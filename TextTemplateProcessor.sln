@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TextTemplateProcessor", "TextTemplateProcessor\TextTemplateProcessor.csproj", "{9771F3E9-41CD-475B-8028-032C08440AE5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TextTemplateProcessor.Tests", "TextTemplateProcessor.Tests\TextTemplateProcessor.Tests.csproj", "{A33B5FD9-D6B2-4451-B380-53B60A289A99}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{647B2473-4E3A-4FBD-AB63-D04F4A748CAA}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9771F3E9-41CD-475B-8028-032C08440AE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9771F3E9-41CD-475B-8028-032C08440AE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9771F3E9-41CD-475B-8028-032C08440AE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9771F3E9-41CD-475B-8028-032C08440AE5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A33B5FD9-D6B2-4451-B380-53B60A289A99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A33B5FD9-D6B2-4451-B380-53B60A289A99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A33B5FD9-D6B2-4451-B380-53B60A289A99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A33B5FD9-D6B2-4451-B380-53B60A289A99}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C4E0AA5A-0D42-47DC-B582-E7136C8B8D81}
+	EndGlobalSection
+EndGlobal
