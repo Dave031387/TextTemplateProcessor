@@ -155,6 +155,12 @@
         internal static Expression<Action<ILogger>> GetLoggerExpression(
             LogEntryType logEntryType,
             string message,
+            bool _)
+            => x => x.Log(logEntryType, message, It.IsAny<string>());
+
+        internal static Expression<Action<ILogger>> GetLoggerExpression(
+            LogEntryType logEntryType,
+            string message,
             string arg1,
             string arg2)
             => x => x.Log(logEntryType, message, arg1, arg2);
@@ -191,5 +197,11 @@
             (string, int) location = (segmentName, lineNumber);
             return x => x.Log(logEntryType, location, message, arg1, arg2);
         }
+
+        internal static Expression<Action<ILogger>> GetLoggerExpression(
+            LogEntryType type,
+            (string segmentName, int lineNumber) location,
+            string message,
+            string arg) => x => x.Log(type, location, message, arg);
     }
 }

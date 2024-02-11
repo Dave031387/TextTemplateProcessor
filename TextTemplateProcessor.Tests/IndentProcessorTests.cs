@@ -1212,17 +1212,6 @@
                 .VerifyNoOtherCalls();
         }
 
-        private static Expression<Action<ILogger>> GetLoggerExpression(
-            LogEntryType type,
-            (string segmentName, int lineNumber) location,
-            string message,
-            string arg) => x => x.Log(type, location, message, arg);
-
-        private static Expression<Action<ILogger>> GetLoggerExpression(
-            LogEntryType type,
-            string message,
-            string arg) => x => x.Log(type, message, arg);
-
         private static void SetCurrentIndent(IIndentProcessor processor, int indent)
         {
             TextItem textItem = new(indent, false, false, string.Empty);
