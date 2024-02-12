@@ -137,7 +137,7 @@
 
             if (!_isFilePathSet)
             {
-                _logger.Log(LogEntryType.Loading, MsgUnableToSetTemplateFilePath, MsgFilePathNotSet);
+                _logger.Log(LogEntryType.Loading, MsgTemplateFilePathNotSet);
                 return textLines;
             }
 

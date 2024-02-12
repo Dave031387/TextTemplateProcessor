@@ -284,7 +284,7 @@
             }
             else
             {
-                _logger.Log(LogEntryType.Loading, MsgUnableToLoadTemplate);
+                _logger.Log(LogEntryType.Loading, MsgTemplateFilePathNotSet);
                 IsTemplateLoaded = false;
             }
         }

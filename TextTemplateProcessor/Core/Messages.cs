@@ -22,7 +22,6 @@
         internal const string MsgErrorWhileReadingUserResponse = "An unexpected error occurred while reading the user response. {0}";
         internal const string MsgFileNotFound = "The specified file was not found. Full file path: ";
         internal const string MsgFilePathIsEmptyOrWhitespace = "The file path must not be empty or contain only whitespace.";
-        internal const string MsgFilePathNotSet = "A Valid template file path has not been set.";
         internal const string MsgFileSuccessfullyRead = "The text template file has been successfully read.";
         internal const string MsgFirstTimeIndentHasBeenTruncated = "The calculated first time indent for segment \"{0}\" went negative. It will be set to zero.";
         internal const string MsgFirstTimeIndentSetToZero = "The First Time Indent option value was set to zero. This value disables the First Time Indent processing.";
@@ -69,6 +68,7 @@
         internal const string MsgTabSizeValueMustBeValidNumber = "The tab size value \"{0}\" is not a valid integer value.";
         internal const string MsgTabSizeValueOutOfRange = "The TAB option value must be a number between 1 and 9. The value given was {0}.";
         internal const string MsgTemplateFileIsEmpty = "The template file is empty.";
+        internal const string MsgTemplateFilePathNotSet = "Unable to load the template file because a valid file path has not been set.";
         internal const string MsgTemplateHasBeenReset = "The environment for template file \"{0}\" has been reset.";
         internal const string MsgTokenDictionaryContainsInvalidTokenName = "The token dictionary contained an invalid token name \"{1}\" for segment \"{0}\".";
         internal const string MsgTokenDictionaryIsEmpty = "An empty token dictionary was supplied for segment \"{0}\".";
@@ -86,7 +86,6 @@
         internal const string MsgTokenWithEmptyValue = "Token \"{1}\" was passed in with an empty value for segment \"{0}\".";
         internal const string MsgTokenWithNullValue = "Token \"{1}\" was passed in with a null value for segment \"{0}\".";
         internal const string MsgUnableToCreateOutputDirectory = "Encountered an error when trying to create the output directory path.\n{0}";
-        internal const string MsgUnableToLoadTemplate = "Unable to load the template file because a valid file path has not been set.";
         internal const string MsgUnableToLoadTemplateFile = "Encountered an error when trying to load the template file.\n{0}";
         internal const string MsgUnableToLocateSolutionDirectory = "The directory containing the solution file could not be found.";
         internal const string MsgUnableToResetSegment = "Unable to reset segment \"{0}\" because of a null or unknown segment name.";
