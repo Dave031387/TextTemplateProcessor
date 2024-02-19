@@ -3,7 +3,6 @@
     using global::TextTemplateProcessor.Core;
     using global::TextTemplateProcessor.Interfaces;
     using System;
-    using static global::TextTemplateProcessor.Core.Messages;
 
     /// <summary>
     /// The <see cref="ConsoleLogger" /> class is used for logging to the <see cref="Console" />.
@@ -33,11 +32,11 @@
         /// </exception>
         internal ConsoleLogger(IMessageWriter messageWriter)
         {
-            if (messageWriter is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(ConsoleLogger), nameof(IMessageWriter));
-                throw new ArgumentNullException(nameof(messageWriter), message);
-            }
+            Utility.NullDependencyCheck(
+                messageWriter,
+                ClassNames.ConsoleLoggerClass,
+                ServiceNames.MessageWriterService,
+                ServiceParameterNames.MessageWriterParameter);
 
             _messageWriter = messageWriter;
         }

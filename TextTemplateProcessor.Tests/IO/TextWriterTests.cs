@@ -21,9 +21,9 @@
             // Arrange
             Action action = () => { TextWriter writer = new(_logger.Object, null!, _pathValidater.Object); };
             string expected = GetNullDependencyMessage(
-                nameof(TextWriter),
-                nameof(IFileAndDirectoryService),
-                "fileAndDirectoryService");
+                ClassNames.TextWriterClass,
+                ServiceNames.FileAndDirectoryService,
+                ServiceParameterNames.FileAndDirectoryServiceParameter);
 
             // Act/Assert
             action
@@ -38,9 +38,9 @@
             // Arrange
             Action action = () => { TextWriter writer = new(null!, _fileService.Object, _pathValidater.Object); };
             string expected = GetNullDependencyMessage(
-                nameof(TextWriter),
-                nameof(ILogger),
-                "logger");
+                ClassNames.TextWriterClass,
+                ServiceNames.LoggerService,
+                ServiceParameterNames.LoggerParameter);
 
             // Act/Assert
             action
@@ -55,9 +55,9 @@
             // Arrange
             Action action = () => { TextWriter writer = new(_logger.Object, _fileService.Object, null!); };
             string expected = GetNullDependencyMessage(
-                nameof(TextWriter),
-                nameof(IPathValidater),
-                "pathValidater");
+                ClassNames.TextWriterClass,
+                ServiceNames.PathValidaterService,
+                ServiceParameterNames.PathValidaterParameter);
 
             // Act/Assert
             action

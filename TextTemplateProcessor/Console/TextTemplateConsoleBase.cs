@@ -73,35 +73,35 @@
             IFileAndDirectoryService fileAndDirectoryService,
             IPathValidater pathValidater)
         {
-            if (logger is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(TextTemplateConsoleBase), nameof(ILogger));
-                throw new ArgumentNullException(nameof(logger), message);
-            }
+            Utility.NullDependencyCheck(
+                logger,
+                ClassNames.TextTemplateConsoleBaseClass,
+                ServiceNames.LoggerService,
+                ServiceParameterNames.LoggerParameter);
 
-            if (consoleReader is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(TextTemplateConsoleBase), nameof(IConsoleReader));
-                throw new ArgumentNullException(nameof(consoleReader), message);
-            }
+            Utility.NullDependencyCheck(
+                consoleReader,
+                ClassNames.TextTemplateConsoleBaseClass,
+                ServiceNames.ConsoleReaderService,
+                ServiceParameterNames.ConsoleReaderParameter);
 
-            if (messageWriter is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(TextTemplateConsoleBase), nameof(IMessageWriter));
-                throw new ArgumentNullException(nameof(messageWriter), message);
-            }
+            Utility.NullDependencyCheck(
+                messageWriter,
+                ClassNames.TextTemplateConsoleBaseClass,
+                ServiceNames.MessageWriterService,
+                ServiceParameterNames.MessageWriterParameter);
 
-            if (fileAndDirectoryService is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(TextTemplateConsoleBase), nameof(IFileAndDirectoryService));
-                throw new ArgumentNullException(nameof(fileAndDirectoryService), message);
-            }
+            Utility.NullDependencyCheck(
+                fileAndDirectoryService,
+                ClassNames.TextTemplateConsoleBaseClass,
+                ServiceNames.FileAndDirectoryService,
+                ServiceParameterNames.FileAndDirectoryServiceParameter);
 
-            if (pathValidater is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(TextTemplateConsoleBase), nameof(IPathValidater));
-                throw new ArgumentNullException(nameof(pathValidater), message);
-            }
+            Utility.NullDependencyCheck(
+                pathValidater,
+                ClassNames.TextTemplateConsoleBaseClass,
+                ServiceNames.PathValidaterService,
+                ServiceParameterNames.PathValidaterParameter);
 
             _logger = logger;
             _consoleReader = consoleReader;

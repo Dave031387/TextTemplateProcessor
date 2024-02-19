@@ -3,7 +3,6 @@
     using global::TextTemplateProcessor.Core;
     using global::TextTemplateProcessor.Interfaces;
     using System;
-    using static global::TextTemplateProcessor.Core.Messages;
 
     /// <summary>
     /// The <see cref="MessageWriter" /> class is used by the Text Template Processor for writing
@@ -32,11 +31,11 @@
         /// </exception>
         internal MessageWriter(IConsoleWriter consoleWriter)
         {
-            if (consoleWriter is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(MessageWriter), nameof(IConsoleWriter));
-                throw new ArgumentNullException(nameof(consoleWriter), message);
-            }
+            Utility.NullDependencyCheck(
+                consoleWriter,
+                ClassNames.MessageWriterClass,
+                ServiceNames.ConsoleWriterService,
+                ServiceParameterNames.ConsoleWriterParameter);
 
             _consoleWriter = consoleWriter;
         }

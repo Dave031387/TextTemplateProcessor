@@ -49,23 +49,23 @@
         /// </exception>
         internal TokenProcessor(ILogger logger, ILocater locater, INameValidater nameValidater)
         {
-            if (logger is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(TokenProcessor), nameof(ILogger));
-                throw new ArgumentNullException(nameof(logger), message);
-            }
+            Utility.NullDependencyCheck(
+                logger,
+                ClassNames.TokenProcessorClass,
+                ServiceNames.LoggerService,
+                ServiceParameterNames.LoggerParameter);
 
-            if (locater is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(TokenProcessor), nameof(ILocater));
-                throw new ArgumentNullException(nameof(locater), message);
-            }
+            Utility.NullDependencyCheck(
+                locater,
+                ClassNames.TokenProcessorClass,
+                ServiceNames.LocaterService,
+                ServiceParameterNames.LocaterParameter);
 
-            if (nameValidater is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(TokenProcessor), nameof(INameValidater));
-                throw new ArgumentNullException(nameof(nameValidater), message);
-            }
+            Utility.NullDependencyCheck(
+                nameValidater,
+                ClassNames.TokenProcessorClass,
+                ServiceNames.NameValidaterService,
+                ServiceParameterNames.NameValidaterParameter);
 
             _logger = logger;
             _locater = locater;

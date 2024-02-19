@@ -94,53 +94,53 @@
             ITextWriter textWriter,
             ITokenProcessor tokenProcessor)
         {
-            if (logger is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(TextTemplateProcessor), nameof(ILogger));
-                throw new ArgumentNullException(nameof(logger), message);
-            }
+            Utility.NullDependencyCheck(
+                logger,
+                ClassNames.TextTemplateProcessorClass,
+                ServiceNames.LoggerService,
+                ServiceParameterNames.LoggerParameter);
 
-            if (defaultSegmentNameGenerator is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(TextTemplateProcessor), nameof(IDefaultSegmentNameGenerator));
-                throw new ArgumentNullException(nameof(defaultSegmentNameGenerator), message);
-            }
+            Utility.NullDependencyCheck(
+                defaultSegmentNameGenerator,
+                ClassNames.TextTemplateProcessorClass,
+                ServiceNames.DefaultSegmentNameGeneratorService,
+                ServiceParameterNames.DefaultSegmentNameGeneratorParameter);
 
-            if (indentProcessor is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(TextTemplateProcessor), nameof(IIndentProcessor));
-                throw new ArgumentNullException(nameof(indentProcessor), message);
-            }
+            Utility.NullDependencyCheck(
+                indentProcessor,
+                ClassNames.TextTemplateProcessorClass,
+                ServiceNames.IndentProcessorService,
+                ServiceParameterNames.IndentProcessorParameter);
 
-            if (locater is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(TextTemplateProcessor), nameof(ILocater));
-                throw new ArgumentNullException(nameof(locater), message);
-            }
+            Utility.NullDependencyCheck(
+                locater,
+                ClassNames.TextTemplateProcessorClass,
+                ServiceNames.LocaterService,
+                ServiceParameterNames.LocaterParameter);
 
-            if (templateLoader is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(TextTemplateProcessor), nameof(ITemplateLoader));
-                throw new ArgumentNullException(nameof(templateLoader), message);
-            }
+            Utility.NullDependencyCheck(
+                templateLoader,
+                ClassNames.TextTemplateProcessorClass,
+                ServiceNames.TemplateLoaderService,
+                ServiceParameterNames.TemplateLoaderParameter);
 
-            if (textReader is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(TextTemplateProcessor), nameof(ITextReader));
-                throw new ArgumentNullException(nameof(textReader), message);
-            }
+            Utility.NullDependencyCheck(
+                textReader,
+                ClassNames.TextTemplateProcessorClass,
+                ServiceNames.TextReaderService,
+                ServiceParameterNames.TextReaderParameter);
 
-            if (textWriter is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(TextTemplateProcessor), nameof(ITextWriter));
-                throw new ArgumentNullException(nameof(textWriter), message);
-            }
+            Utility.NullDependencyCheck(
+                textWriter,
+                ClassNames.TextTemplateProcessorClass,
+                ServiceNames.TextWriterService,
+                ServiceParameterNames.TextWriterParameter);
 
-            if (tokenProcessor is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(TextTemplateProcessor), nameof(ITokenProcessor));
-                throw new ArgumentNullException(nameof(tokenProcessor), message);
-            }
+            Utility.NullDependencyCheck(
+                tokenProcessor,
+                ClassNames.TextTemplateProcessorClass,
+                ServiceNames.TokenProcessorService,
+                ServiceParameterNames.TokenProcessorParameter);
 
             _logger = logger;
             _defaultSegmentNameGenerator = defaultSegmentNameGenerator;

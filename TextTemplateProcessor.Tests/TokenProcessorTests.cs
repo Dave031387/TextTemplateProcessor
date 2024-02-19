@@ -19,9 +19,9 @@
             // Arrange
             Action action = () => { TokenProcessor processor = new(_logger.Object, null!, _nameValidater.Object); };
             string expected = GetNullDependencyMessage(
-                nameof(TokenProcessor),
-                nameof(ILocater),
-                "locater");
+                ClassNames.TokenProcessorClass,
+                ServiceNames.LocaterService,
+                ServiceParameterNames.LocaterParameter);
 
             // Act/Assert
             action
@@ -36,9 +36,9 @@
             // Arrange
             Action action = () => { TokenProcessor processor = new(null!, _locater.Object, _nameValidater.Object); };
             string expected = GetNullDependencyMessage(
-                nameof(TokenProcessor),
-                nameof(ILogger),
-                "logger");
+                ClassNames.TokenProcessorClass,
+                ServiceNames.LoggerService,
+                ServiceParameterNames.LoggerParameter);
 
             // Act/Assert
             action
@@ -53,9 +53,9 @@
             // Arrange
             Action action = () => { TokenProcessor processor = new(_logger.Object, _locater.Object, null!); };
             string expected = GetNullDependencyMessage(
-                nameof(TokenProcessor),
-                nameof(INameValidater),
-                "nameValidater");
+                ClassNames.TokenProcessorClass,
+                ServiceNames.NameValidaterService,
+                ServiceParameterNames.NameValidaterParameter);
 
             // Act/Assert
             action

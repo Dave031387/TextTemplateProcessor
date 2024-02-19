@@ -56,35 +56,35 @@
             ISegmentHeaderParser segmentHeaderParser,
             ITextLineParser textLineParser)
         {
-            if (logger is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(TemplateLoader), nameof(ILogger));
-                throw new ArgumentNullException(nameof(logger), message);
-            }
+            Utility.NullDependencyCheck(
+                logger,
+                ClassNames.TemplateLoaderClass,
+                ServiceNames.LoggerService,
+                ServiceParameterNames.LoggerParameter);
 
-            if (defaultSegmentNameGenerator is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(TemplateLoader), nameof(IDefaultSegmentNameGenerator));
-                throw new ArgumentNullException(nameof(defaultSegmentNameGenerator), message);
-            }
+            Utility.NullDependencyCheck(
+                defaultSegmentNameGenerator,
+                ClassNames.TemplateLoaderClass,
+                ServiceNames.DefaultSegmentNameGeneratorService,
+                ServiceParameterNames.DefaultSegmentNameGeneratorParameter);
 
-            if (locater is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(TemplateLoader), nameof(ILocater));
-                throw new ArgumentNullException(nameof(locater), message);
-            }
+            Utility.NullDependencyCheck(
+                locater,
+                ClassNames.TemplateLoaderClass,
+                ServiceNames.LocaterService,
+                ServiceParameterNames.LocaterParameter);
 
-            if (segmentHeaderParser is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(TemplateLoader), nameof(ISegmentHeaderParser));
-                throw new ArgumentNullException(nameof(segmentHeaderParser), message);
-            }
+            Utility.NullDependencyCheck(
+                segmentHeaderParser,
+                ClassNames.TemplateLoaderClass,
+                ServiceNames.SegmentHeaderParserService,
+                ServiceParameterNames.SegmentHeaderParserParameter);
 
-            if (textLineParser is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(TemplateLoader), nameof(ITextLineParser));
-                throw new ArgumentNullException(nameof(textLineParser), message);
-            }
+            Utility.NullDependencyCheck(
+                textLineParser,
+                ClassNames.TemplateLoaderClass,
+                ServiceNames.TextLineParserService,
+                ServiceParameterNames.TextLineParserParameter);
 
             _logger = logger;
             _defaultSegmentNameGenerator = defaultSegmentNameGenerator;

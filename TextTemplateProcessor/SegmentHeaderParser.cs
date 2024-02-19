@@ -64,35 +64,35 @@
             IIndentProcessor indentProcessor,
             INameValidater nameValidater)
         {
-            if (logger is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(SegmentHeaderParser), nameof(ILogger));
-                throw new ArgumentNullException(nameof(logger), message);
-            }
+            Utility.NullDependencyCheck(
+                logger,
+                ClassNames.SegmentHeaderParserClass,
+                ServiceNames.LoggerService,
+                ServiceParameterNames.LoggerParameter);
 
-            if (defaultSegmentNameGenerator is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(SegmentHeaderParser), nameof(IDefaultSegmentNameGenerator));
-                throw new ArgumentNullException(nameof(defaultSegmentNameGenerator), message);
-            }
+            Utility.NullDependencyCheck(
+                defaultSegmentNameGenerator,
+                ClassNames.SegmentHeaderParserClass,
+                ServiceNames.DefaultSegmentNameGeneratorService,
+                ServiceParameterNames.DefaultSegmentNameGeneratorParameter);
 
-            if (locater is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(SegmentHeaderParser), nameof(ILocater));
-                throw new ArgumentNullException(nameof(locater), message);
-            }
+            Utility.NullDependencyCheck(
+                locater,
+                ClassNames.SegmentHeaderParserClass,
+                ServiceNames.LocaterService,
+                ServiceParameterNames.LocaterParameter);
 
-            if (indentProcessor is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(SegmentHeaderParser), nameof(IIndentProcessor));
-                throw new ArgumentNullException(nameof(indentProcessor), message);
-            }
+            Utility.NullDependencyCheck(
+                indentProcessor,
+                ClassNames.SegmentHeaderParserClass,
+                ServiceNames.IndentProcessorService,
+                ServiceParameterNames.IndentProcessorParameter);
 
-            if (nameValidater is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(SegmentHeaderParser), nameof(INameValidater));
-                throw new ArgumentNullException(nameof(nameValidater), message);
-            }
+            Utility.NullDependencyCheck(
+                nameValidater,
+                ClassNames.SegmentHeaderParserClass,
+                ServiceNames.NameValidaterService,
+                ServiceParameterNames.NameValidaterParameter);
 
             _logger = logger;
             _defaultSegmentNameGenerator = defaultSegmentNameGenerator;

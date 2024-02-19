@@ -272,9 +272,9 @@
                     _pathValidater.Object);
             };
             string expected = GetNullDependencyMessage(
-                nameof(TextReader),
-                nameof(IFileAndDirectoryService),
-                "fileAndDirectoryService");
+                ClassNames.TextReaderClass,
+                ServiceNames.FileAndDirectoryService,
+                ServiceParameterNames.FileAndDirectoryServiceParameter);
 
             // Act/Assert
             action
@@ -297,9 +297,9 @@
                     _pathValidater.Object);
             };
             string expected = GetNullDependencyMessage(
-                nameof(TextReader),
-                nameof(ILogger),
-                "logger");
+                ClassNames.TextReaderClass,
+                ServiceNames.LoggerService,
+                ServiceParameterNames.LoggerParameter);
 
             // Act/Assert
             action
@@ -322,9 +322,9 @@
                     null!);
             };
             string expected = GetNullDependencyMessage(
-                nameof(TextReader),
-                nameof(IPathValidater),
-                "pathValidater");
+                ClassNames.TextReaderClass,
+                ServiceNames.PathValidaterService,
+                ServiceParameterNames.PathValidaterParameter);
 
             // Act/Assert
             action
@@ -391,9 +391,9 @@
                     _pathValidater.Object);
             };
             string expected = GetNullDependencyMessage(
-                nameof(TextReader),
-                nameof(IFileAndDirectoryService),
-                "fileAndDirectoryService");
+                ClassNames.TextReaderClass,
+                ServiceNames.FileAndDirectoryService,
+                ServiceParameterNames.FileAndDirectoryServiceParameter);
 
             // Act/Assert
             action
@@ -414,9 +414,9 @@
                     _pathValidater.Object);
             };
             string expected = GetNullDependencyMessage(
-                nameof(TextReader),
-                nameof(ILogger),
-                "logger");
+                ClassNames.TextReaderClass,
+                ServiceNames.LoggerService,
+                ServiceParameterNames.LoggerParameter);
 
             // Act/Assert
             action
@@ -437,9 +437,9 @@
                     null!);
             };
             string expected = GetNullDependencyMessage(
-                nameof(TextReader),
-                nameof(IPathValidater),
-                "pathValidater");
+                ClassNames.TextReaderClass,
+                ServiceNames.PathValidaterService,
+                ServiceParameterNames.PathValidaterParameter);
 
             // Act/Assert
             action

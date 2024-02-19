@@ -8,9 +8,9 @@
             // Arrange
             Action action = () => { _ = new MessageWriter(null!); };
             string expected = GetNullDependencyMessage(
-                nameof(MessageWriter),
-                nameof(IConsoleWriter),
-                "consoleWriter");
+                ClassNames.MessageWriterClass,
+                ServiceNames.ConsoleWriterService,
+                ServiceParameterNames.ConsoleWriterParameter);
 
             // Act/Assert
             action

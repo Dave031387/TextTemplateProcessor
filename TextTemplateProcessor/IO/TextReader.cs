@@ -85,23 +85,23 @@
             IFileAndDirectoryService fileAndDirectoryService,
             IPathValidater pathValidater)
         {
-            if (logger is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(TextReader), nameof(ILogger));
-                throw new ArgumentNullException(nameof(logger), message);
-            }
+            Utility.NullDependencyCheck(
+                logger,
+                ClassNames.TextReaderClass,
+                ServiceNames.LoggerService,
+                ServiceParameterNames.LoggerParameter);
 
-            if (fileAndDirectoryService is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(TextReader), nameof(IFileAndDirectoryService));
-                throw new ArgumentNullException(nameof(fileAndDirectoryService), message);
-            }
+            Utility.NullDependencyCheck(
+                fileAndDirectoryService,
+                ClassNames.TextReaderClass,
+                ServiceNames.FileAndDirectoryService,
+                ServiceParameterNames.FileAndDirectoryServiceParameter);
 
-            if (pathValidater is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(TextReader), nameof(IPathValidater));
-                throw new ArgumentNullException(nameof(pathValidater), message);
-            }
+            Utility.NullDependencyCheck(
+                pathValidater,
+                ClassNames.TextReaderClass,
+                ServiceNames.PathValidaterService,
+                ServiceParameterNames.PathValidaterParameter);
 
             _logger = logger;
             _fileAndDirectoryService = fileAndDirectoryService;

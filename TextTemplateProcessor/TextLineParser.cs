@@ -60,23 +60,23 @@
             ILocater locater,
             ITokenProcessor tokenProcessor)
         {
-            if (logger is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(TextLineParser), nameof(ILogger));
-                throw new ArgumentNullException(nameof(logger), message);
-            }
+            Utility.NullDependencyCheck(
+                logger,
+                ClassNames.TextLineParserClass,
+                ServiceNames.LoggerService,
+                ServiceParameterNames.LoggerParameter);
 
-            if (locater is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(TextLineParser), nameof(ILocater));
-                throw new ArgumentNullException(nameof(locater), message);
-            }
+            Utility.NullDependencyCheck(
+                locater,
+                ClassNames.TextLineParserClass,
+                ServiceNames.LocaterService,
+                ServiceParameterNames.LocaterParameter);
 
-            if (tokenProcessor is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(TextLineParser), nameof(ITokenProcessor));
-                throw new ArgumentNullException(nameof(tokenProcessor), message);
-            }
+            Utility.NullDependencyCheck(
+                tokenProcessor,
+                ClassNames.TextLineParserClass,
+                ServiceNames.TokenProcessorService,
+                ServiceParameterNames.TokenProcessorParameter);
 
             _logger = logger;
             _locater = locater;

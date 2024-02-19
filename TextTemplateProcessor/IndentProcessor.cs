@@ -50,17 +50,17 @@
         /// </exception>
         internal IndentProcessor(ILogger logger, ILocater locater)
         {
-            if (logger is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(IndentProcessor), nameof(ILogger));
-                throw new ArgumentNullException(nameof(logger), message);
-            }
+            Utility.NullDependencyCheck(
+                logger,
+                ClassNames.IndentProcessorClass,
+                ServiceNames.LoggerService,
+                ServiceParameterNames.LoggerParameter);
 
-            if (locater is null)
-            {
-                string message = string.Format(MsgDependencyIsNull, nameof(IndentProcessor), nameof(ILocater));
-                throw new ArgumentNullException(nameof(locater), message);
-            }
+            Utility.NullDependencyCheck(
+                locater,
+                ClassNames.IndentProcessorClass,
+                ServiceNames.LocaterService,
+                ServiceParameterNames.LocaterParameter);
 
             _logger = logger;
             _locater = locater;
