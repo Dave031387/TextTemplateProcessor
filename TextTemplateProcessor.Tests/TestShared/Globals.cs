@@ -141,6 +141,9 @@
             ? Path.GetFullPath(path)
             : Path.Combine(SolutionDirectory, path);
 
+        public static string GetNullDependencyMessage(string className, string serviceName, string parameterName)
+            => string.Format(MsgDependencyIsNull, className, serviceName) + $" (Parameter '{parameterName}')";
+
         internal static Expression<Action<ILogger>> GetLoggerExpression(
             LogEntryType logEntryType,
             string message)

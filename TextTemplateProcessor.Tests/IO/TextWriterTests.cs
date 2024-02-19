@@ -19,9 +19,11 @@
         public void TextWriter_ConstructWithNullFileService_ThrowsException()
         {
             // Arrange
-            string expected = string.Format(MsgDependencyIsNull, nameof(TextReader), nameof(IFileAndDirectoryService))
-                + " (Parameter 'fileAndDirectoryService')";
             Action action = () => { TextWriter writer = new(_logger.Object, null!, _pathValidater.Object); };
+            string expected = GetNullDependencyMessage(
+                nameof(TextWriter),
+                nameof(IFileAndDirectoryService),
+                "fileAndDirectoryService");
 
             // Act/Assert
             action
@@ -34,9 +36,11 @@
         public void TextWriter_ConstructWithNullLogger_ThrowsException()
         {
             // Arrange
-            string expected = string.Format(MsgDependencyIsNull, nameof(TextReader), nameof(ILogger))
-                + " (Parameter 'logger')";
             Action action = () => { TextWriter writer = new(null!, _fileService.Object, _pathValidater.Object); };
+            string expected = GetNullDependencyMessage(
+                nameof(TextWriter),
+                nameof(ILogger),
+                "logger");
 
             // Act/Assert
             action
@@ -49,9 +53,11 @@
         public void TextWriter_ConstructWithNullPathValidater_ThrowsException()
         {
             // Arrange
-            string expected = string.Format(MsgDependencyIsNull, nameof(TextReader), nameof(IPathValidater))
-                + " (Parameter 'pathValidater')";
             Action action = () => { TextWriter writer = new(_logger.Object, _fileService.Object, null!); };
+            string expected = GetNullDependencyMessage(
+                nameof(TextWriter),
+                nameof(IPathValidater),
+                "pathValidater");
 
             // Act/Assert
             action
@@ -70,7 +76,12 @@
             action
                 .Should()
                 .NotThrow();
-            ;
+            _logger
+                .VerifyNoOtherCalls();
+            _fileService
+                .VerifyNoOtherCalls();
+            _pathValidater
+                .VerifyNoOtherCalls();
         }
 
         [Fact]

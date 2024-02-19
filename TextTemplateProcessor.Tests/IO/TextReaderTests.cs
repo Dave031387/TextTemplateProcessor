@@ -271,11 +271,10 @@
                     null!,
                     _pathValidater.Object);
             };
-            string expected = string.Format(
-                MsgDependencyIsNull,
+            string expected = GetNullDependencyMessage(
                 nameof(TextReader),
-                nameof(IFileAndDirectoryService))
-                + " (Parameter 'fileAndDirectoryService')";
+                nameof(IFileAndDirectoryService),
+                "fileAndDirectoryService");
 
             // Act/Assert
             action
@@ -297,11 +296,10 @@
                     _fileService.Object,
                     _pathValidater.Object);
             };
-            string expected = string.Format(
-                MsgDependencyIsNull,
+            string expected = GetNullDependencyMessage(
                 nameof(TextReader),
-                nameof(ILogger))
-                + " (Parameter 'logger')";
+                nameof(ILogger),
+                "logger");
 
             // Act/Assert
             action
@@ -323,11 +321,10 @@
                     _fileService.Object,
                     null!);
             };
-            string expected = string.Format(
-                MsgDependencyIsNull,
+            string expected = GetNullDependencyMessage(
                 nameof(TextReader),
-                nameof(IPathValidater))
-                + " (Parameter 'pathValidater')";
+                nameof(IPathValidater),
+                "pathValidater");
 
             // Act/Assert
             action
@@ -393,11 +390,10 @@
                     null!,
                     _pathValidater.Object);
             };
-            string expected = string.Format(
-                MsgDependencyIsNull,
+            string expected = GetNullDependencyMessage(
                 nameof(TextReader),
-                nameof(IFileAndDirectoryService))
-                + " (Parameter 'fileAndDirectoryService')";
+                nameof(IFileAndDirectoryService),
+                "fileAndDirectoryService");
 
             // Act/Assert
             action
@@ -417,11 +413,10 @@
                     _fileService.Object,
                     _pathValidater.Object);
             };
-            string expected = string.Format(
-                MsgDependencyIsNull,
+            string expected = GetNullDependencyMessage(
                 nameof(TextReader),
-                nameof(ILogger))
-                + " (Parameter 'logger')";
+                nameof(ILogger),
+                "logger");
 
             // Act/Assert
             action
@@ -441,11 +436,10 @@
                     _fileService.Object,
                     null!);
             };
-            string expected = string.Format(
-                MsgDependencyIsNull,
+            string expected = GetNullDependencyMessage(
                 nameof(TextReader),
-                nameof(IPathValidater))
-                + " (Parameter 'pathValidater')";
+                nameof(IPathValidater),
+                "pathValidater");
 
             // Act/Assert
             action

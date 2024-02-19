@@ -784,8 +784,10 @@
         {
             // Arrange
             Action action = () => { IndentProcessor processor = new(_logger.Object, null!); };
-            string expected = string.Format(MsgDependencyIsNull, nameof(IndentProcessor), nameof(ILocater))
-                + " (Parameter 'locater')";
+            string expected = GetNullDependencyMessage(
+                nameof(IndentProcessor),
+                nameof(ILocater),
+                "locater");
 
             // Act/Assert
             action
@@ -799,8 +801,10 @@
         {
             // Arrange
             Action action = () => { IndentProcessor processor = new(null!, _locater.Object); };
-            string expected = string.Format(MsgDependencyIsNull, nameof(IndentProcessor), nameof(ILogger))
-                + " (Parameter 'logger')";
+            string expected = GetNullDependencyMessage(
+                nameof(IndentProcessor),
+                nameof(ILogger),
+                "logger");
 
             // Act/Assert
             action

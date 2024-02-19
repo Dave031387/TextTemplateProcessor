@@ -39,7 +39,10 @@
         {
             // Arrange
             Action action = () => { _ = new ConsoleLogger(null!); };
-            string expected = string.Format(MsgDependencyIsNull + " (Parameter 'messageWriter')", nameof(ConsoleLogger), nameof(IMessageWriter));
+            string expected = GetNullDependencyMessage(
+                nameof(ConsoleLogger),
+                nameof(IMessageWriter),
+                "messageWriter");
 
             // Act/Assert
             action

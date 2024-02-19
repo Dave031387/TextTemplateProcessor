@@ -47,19 +47,19 @@
         {
             if (logger is null)
             {
-                string message = string.Format(MsgDependencyIsNull, nameof(TextReader), nameof(ILogger));
+                string message = string.Format(MsgDependencyIsNull, nameof(TextWriter), nameof(ILogger));
                 throw new ArgumentNullException(nameof(logger), message);
             }
 
             if (fileAndDirectoryService is null)
             {
-                string message = string.Format(MsgDependencyIsNull, nameof(TextReader), nameof(IFileAndDirectoryService));
+                string message = string.Format(MsgDependencyIsNull, nameof(TextWriter), nameof(IFileAndDirectoryService));
                 throw new ArgumentNullException(nameof(fileAndDirectoryService), message);
             }
 
             if (pathValidater is null)
             {
-                string message = string.Format(MsgDependencyIsNull, nameof(TextReader), nameof(IPathValidater));
+                string message = string.Format(MsgDependencyIsNull, nameof(TextWriter), nameof(IPathValidater));
                 throw new ArgumentNullException(nameof(pathValidater), message);
             }
 
