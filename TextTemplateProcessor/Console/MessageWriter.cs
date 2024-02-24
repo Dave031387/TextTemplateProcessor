@@ -31,11 +31,10 @@
         /// </exception>
         internal MessageWriter(IConsoleWriter consoleWriter)
         {
-            Utility.NullDependencyCheck(
-                consoleWriter,
-                ClassNames.MessageWriterClass,
-                ServiceNames.ConsoleWriterService,
-                ServiceParameterNames.ConsoleWriterParameter);
+            Utility.NullDependencyCheck(consoleWriter,
+                                        ClassNames.MessageWriterClass,
+                                        ServiceNames.ConsoleWriterService,
+                                        ServiceParameterNames.ConsoleWriterParameter);
 
             _consoleWriter = consoleWriter;
         }

@@ -22,12 +22,11 @@
         /// <summary>
         /// Default constructor that creates an instance of the <see cref="TemplateLoader" /> class.
         /// </summary>
-        public TemplateLoader() : this(
-            ServiceLocater.Current.Get<ILogger>(),
-            ServiceLocater.Current.Get<IDefaultSegmentNameGenerator>(),
-            ServiceLocater.Current.Get<ILocater>(),
-            ServiceLocater.Current.Get<ISegmentHeaderParser>(),
-            ServiceLocater.Current.Get<ITextLineParser>())
+        public TemplateLoader() : this(ServiceLocater.Current.Get<ILogger>(),
+                                       ServiceLocater.Current.Get<IDefaultSegmentNameGenerator>(),
+                                       ServiceLocater.Current.Get<ILocater>(),
+                                       ServiceLocater.Current.Get<ISegmentHeaderParser>(),
+                                       ServiceLocater.Current.Get<ITextLineParser>())
         {
         }
 
@@ -49,42 +48,36 @@
         /// Exception is thrown if any of the dependencies passed into the constructor are
         /// <see langword="null" />.
         /// </exception>
-        internal TemplateLoader(
-            ILogger logger,
-            IDefaultSegmentNameGenerator defaultSegmentNameGenerator,
-            ILocater locater,
-            ISegmentHeaderParser segmentHeaderParser,
-            ITextLineParser textLineParser)
+        internal TemplateLoader(ILogger logger,
+                                IDefaultSegmentNameGenerator defaultSegmentNameGenerator,
+                                ILocater locater,
+                                ISegmentHeaderParser segmentHeaderParser,
+                                ITextLineParser textLineParser)
         {
-            Utility.NullDependencyCheck(
-                logger,
-                ClassNames.TemplateLoaderClass,
-                ServiceNames.LoggerService,
-                ServiceParameterNames.LoggerParameter);
+            Utility.NullDependencyCheck(logger,
+                                        ClassNames.TemplateLoaderClass,
+                                        ServiceNames.LoggerService,
+                                        ServiceParameterNames.LoggerParameter);
 
-            Utility.NullDependencyCheck(
-                defaultSegmentNameGenerator,
-                ClassNames.TemplateLoaderClass,
-                ServiceNames.DefaultSegmentNameGeneratorService,
-                ServiceParameterNames.DefaultSegmentNameGeneratorParameter);
+            Utility.NullDependencyCheck(defaultSegmentNameGenerator,
+                                        ClassNames.TemplateLoaderClass,
+                                        ServiceNames.DefaultSegmentNameGeneratorService,
+                                        ServiceParameterNames.DefaultSegmentNameGeneratorParameter);
 
-            Utility.NullDependencyCheck(
-                locater,
-                ClassNames.TemplateLoaderClass,
-                ServiceNames.LocaterService,
-                ServiceParameterNames.LocaterParameter);
+            Utility.NullDependencyCheck(locater,
+                                        ClassNames.TemplateLoaderClass,
+                                        ServiceNames.LocaterService,
+                                        ServiceParameterNames.LocaterParameter);
 
-            Utility.NullDependencyCheck(
-                segmentHeaderParser,
-                ClassNames.TemplateLoaderClass,
-                ServiceNames.SegmentHeaderParserService,
-                ServiceParameterNames.SegmentHeaderParserParameter);
+            Utility.NullDependencyCheck(segmentHeaderParser,
+                                        ClassNames.TemplateLoaderClass,
+                                        ServiceNames.SegmentHeaderParserService,
+                                        ServiceParameterNames.SegmentHeaderParserParameter);
 
-            Utility.NullDependencyCheck(
-                textLineParser,
-                ClassNames.TemplateLoaderClass,
-                ServiceNames.TextLineParserService,
-                ServiceParameterNames.TextLineParserParameter);
+            Utility.NullDependencyCheck(textLineParser,
+                                        ClassNames.TemplateLoaderClass,
+                                        ServiceNames.TextLineParserService,
+                                        ServiceParameterNames.TextLineParserParameter);
 
             _logger = logger;
             _defaultSegmentNameGenerator = defaultSegmentNameGenerator;
@@ -109,10 +102,9 @@
         /// file and the value is a <see cref="ControlItem" /> object containing the control
         /// information for that segment.
         /// </param>
-        public void LoadTemplate(
-            IEnumerable<string> templateLines,
-            Dictionary<string, List<TextItem>> segmentDictionary,
-            Dictionary<string, ControlItem> controlDictionary)
+        public void LoadTemplate(IEnumerable<string> templateLines,
+                                 Dictionary<string, List<TextItem>> segmentDictionary,
+                                 Dictionary<string, ControlItem> controlDictionary)
         {
             _segmentDictionary = segmentDictionary;
             _controlDictionary = controlDictionary;
@@ -140,18 +132,28 @@
             if (_controlDictionary.ContainsKey(segmentName))
             {
                 _locater.CurrentSegment = _defaultSegmentNameGenerator.Next;
-                _logger.Log(LogEntryType.Parsing, _locater.Location, MsgFoundDuplicateSegmentName, segmentName, _locater.CurrentSegment);
+                _logger.Log(LogEntryType.Parsing,
+                            _locater.Location,
+                            MsgFoundDuplicateSegmentName,
+                            segmentName,
+                            _locater.CurrentSegment);
             }
 
             if (IsPadSegmentInvalid(segmentName, controlItem.PadSegment))
             {
-                _logger.Log(LogEntryType.Parsing, _locater.Location, MsgPadSegmentsMustBeDefinedEarlier, segmentName, controlItem.PadSegment);
+                _logger.Log(LogEntryType.Parsing,
+                            _locater.Location,
+                            MsgPadSegmentsMustBeDefinedEarlier,
+                            segmentName,
+                            controlItem.PadSegment);
                 controlItem.PadSegment = string.Empty;
             }
 
             _controlDictionary[_locater.CurrentSegment] = controlItem;
             _textLineCount = 0;
-            _logger.Log(LogEntryType.Parsing, _locater.Location, MsgSegmentHasBeenAdded);
+            _logger.Log(LogEntryType.Parsing,
+                        _locater.Location,
+                        MsgSegmentHasBeenAdded);
         }
 
         private void AddTextItemToSegmentDictionary(TextItem textItem)
@@ -172,7 +174,10 @@
         {
             if (_locater.HasValidSegmentName && _textLineCount == 0)
             {
-                _logger.Log(LogEntryType.Parsing, _locater.Location, MsgNoTextLinesFollowingSegmentHeader, _locater.CurrentSegment);
+                _logger.Log(LogEntryType.Parsing,
+                            _locater.Location,
+                            MsgNoTextLinesFollowingSegmentHeader,
+                            _locater.CurrentSegment);
             }
         }
 
@@ -181,7 +186,10 @@
             if (_locater.HasEmptySegmentName)
             {
                 CreateDefaultSegment();
-                _logger.Log(LogEntryType.Parsing, _locater.Location, MsgMissingInitialSegmentHeader, _locater.CurrentSegment);
+                _logger.Log(LogEntryType.Parsing,
+                            _locater.Location,
+                            MsgMissingInitialSegmentHeader,
+                            _locater.CurrentSegment);
             }
         }
 
@@ -193,7 +201,7 @@
         }
 
         private bool IsPadSegmentInvalid(string segmentName, string? padSegment)
-            => !string.IsNullOrEmpty(padSegment) && (!_controlDictionary.ContainsKey(padSegment) || padSegment == segmentName);
+            => string.IsNullOrEmpty(padSegment) is false && (_controlDictionary.ContainsKey(padSegment) is false || padSegment == segmentName);
 
         private void ParseTemplateLine(string templateLine)
         {

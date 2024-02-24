@@ -33,7 +33,7 @@
         /// Gets a boolean value that's <see langword="true" /> when the
         /// <see cref="CurrentSegment" /> property contains a valid segment name.
         /// </summary>
-        public bool HasValidSegmentName => !string.IsNullOrWhiteSpace(CurrentSegment);
+        public bool HasValidSegmentName => string.IsNullOrWhiteSpace(CurrentSegment) is false;
 
         /// <summary>
         /// Gets the current line number of the segment that is being processed in the text template

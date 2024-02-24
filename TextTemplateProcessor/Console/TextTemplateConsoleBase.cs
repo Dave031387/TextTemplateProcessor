@@ -22,12 +22,11 @@
         /// Default constructor that creates an instance of the
         /// <see cref="TextTemplateConsoleBase" /> class.
         /// </summary>
-        public TextTemplateConsoleBase() : this(
-            ServiceLocater.Current.Get<ILogger>(),
-            ServiceLocater.Current.Get<IConsoleReader>(),
-            ServiceLocater.Current.Get<IMessageWriter>(),
-            ServiceLocater.Current.Get<IFileAndDirectoryService>(),
-            ServiceLocater.Current.Get<IPathValidater>())
+        public TextTemplateConsoleBase() : this(ServiceLocater.Current.Get<ILogger>(),
+                                                ServiceLocater.Current.Get<IConsoleReader>(),
+                                                ServiceLocater.Current.Get<IMessageWriter>(),
+                                                ServiceLocater.Current.Get<IFileAndDirectoryService>(),
+                                                ServiceLocater.Current.Get<IPathValidater>())
         {
         }
 
@@ -66,42 +65,36 @@
         /// Exception is thrown if any of the dependencies passed into the constructor are
         /// <see langword="null" />.
         /// </exception>
-        internal TextTemplateConsoleBase(
-            ILogger logger,
-            IConsoleReader consoleReader,
-            IMessageWriter messageWriter,
-            IFileAndDirectoryService fileAndDirectoryService,
-            IPathValidater pathValidater)
+        internal TextTemplateConsoleBase(ILogger logger,
+                                         IConsoleReader consoleReader,
+                                         IMessageWriter messageWriter,
+                                         IFileAndDirectoryService fileAndDirectoryService,
+                                         IPathValidater pathValidater)
         {
-            Utility.NullDependencyCheck(
-                logger,
-                ClassNames.TextTemplateConsoleBaseClass,
-                ServiceNames.LoggerService,
-                ServiceParameterNames.LoggerParameter);
+            Utility.NullDependencyCheck(logger,
+                                        ClassNames.TextTemplateConsoleBaseClass,
+                                        ServiceNames.LoggerService,
+                                        ServiceParameterNames.LoggerParameter);
 
-            Utility.NullDependencyCheck(
-                consoleReader,
-                ClassNames.TextTemplateConsoleBaseClass,
-                ServiceNames.ConsoleReaderService,
-                ServiceParameterNames.ConsoleReaderParameter);
+            Utility.NullDependencyCheck(consoleReader,
+                                        ClassNames.TextTemplateConsoleBaseClass,
+                                        ServiceNames.ConsoleReaderService,
+                                        ServiceParameterNames.ConsoleReaderParameter);
 
-            Utility.NullDependencyCheck(
-                messageWriter,
-                ClassNames.TextTemplateConsoleBaseClass,
-                ServiceNames.MessageWriterService,
-                ServiceParameterNames.MessageWriterParameter);
+            Utility.NullDependencyCheck(messageWriter,
+                                        ClassNames.TextTemplateConsoleBaseClass,
+                                        ServiceNames.MessageWriterService,
+                                        ServiceParameterNames.MessageWriterParameter);
 
-            Utility.NullDependencyCheck(
-                fileAndDirectoryService,
-                ClassNames.TextTemplateConsoleBaseClass,
-                ServiceNames.FileAndDirectoryService,
-                ServiceParameterNames.FileAndDirectoryServiceParameter);
+            Utility.NullDependencyCheck(fileAndDirectoryService,
+                                        ClassNames.TextTemplateConsoleBaseClass,
+                                        ServiceNames.FileAndDirectoryService,
+                                        ServiceParameterNames.FileAndDirectoryServiceParameter);
 
-            Utility.NullDependencyCheck(
-                pathValidater,
-                ClassNames.TextTemplateConsoleBaseClass,
-                ServiceNames.PathValidaterService,
-                ServiceParameterNames.PathValidaterParameter);
+            Utility.NullDependencyCheck(pathValidater,
+                                        ClassNames.TextTemplateConsoleBaseClass,
+                                        ServiceNames.PathValidaterService,
+                                        ServiceParameterNames.PathValidaterParameter);
 
             _logger = logger;
             _consoleReader = consoleReader;
@@ -116,7 +109,9 @@
             }
             catch (Exception ex)
             {
-                _logger.Log(LogEntryType.Setup, MsgErrorWhenLocatingSolutionDirectory, ex.Message);
+                _logger.Log(LogEntryType.Setup,
+                            MsgErrorWhenLocatingSolutionDirectory,
+                            ex.Message);
                 SolutionDirectory = string.Empty;
             }
         }
@@ -145,7 +140,7 @@
         /// </remarks>
         public void ClearOutputDirectory()
         {
-            if (!string.IsNullOrWhiteSpace(OutputDirectory))
+            if (string.IsNullOrWhiteSpace(OutputDirectory) is false)
             {
                 _messageWriter.WriteLine(MsgClearTheOutputDirectory, OutputDirectory);
                 string response = ShowContinuationPrompt(MsgYesNoPrompt);
@@ -155,11 +150,14 @@
                     try
                     {
                         _fileAndDirectoryService.ClearDirectory(OutputDirectory);
-                        _logger.Log(LogEntryType.Reset, MsgOutputDirectoryCleared);
+                        _logger.Log(LogEntryType.Reset,
+                                    MsgOutputDirectoryCleared);
                     }
                     catch (Exception ex)
                     {
-                        _logger.Log(LogEntryType.Reset, MsgErrorWhenClearingOutputDirectory, ex.Message);
+                        _logger.Log(LogEntryType.Reset,
+                                    MsgErrorWhenClearingOutputDirectory,
+                                    ex.Message);
                     }
                 }
 
@@ -183,7 +181,9 @@
             }
             catch (Exception ex)
             {
-                _logger.Log(LogEntryType.Loading, MsgUnableToLoadTemplateFile, ex.Message);
+                _logger.Log(LogEntryType.Loading,
+                            MsgUnableToLoadTemplateFile,
+                            ex.Message);
                 ResetAll();
             }
 
@@ -206,7 +206,9 @@
             }
             catch (Exception ex)
             {
-                _logger.Log(LogEntryType.Setup, MsgErrorWhenCreatingOutputDirectory, ex.Message);
+                _logger.Log(LogEntryType.Setup,
+                            MsgErrorWhenCreatingOutputDirectory,
+                            ex.Message);
                 OutputDirectory = string.Empty;
             }
 
@@ -239,7 +241,9 @@
             }
             catch (Exception ex)
             {
-                _logger.Log(LogEntryType.Setup, MsgErrorWhileReadingUserResponse, ex.Message);
+                _logger.Log(LogEntryType.Setup,
+                            MsgErrorWhileReadingUserResponse,
+                            ex.Message);
                 return string.Empty;
             }
 
@@ -263,7 +267,8 @@
 
             if (string.IsNullOrWhiteSpace(OutputDirectory))
             {
-                _logger.Log(LogEntryType.Writing, MsgOutputDirectoryNotSet);
+                _logger.Log(LogEntryType.Writing,
+                            MsgOutputDirectoryNotSet);
             }
             else
             {
@@ -275,7 +280,9 @@
                 }
                 catch (Exception ex)
                 {
-                    _logger.Log(LogEntryType.Writing, MsgErrorWhileConstructingFilePath, ex.Message);
+                    _logger.Log(LogEntryType.Writing,
+                                MsgErrorWhileConstructingFilePath,
+                                ex.Message);
                     filePath = string.Empty;
                 }
 

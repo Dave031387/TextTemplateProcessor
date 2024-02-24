@@ -37,16 +37,16 @@
         /// This method is used to load substitution values into the <see cref="TokenDictionary" />
         /// for the given token names.
         /// </summary>
-        /// <param name="tokenDictionary">
+        /// <param name="tokenValues">
         /// A dictionary of key/value pairs where the key is the token name and the value is the
         /// substitution value to be assigned to that token.
         /// </param>
         /// <remarks>
-        /// The token names in the <paramref name="tokenDictionary" /> passed into this method must
-        /// already exist in the <see cref="TokenDictionary" />. Any token names not found will be
-        /// ignored.
+        /// The token names in the <paramref name="tokenValues" /> dictionary passed into this
+        /// method must already exist in the <see cref="TokenDictionary" />. Any token names not
+        /// found will be ignored.
         /// </remarks>
-        void LoadTokenValues(Dictionary<string, string> tokenDictionary);
+        void LoadTokenValues(Dictionary<string, string> tokenValues);
 
         /// <summary>
         /// Replace tokens in the given text line with their corresponding substitution values.

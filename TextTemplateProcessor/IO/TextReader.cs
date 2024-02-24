@@ -17,10 +17,9 @@
         /// <summary>
         /// Default constructor that creates an instance of the <see cref="TextReader" /> class.
         /// </summary>
-        public TextReader() : this(
-            ServiceLocater.Current.Get<ILogger>(),
-            ServiceLocater.Current.Get<IFileAndDirectoryService>(),
-            ServiceLocater.Current.Get<IPathValidater>())
+        public TextReader() : this(ServiceLocater.Current.Get<ILogger>(),
+                                   ServiceLocater.Current.Get<IFileAndDirectoryService>(),
+                                   ServiceLocater.Current.Get<IPathValidater>())
         {
         }
 
@@ -31,11 +30,10 @@
         /// <param name="filePath">
         /// The file path of a text file to be read.
         /// </param>
-        public TextReader(string filePath) : this(
-            filePath,
-            ServiceLocater.Current.Get<ILogger>(),
-            ServiceLocater.Current.Get<IFileAndDirectoryService>(),
-            ServiceLocater.Current.Get<IPathValidater>())
+        public TextReader(string filePath) : this(filePath,
+                                                  ServiceLocater.Current.Get<ILogger>(),
+                                                  ServiceLocater.Current.Get<IFileAndDirectoryService>(),
+                                                  ServiceLocater.Current.Get<IPathValidater>())
         {
         }
 
@@ -55,11 +53,10 @@
         /// <param name="pathValidater">
         /// A reference to a path validater object for validating file and directory paths.
         /// </param>
-        internal TextReader(
-            string filePath,
-            ILogger logger,
-            IFileAndDirectoryService fileAndDirectoryService,
-            IPathValidater pathValidater)
+        internal TextReader(string filePath,
+                            ILogger logger,
+                            IFileAndDirectoryService fileAndDirectoryService,
+                            IPathValidater pathValidater)
             : this(logger, fileAndDirectoryService, pathValidater)
             => SetFilePath(filePath);
 
@@ -80,28 +77,24 @@
         /// Exception is thrown if any of the dependencies passed into the constructor are
         /// <see langword="null" />.
         /// </exception>
-        internal TextReader(
-            ILogger logger,
-            IFileAndDirectoryService fileAndDirectoryService,
-            IPathValidater pathValidater)
+        internal TextReader(ILogger logger,
+                            IFileAndDirectoryService fileAndDirectoryService,
+                            IPathValidater pathValidater)
         {
-            Utility.NullDependencyCheck(
-                logger,
-                ClassNames.TextReaderClass,
-                ServiceNames.LoggerService,
-                ServiceParameterNames.LoggerParameter);
+            Utility.NullDependencyCheck(logger,
+                                        ClassNames.TextReaderClass,
+                                        ServiceNames.LoggerService,
+                                        ServiceParameterNames.LoggerParameter);
 
-            Utility.NullDependencyCheck(
-                fileAndDirectoryService,
-                ClassNames.TextReaderClass,
-                ServiceNames.FileAndDirectoryService,
-                ServiceParameterNames.FileAndDirectoryServiceParameter);
+            Utility.NullDependencyCheck(fileAndDirectoryService,
+                                        ClassNames.TextReaderClass,
+                                        ServiceNames.FileAndDirectoryService,
+                                        ServiceParameterNames.FileAndDirectoryServiceParameter);
 
-            Utility.NullDependencyCheck(
-                pathValidater,
-                ClassNames.TextReaderClass,
-                ServiceNames.PathValidaterService,
-                ServiceParameterNames.PathValidaterParameter);
+            Utility.NullDependencyCheck(pathValidater,
+                                        ClassNames.TextReaderClass,
+                                        ServiceNames.PathValidaterService,
+                                        ServiceParameterNames.PathValidaterParameter);
 
             _logger = logger;
             _fileAndDirectoryService = fileAndDirectoryService;
@@ -135,21 +128,27 @@
         {
             List<string> textLines = new();
 
-            if (!_isFilePathSet)
+            if (_isFilePathSet is false)
             {
-                _logger.Log(LogEntryType.Loading, MsgTemplateFilePathNotSet);
+                _logger.Log(LogEntryType.Loading,
+                            MsgTemplateFilePathNotSet);
                 return textLines;
             }
 
             try
             {
-                _logger.Log(LogEntryType.Loading, MsgAttemptingToReadFile, FullFilePath);
+                _logger.Log(LogEntryType.Loading,
+                            MsgAttemptingToReadFile,
+                            FullFilePath);
                 textLines = _fileAndDirectoryService.ReadTextFile(FullFilePath).ToList();
-                _logger.Log(LogEntryType.Loading, MsgFileSuccessfullyRead);
+                _logger.Log(LogEntryType.Loading,
+                            MsgFileSuccessfullyRead);
             }
             catch (Exception ex)
             {
-                _logger.Log(LogEntryType.Loading, MsgErrorWhileReadingTemplateFile, ex.Message);
+                _logger.Log(LogEntryType.Loading,
+                            MsgErrorWhileReadingTemplateFile,
+                            ex.Message);
             }
 
             return textLines;
@@ -173,7 +172,9 @@
             catch (Exception ex)
             {
                 InitializeProperties();
-                _logger.Log(LogEntryType.Loading, MsgUnableToSetTemplateFilePath, ex.Message);
+                _logger.Log(LogEntryType.Loading,
+                            MsgUnableToSetTemplateFilePath,
+                            ex.Message);
             }
         }
 

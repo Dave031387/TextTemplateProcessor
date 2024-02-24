@@ -32,11 +32,10 @@
         /// </exception>
         internal ConsoleLogger(IMessageWriter messageWriter)
         {
-            Utility.NullDependencyCheck(
-                messageWriter,
-                ClassNames.ConsoleLoggerClass,
-                ServiceNames.MessageWriterService,
-                ServiceParameterNames.MessageWriterParameter);
+            Utility.NullDependencyCheck(messageWriter,
+                                        ClassNames.ConsoleLoggerClass,
+                                        ServiceNames.MessageWriterService,
+                                        ServiceParameterNames.MessageWriterParameter);
 
             _messageWriter = messageWriter;
         }

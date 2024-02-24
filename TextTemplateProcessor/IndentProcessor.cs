@@ -27,9 +27,8 @@
         /// The default constructor that creates an instance of the <see cref="IndentProcessor" />
         /// class.
         /// </summary>
-        public IndentProcessor() : this(
-            ServiceLocater.Current.Get<ILogger>(),
-            ServiceLocater.Current.Get<ILocater>())
+        public IndentProcessor() : this(ServiceLocater.Current.Get<ILogger>(),
+                                        ServiceLocater.Current.Get<ILocater>())
         {
         }
 
@@ -50,17 +49,15 @@
         /// </exception>
         internal IndentProcessor(ILogger logger, ILocater locater)
         {
-            Utility.NullDependencyCheck(
-                logger,
-                ClassNames.IndentProcessorClass,
-                ServiceNames.LoggerService,
-                ServiceParameterNames.LoggerParameter);
+            Utility.NullDependencyCheck(logger,
+                                        ClassNames.IndentProcessorClass,
+                                        ServiceNames.LoggerService,
+                                        ServiceParameterNames.LoggerParameter);
 
-            Utility.NullDependencyCheck(
-                locater,
-                ClassNames.IndentProcessorClass,
-                ServiceNames.LocaterService,
-                ServiceParameterNames.LocaterParameter);
+            Utility.NullDependencyCheck(locater,
+                                        ClassNames.IndentProcessorClass,
+                                        ServiceNames.LocaterService,
+                                        ServiceParameterNames.LocaterParameter);
 
             _logger = logger;
             _locater = locater;
@@ -105,13 +102,16 @@
         {
             int indent = CurrentIndent;
 
-            if (firstTimeOffset != 0)
+            if (firstTimeOffset is not 0)
             {
                 indent += firstTimeOffset * TabSize;
 
                 if (indent < 0)
                 {
-                    _logger.Log(LogEntryType.Generating, _locater.Location, MsgFirstTimeIndentHasBeenTruncated, _locater.CurrentSegment);
+                    _logger.Log(LogEntryType.Generating,
+                                _locater.Location,
+                                MsgFirstTimeIndentHasBeenTruncated,
+                                _locater.CurrentSegment);
                     indent = 0;
                 }
 
@@ -149,11 +149,14 @@
 
             if (indent < 0)
             {
-                _logger.Log(LogEntryType.Generating, _locater.Location, MsgLeftIndentHasBeenTruncated, _locater.CurrentSegment);
+                _logger.Log(LogEntryType.Generating,
+                            _locater.Location,
+                            MsgLeftIndentHasBeenTruncated,
+                            _locater.CurrentSegment);
                 indent = 0;
             }
 
-            if (!textItem.IsOneTime)
+            if (textItem.IsOneTime is false)
             {
                 CurrentIndent = indent;
             }
@@ -185,7 +188,10 @@
             {
                 if (indentValue is < MinIndentValue or > MaxIndentValue)
                 {
-                    _logger.Log(LogEntryType.Parsing, _locater.Location, MsgIndentValueOutOfRange, indentValue.ToString());
+                    _logger.Log(LogEntryType.Parsing,
+                                _locater.Location,
+                                MsgIndentValueOutOfRange,
+                                indentValue.ToString());
                 }
                 else
                 {
@@ -195,7 +201,10 @@
             }
             else
             {
-                _logger.Log(LogEntryType.Parsing, _locater.Location, MsgIndentValueMustBeValidNumber, stringValue);
+                _logger.Log(LogEntryType.Parsing,
+                            _locater.Location,
+                            MsgIndentValueMustBeValidNumber,
+                            stringValue);
             }
 
             indent = 0;
@@ -225,7 +234,10 @@
             {
                 if (tabValue is < MinTabSize or > MaxTabSize)
                 {
-                    _logger.Log(LogEntryType.Parsing, _locater.Location, MsgTabSizeValueOutOfRange, tabValue.ToString());
+                    _logger.Log(LogEntryType.Parsing,
+                                _locater.Location,
+                                MsgTabSizeValueOutOfRange,
+                                tabValue.ToString());
                 }
                 else
                 {
@@ -235,7 +247,10 @@
             }
             else
             {
-                _logger.Log(LogEntryType.Parsing, _locater.Location, MsgTabSizeValueMustBeValidNumber, stringValue);
+                _logger.Log(LogEntryType.Parsing,
+                            _locater.Location,
+                            MsgTabSizeValueMustBeValidNumber,
+                            stringValue);
             }
 
             tabSize = 0;
@@ -296,12 +311,16 @@
         {
             if (tabSize < MinTabSize)
             {
-                _logger.Log(LogEntryType.Setup, MsgTabSizeTooSmall, MinTabSize.ToString());
+                _logger.Log(LogEntryType.Setup,
+                            MsgTabSizeTooSmall,
+                            MinTabSize.ToString());
                 TabSize = MinTabSize;
             }
             else if (tabSize > MaxTabSize)
             {
-                _logger.Log(LogEntryType.Setup, MsgTabSizeTooLarge, MaxTabSize.ToString());
+                _logger.Log(LogEntryType.Setup,
+                            MsgTabSizeTooLarge,
+                            MaxTabSize.ToString());
                 TabSize = MaxTabSize;
             }
             else

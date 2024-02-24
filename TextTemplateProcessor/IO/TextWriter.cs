@@ -16,10 +16,9 @@
         /// <summary>
         /// The default constructor for creating an instance of the <see cref="TextWriter" /> class.
         /// </summary>
-        public TextWriter() : this(
-            ServiceLocater.Current.Get<ILogger>(),
-            ServiceLocater.Current.Get<IFileAndDirectoryService>(),
-            ServiceLocater.Current.Get<IPathValidater>())
+        public TextWriter() : this(ServiceLocater.Current.Get<ILogger>(),
+                                   ServiceLocater.Current.Get<IFileAndDirectoryService>(),
+                                   ServiceLocater.Current.Get<IPathValidater>())
         {
         }
 
@@ -40,28 +39,24 @@
         /// Exception is thrown if any of the dependencies passed into the constructor are
         /// <see langword="null" />.
         /// </exception>
-        internal TextWriter(
-            ILogger logger,
-            IFileAndDirectoryService fileAndDirectoryService,
-            IPathValidater pathValidater)
+        internal TextWriter(ILogger logger,
+                            IFileAndDirectoryService fileAndDirectoryService,
+                            IPathValidater pathValidater)
         {
-            Utility.NullDependencyCheck(
-                logger,
-                ClassNames.TextWriterClass,
-                ServiceNames.LoggerService,
-                ServiceParameterNames.LoggerParameter);
+            Utility.NullDependencyCheck(logger,
+                                        ClassNames.TextWriterClass,
+                                        ServiceNames.LoggerService,
+                                        ServiceParameterNames.LoggerParameter);
 
-            Utility.NullDependencyCheck(
-                fileAndDirectoryService,
-                ClassNames.TextWriterClass,
-                ServiceNames.FileAndDirectoryService,
-                ServiceParameterNames.FileAndDirectoryServiceParameter);
+            Utility.NullDependencyCheck(fileAndDirectoryService,
+                                        ClassNames.TextWriterClass,
+                                        ServiceNames.FileAndDirectoryService,
+                                        ServiceParameterNames.FileAndDirectoryServiceParameter);
 
-            Utility.NullDependencyCheck(
-                pathValidater,
-                ClassNames.TextWriterClass,
-                ServiceNames.PathValidaterService,
-                ServiceParameterNames.PathValidaterParameter);
+            Utility.NullDependencyCheck(pathValidater,
+                                        ClassNames.TextWriterClass,
+                                        ServiceNames.PathValidaterService,
+                                        ServiceParameterNames.PathValidaterParameter);
 
             _logger = logger;
             _fileAndDirectoryService = fileAndDirectoryService;
@@ -101,7 +96,9 @@
                 }
                 catch (Exception ex)
                 {
-                    _logger.Log(LogEntryType.Writing, MsgUnableToWriteFile, ex.Message);
+                    _logger.Log(LogEntryType.Writing,
+                                MsgUnableToWriteFile,
+                                ex.Message);
                     isValid = false;
                 }
             }
@@ -113,13 +110,15 @@
         {
             if (textLines is null)
             {
-                _logger.Log(LogEntryType.Writing, MsgGeneratedTextIsNull);
+                _logger.Log(LogEntryType.Writing,
+                            MsgGeneratedTextIsNull);
                 return false;
             }
 
-            if (!textLines.Any())
+            if (textLines.Any() is false)
             {
-                _logger.Log(LogEntryType.Writing, MsgGeneratedTextIsEmpty);
+                _logger.Log(LogEntryType.Writing,
+                            MsgGeneratedTextIsEmpty);
                 return false;
             }
 

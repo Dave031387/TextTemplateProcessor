@@ -23,12 +23,11 @@
         /// Default constructor that creates an instance of the <see cref="SegmentHeaderParser" />
         /// class.
         /// </summary>
-        public SegmentHeaderParser() : this(
-            ServiceLocater.Current.Get<ILogger>(),
-            ServiceLocater.Current.Get<IDefaultSegmentNameGenerator>(),
-            ServiceLocater.Current.Get<ILocater>(),
-            ServiceLocater.Current.Get<IIndentProcessor>(),
-            ServiceLocater.Current.Get<INameValidater>())
+        public SegmentHeaderParser() : this(ServiceLocater.Current.Get<ILogger>(),
+                                            ServiceLocater.Current.Get<IDefaultSegmentNameGenerator>(),
+                                            ServiceLocater.Current.Get<ILocater>(),
+                                            ServiceLocater.Current.Get<IIndentProcessor>(),
+                                            ServiceLocater.Current.Get<INameValidater>())
         {
         }
 
@@ -57,42 +56,36 @@
         /// Exception is thrown if any of the dependencies passed into the constructor are
         /// <see langword="null" />.
         /// </exception>
-        internal SegmentHeaderParser(
-            ILogger logger,
-            IDefaultSegmentNameGenerator defaultSegmentNameGenerator,
-            ILocater locater,
-            IIndentProcessor indentProcessor,
-            INameValidater nameValidater)
+        internal SegmentHeaderParser(ILogger logger,
+                                     IDefaultSegmentNameGenerator defaultSegmentNameGenerator,
+                                     ILocater locater,
+                                     IIndentProcessor indentProcessor,
+                                     INameValidater nameValidater)
         {
-            Utility.NullDependencyCheck(
-                logger,
-                ClassNames.SegmentHeaderParserClass,
-                ServiceNames.LoggerService,
-                ServiceParameterNames.LoggerParameter);
+            Utility.NullDependencyCheck(logger,
+                                        ClassNames.SegmentHeaderParserClass,
+                                        ServiceNames.LoggerService,
+                                        ServiceParameterNames.LoggerParameter);
 
-            Utility.NullDependencyCheck(
-                defaultSegmentNameGenerator,
-                ClassNames.SegmentHeaderParserClass,
-                ServiceNames.DefaultSegmentNameGeneratorService,
-                ServiceParameterNames.DefaultSegmentNameGeneratorParameter);
+            Utility.NullDependencyCheck(defaultSegmentNameGenerator,
+                                        ClassNames.SegmentHeaderParserClass,
+                                        ServiceNames.DefaultSegmentNameGeneratorService,
+                                        ServiceParameterNames.DefaultSegmentNameGeneratorParameter);
 
-            Utility.NullDependencyCheck(
-                locater,
-                ClassNames.SegmentHeaderParserClass,
-                ServiceNames.LocaterService,
-                ServiceParameterNames.LocaterParameter);
+            Utility.NullDependencyCheck(locater,
+                                        ClassNames.SegmentHeaderParserClass,
+                                        ServiceNames.LocaterService,
+                                        ServiceParameterNames.LocaterParameter);
 
-            Utility.NullDependencyCheck(
-                indentProcessor,
-                ClassNames.SegmentHeaderParserClass,
-                ServiceNames.IndentProcessorService,
-                ServiceParameterNames.IndentProcessorParameter);
+            Utility.NullDependencyCheck(indentProcessor,
+                                        ClassNames.SegmentHeaderParserClass,
+                                        ServiceNames.IndentProcessorService,
+                                        ServiceParameterNames.IndentProcessorParameter);
 
-            Utility.NullDependencyCheck(
-                nameValidater,
-                ClassNames.SegmentHeaderParserClass,
-                ServiceNames.NameValidaterService,
-                ServiceParameterNames.NameValidaterParameter);
+            Utility.NullDependencyCheck(nameValidater,
+                                        ClassNames.SegmentHeaderParserClass,
+                                        ServiceNames.NameValidaterService,
+                                        ServiceParameterNames.NameValidaterParameter);
 
             _logger = logger;
             _defaultSegmentNameGenerator = defaultSegmentNameGenerator;
@@ -118,13 +111,19 @@
             if (headerLine.Length < 5)
             {
                 _locater.CurrentSegment = _defaultSegmentNameGenerator.Next;
-                _logger.Log(LogEntryType.Parsing, _locater.Location, MsgSegmentNameMustStartInColumn5, _locater.CurrentSegment);
+                _logger.Log(LogEntryType.Parsing,
+                            _locater.Location,
+                            MsgSegmentNameMustStartInColumn5,
+                            _locater.CurrentSegment);
                 return controlItem;
             }
 
             if (headerLine[4] == ' ')
             {
-                _logger.Log(LogEntryType.Parsing, _locater.Location, MsgSegmentNameMustStartInColumn5, _locater.CurrentSegment);
+                _logger.Log(LogEntryType.Parsing,
+                            _locater.Location,
+                            MsgSegmentNameMustStartInColumn5,
+                            _locater.CurrentSegment);
                 headerLine = headerLine.Insert(4, _defaultSegmentNameGenerator.Next);
             }
 
@@ -138,7 +137,11 @@
             else
             {
                 _locater.CurrentSegment = _defaultSegmentNameGenerator.Next;
-                _logger.Log(LogEntryType.Parsing, _locater.Location, MsgInvalidSegmentName, segmentName, _locater.CurrentSegment);
+                _logger.Log(LogEntryType.Parsing,
+                            _locater.Location,
+                            MsgInvalidSegmentName,
+                            segmentName,
+                            _locater.CurrentSegment);
             }
 
             if (args.Length > 2)
@@ -161,13 +164,19 @@
             }
             else
             {
-                _logger.Log(LogEntryType.Parsing, _locater.Location, MsgInvalidFormOfOption, arg);
+                _logger.Log(LogEntryType.Parsing,
+                            _locater.Location,
+                            MsgInvalidFormOfOption,
+                            arg);
                 return result;
             }
 
             if (optionIndex < 1)
             {
-                _logger.Log(LogEntryType.Parsing, _locater.Location, MsgOptionNameMustPrecedeEqualsSign, _locater.CurrentSegment);
+                _logger.Log(LogEntryType.Parsing,
+                            _locater.Location,
+                            MsgOptionNameMustPrecedeEqualsSign,
+                            _locater.CurrentSegment);
                 return result;
             }
 
@@ -175,7 +184,11 @@
 
             if (result.optionName is not FirstTimeIndentOption and not PadSegmentNameOption and not TabSizeOption)
             {
-                _logger.Log(LogEntryType.Parsing, _locater.Location, MsgUnknownSegmentOptionFound, _locater.CurrentSegment, arg);
+                _logger.Log(LogEntryType.Parsing,
+                            _locater.Location,
+                            MsgUnknownSegmentOptionFound,
+                            _locater.CurrentSegment,
+                            arg);
                 return result;
             }
 
@@ -183,7 +196,11 @@
 
             if (optionIndex == arg.Length)
             {
-                _logger.Log(LogEntryType.Parsing, _locater.Location, MsgOptionValueMustFollowEqualsSign, _locater.CurrentSegment, result.optionName);
+                _logger.Log(LogEntryType.Parsing,
+                            _locater.Location,
+                            MsgOptionValueMustFollowEqualsSign,
+                            _locater.CurrentSegment,
+                            result.optionName);
                 return result;
             }
 
@@ -212,7 +229,11 @@
                     || (optionName == PadSegmentNameOption && padSegmentOptionFound)
                     || (optionName == TabSizeOption && tabOptionFound))
                 {
-                    _logger.Log(LogEntryType.Parsing, _locater.Location, MsgFoundDuplicateOptionNameOnHeaderLine, _locater.CurrentSegment, optionName);
+                    _logger.Log(LogEntryType.Parsing,
+                                _locater.Location,
+                                MsgFoundDuplicateOptionNameOnHeaderLine,
+                                _locater.CurrentSegment,
+                                optionName);
                     continue;
                 }
 
@@ -247,7 +268,9 @@
             {
                 if (indentValue == 0)
                 {
-                    _logger.Log(LogEntryType.Parsing, _locater.Location, MsgFirstTimeIndentSetToZero);
+                    _logger.Log(LogEntryType.Parsing,
+                                _locater.Location,
+                                MsgFirstTimeIndentSetToZero);
                 }
 
                 controlItem.FirstTimeIndent = indentValue;
@@ -262,7 +285,11 @@
             }
             else
             {
-                _logger.Log(LogEntryType.Parsing, _locater.Location, MsgInvalidPadSegmentName, optionValue, _locater.CurrentSegment);
+                _logger.Log(LogEntryType.Parsing,
+                            _locater.Location,
+                            MsgInvalidPadSegmentName,
+                            optionValue,
+                            _locater.CurrentSegment);
             }
         }
 

@@ -44,7 +44,7 @@
         /// Returns a boolean value indicating whether or not the pad segment should be inserted the
         /// next time the given segment is processed.
         /// </summary>
-        internal bool ShouldGeneratePadSegment => !(string.IsNullOrEmpty(PadSegment) || IsFirstTime);
+        internal bool ShouldGeneratePadSegment => string.IsNullOrEmpty(PadSegment) is false || IsFirstTime;
 
         /// <summary>
         /// Gets or sets the tab size for the segment.
@@ -65,7 +65,7 @@
         /// </returns>
         public override bool Equals(object? obj)
         {
-            return obj != null && (obj is ControlItem controlItem
+            return obj is not null && (obj is ControlItem controlItem
                 ? FirstTimeIndent == controlItem.FirstTimeIndent
                     && IsFirstTime == controlItem.IsFirstTime
                     && PadSegment == controlItem.PadSegment

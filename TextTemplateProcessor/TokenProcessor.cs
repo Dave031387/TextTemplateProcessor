@@ -22,10 +22,9 @@
         /// The default constructor that creates an instance of the <see cref="TokenProcessor" />
         /// class.
         /// </summary>
-        public TokenProcessor() : this(
-            ServiceLocater.Current.Get<ILogger>(),
-            ServiceLocater.Current.Get<ILocater>(),
-            ServiceLocater.Current.Get<INameValidater>())
+        public TokenProcessor() : this(ServiceLocater.Current.Get<ILogger>(),
+                                       ServiceLocater.Current.Get<ILocater>(),
+                                       ServiceLocater.Current.Get<INameValidater>())
         {
         }
 
@@ -49,23 +48,20 @@
         /// </exception>
         internal TokenProcessor(ILogger logger, ILocater locater, INameValidater nameValidater)
         {
-            Utility.NullDependencyCheck(
-                logger,
-                ClassNames.TokenProcessorClass,
-                ServiceNames.LoggerService,
-                ServiceParameterNames.LoggerParameter);
+            Utility.NullDependencyCheck(logger,
+                                        ClassNames.TokenProcessorClass,
+                                        ServiceNames.LoggerService,
+                                        ServiceParameterNames.LoggerParameter);
 
-            Utility.NullDependencyCheck(
-                locater,
-                ClassNames.TokenProcessorClass,
-                ServiceNames.LocaterService,
-                ServiceParameterNames.LocaterParameter);
+            Utility.NullDependencyCheck(locater,
+                                        ClassNames.TokenProcessorClass,
+                                        ServiceNames.LocaterService,
+                                        ServiceParameterNames.LocaterParameter);
 
-            Utility.NullDependencyCheck(
-                nameValidater,
-                ClassNames.TokenProcessorClass,
-                ServiceNames.NameValidaterService,
-                ServiceParameterNames.NameValidaterParameter);
+            Utility.NullDependencyCheck(nameValidater,
+                                        ClassNames.TokenProcessorClass,
+                                        ServiceNames.NameValidaterService,
+                                        ServiceParameterNames.NameValidaterParameter);
 
             _logger = logger;
             _locater = locater;
@@ -108,7 +104,7 @@
                     continue;
                 }
 
-                if (!TokenDictionary.ContainsKey(tokenName))
+                if (TokenDictionary.ContainsKey(tokenName) is false)
                 {
                     TokenDictionary.Add(tokenName, string.Empty);
                 }
@@ -119,36 +115,40 @@
         /// This method is used to load substitution values into the <see cref="TokenDictionary" />
         /// for the given token names.
         /// </summary>
-        /// <param name="tokenDictionary">
+        /// <param name="tokenValues">
         /// A dictionary of key/value pairs where the key is the token name and the value is the
         /// substitution value to be assigned to that token.
         /// </param>
         /// <remarks>
-        /// The token names in the <paramref name="tokenDictionary" /> passed into this method must
-        /// already exist in the <see cref="TokenDictionary" />. Any token names not found will be
-        /// ignored.
+        /// The token names in the <paramref name="tokenValues" /> dictionary passed into this
+        /// method must already exist in the <see cref="TokenDictionary" />. Any token names not
+        /// found will be ignored.
         /// </remarks>
-        public void LoadTokenValues(Dictionary<string, string> tokenDictionary)
+        public void LoadTokenValues(Dictionary<string, string> tokenValues)
         {
-            if (tokenDictionary is not null)
+            if (tokenValues is not null)
             {
-                if (tokenDictionary.Count > 0)
+                if (tokenValues.Any())
                 {
-                    foreach (string tokenName in tokenDictionary.Keys)
+                    foreach (KeyValuePair<string, string> keyValuePair in tokenValues)
                     {
-                        string tokenValue = tokenDictionary[tokenName];
-
-                        UpdateTokenDictionary(tokenName, tokenValue);
+                        UpdateTokenDictionary(keyValuePair);
                     }
                 }
                 else
                 {
-                    _logger.Log(LogEntryType.Generating, _locater.Location, MsgTokenDictionaryIsEmpty, _locater.CurrentSegment);
+                    _logger.Log(LogEntryType.Generating,
+                                _locater.Location,
+                                MsgTokenDictionaryIsEmpty,
+                                _locater.CurrentSegment);
                 }
             }
             else
             {
-                _logger.Log(LogEntryType.Generating, _locater.Location, MsgTokenDictionaryIsNull, _locater.CurrentSegment);
+                _logger.Log(LogEntryType.Generating,
+                            _locater.Location,
+                            MsgTokenDictionaryIsNull,
+                            _locater.CurrentSegment);
             }
         }
 
@@ -181,12 +181,27 @@
                     break;
                 }
 
-                if (string.IsNullOrEmpty(TokenDictionary[tokenName]))
+                if (TokenDictionary.ContainsKey(tokenName))
                 {
-                    _logger.Log(LogEntryType.Generating, _locater.Location, MsgTokenValueIsEmpty, _locater.CurrentSegment, tokenName);
-                }
+                    if (string.IsNullOrEmpty(TokenDictionary[tokenName]))
+                    {
+                        _logger.Log(LogEntryType.Generating,
+                                    _locater.Location,
+                                    MsgTokenValueIsEmpty,
+                                    _locater.CurrentSegment,
+                                    tokenName);
+                    }
 
-                _ = builder.Replace(token, TokenDictionary[tokenName]);
+                    _ = builder.Replace(token, TokenDictionary[tokenName]); 
+                }
+                else
+                {
+                    _logger.Log(LogEntryType.Generating,
+                                _locater.Location,
+                                MsgTokenNameNotFound,
+                                _locater.CurrentSegment,
+                                tokenName);
+                }
             }
 
             builder = builder.Replace(_tokenEscapeChar + _tokenStart, _tokenStart);
@@ -226,43 +241,56 @@
         {
             if (tokenStart is null)
             {
-                _logger.Log(LogEntryType.Setup, MsgTokenStartDelimiterIsNull);
+                _logger.Log(LogEntryType.Setup,
+                            MsgTokenStartDelimiterIsNull);
                 return false;
             }
 
             if (tokenEnd is null)
             {
-                _logger.Log(LogEntryType.Setup, MsgTokenEndDelimiterIsNull);
+                _logger.Log(LogEntryType.Setup,
+                            MsgTokenEndDelimiterIsNull);
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(tokenStart))
             {
-                _logger.Log(LogEntryType.Setup, MsgTokenStartDelimiterIsEmpty);
+                _logger.Log(LogEntryType.Setup,
+                            MsgTokenStartDelimiterIsEmpty);
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(tokenEnd))
             {
-                _logger.Log(LogEntryType.Setup, MsgTokenEndDelimiterIsEmpty);
+                _logger.Log(LogEntryType.Setup,
+                            MsgTokenEndDelimiterIsEmpty);
                 return false;
             }
 
             if (tokenStart == tokenEnd)
             {
-                _logger.Log(LogEntryType.Setup, MsgTokenStartAndTokenEndAreSame, tokenStart, tokenEnd);
+                _logger.Log(LogEntryType.Setup,
+                            MsgTokenStartAndTokenEndAreSame,
+                            tokenStart,
+                            tokenEnd);
                 return false;
             }
 
             if (tokenStart == tokenEscapeChar.ToString())
             {
-                _logger.Log(LogEntryType.Setup, MsgTokenStartAndTokenEscapeAreSame, tokenStart, tokenEscapeChar.ToString());
+                _logger.Log(LogEntryType.Setup,
+                            MsgTokenStartAndTokenEscapeAreSame,
+                            tokenStart,
+                            tokenEscapeChar.ToString());
                 return false;
             }
 
             if (tokenEnd == tokenEscapeChar.ToString())
             {
-                _logger.Log(LogEntryType.Setup, MsgTokenEndAndTokenEscapeAreSame, tokenEnd, tokenEscapeChar.ToString());
+                _logger.Log(LogEntryType.Setup,
+                            MsgTokenEndAndTokenEscapeAreSame,
+                            tokenEnd,
+                            tokenEscapeChar.ToString());
                 return false;
             }
 
@@ -283,16 +311,21 @@
 
             if (string.IsNullOrWhiteSpace(tokenName))
             {
-                _logger.Log(LogEntryType.Parsing, _locater.Location, MsgMissingTokenName);
+                _logger.Log(LogEntryType.Parsing,
+                            _locater.Location,
+                            MsgMissingTokenName);
                 isValidToken = false;
             }
-            else if (!_nameValidater.IsValidName(tokenName))
+            else if (_nameValidater.IsValidName(tokenName) is false)
             {
-                _logger.Log(LogEntryType.Parsing, _locater.Location, MsgTokenHasInvalidName, tokenName);
+                _logger.Log(LogEntryType.Parsing,
+                            _locater.Location,
+                            MsgTokenHasInvalidName,
+                            tokenName);
                 isValidToken = false;
             }
 
-            if (!isValidToken)
+            if (isValidToken is false)
             {
                 text = InsertEscapeCharacter(tokenStart, text);
                 tokenEnd++;
@@ -317,7 +350,7 @@
             {
                 (bool isValidTokenStart, int tokenStart) = LocateTokenStartDelimiter(startIndex, text);
 
-                if (!isValidTokenStart)
+                if (isValidTokenStart is false)
                 {
                     startIndex = tokenStart;
                     continue;
@@ -325,7 +358,7 @@
 
                 (bool isValidTokenEnd, int tokenEnd) = LocateTokenEndDelimiter(tokenStart, ref text);
 
-                if (!isValidTokenEnd)
+                if (isValidTokenEnd is false)
                 {
                     startIndex = tokenEnd;
                     break;
@@ -346,7 +379,9 @@
 
             if (tokenEnd < 0)
             {
-                _logger.Log(LogEntryType.Parsing, _locater.Location, MsgTokenMissingEndDelimiter);
+                _logger.Log(LogEntryType.Parsing,
+                            _locater.Location,
+                            MsgTokenMissingEndDelimiter);
                 text = InsertEscapeCharacter(tokenStart, text);
                 return (false, text.Length);
             }
@@ -359,38 +394,57 @@
             int tokenStart = text.IndexOf(_tokenStart, startIndex, StringComparison.Ordinal);
 
             return tokenStart < 0
-                ? ((bool isValidTokenStart, int newIndexValue))(false, text.Length)
+                ? (false, text.Length)
                 : tokenStart > 0 && text[tokenStart - 1] == _tokenEscapeChar
-                ? ((bool isValidTokenStart, int newIndexValue))(false, tokenStart + _tokenStart.Length)
-                : ((bool isValidTokenStart, int newIndexValue))(true, tokenStart);
+                ? (false, tokenStart + _tokenStart.Length)
+                : (true, tokenStart);
         }
 
-        private void UpdateTokenDictionary(string tokenName, string tokenValue)
+        private void UpdateTokenDictionary(KeyValuePair<string, string> keyValuePair)
         {
+            string tokenName = keyValuePair.Key;
+            string tokenValue = keyValuePair.Value;
+
             if (_nameValidater.IsValidName(tokenName))
             {
                 if (TokenDictionary.ContainsKey(tokenName))
                 {
                     if (tokenValue is null)
                     {
-                        _logger.Log(LogEntryType.Generating, _locater.Location, MsgTokenWithNullValue, _locater.CurrentSegment, tokenName);
+                        _logger.Log(LogEntryType.Generating,
+                                    _locater.Location,
+                                    MsgTokenWithNullValue,
+                                    _locater.CurrentSegment,
+                                    tokenName);
                         tokenValue = string.Empty;
                     }
                     else if (string.IsNullOrEmpty(tokenValue))
                     {
-                        _logger.Log(LogEntryType.Generating, _locater.Location, MsgTokenWithEmptyValue, _locater.CurrentSegment, tokenName);
+                        _logger.Log(LogEntryType.Generating,
+                                    _locater.Location,
+                                    MsgTokenWithEmptyValue,
+                                    _locater.CurrentSegment,
+                                    tokenName);
                     }
 
                     TokenDictionary[tokenName] = tokenValue;
                 }
                 else
                 {
-                    _logger.Log(LogEntryType.Generating, _locater.Location, MsgUnknownTokenName, _locater.CurrentSegment, tokenName);
+                    _logger.Log(LogEntryType.Generating,
+                                _locater.Location,
+                                MsgUnknownTokenName,
+                                _locater.CurrentSegment,
+                                tokenName);
                 }
             }
             else
             {
-                _logger.Log(LogEntryType.Generating, _locater.Location, MsgTokenDictionaryContainsInvalidTokenName, _locater.CurrentSegment, tokenName);
+                _logger.Log(LogEntryType.Generating,
+                            _locater.Location,
+                            MsgTokenDictionaryContainsInvalidTokenName,
+                            _locater.CurrentSegment,
+                            tokenName);
             }
         }
     }

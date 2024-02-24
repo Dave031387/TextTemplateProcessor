@@ -26,15 +26,14 @@
         /// Default constructor that creates an instance of the <see cref="TextTemplateProcessor" />
         /// class.
         /// </summary>
-        public TextTemplateProcessor() : this(
-            ServiceLocater.Current.Get<ILogger>(),
-            ServiceLocater.Current.Get<IDefaultSegmentNameGenerator>(),
-            ServiceLocater.Current.Get<IIndentProcessor>(),
-            ServiceLocater.Current.Get<ILocater>(),
-            ServiceLocater.Current.Get<ITemplateLoader>(),
-            ServiceLocater.Current.Get<ITextReader>(),
-            ServiceLocater.Current.Get<ITextWriter>(),
-            ServiceLocater.Current.Get<ITokenProcessor>())
+        public TextTemplateProcessor() : this(ServiceLocater.Current.Get<ILogger>(),
+                                              ServiceLocater.Current.Get<IDefaultSegmentNameGenerator>(),
+                                              ServiceLocater.Current.Get<IIndentProcessor>(),
+                                              ServiceLocater.Current.Get<ILocater>(),
+                                              ServiceLocater.Current.Get<ITemplateLoader>(),
+                                              ServiceLocater.Current.Get<ITextReader>(),
+                                              ServiceLocater.Current.Get<ITextWriter>(),
+                                              ServiceLocater.Current.Get<ITokenProcessor>())
         {
         }
 
@@ -84,63 +83,54 @@
         /// Exception is thrown if any of the dependencies passed into the constructor are
         /// <see langword="null" />.
         /// </exception>
-        internal TextTemplateProcessor(
-            ILogger logger,
-            IDefaultSegmentNameGenerator defaultSegmentNameGenerator,
-            IIndentProcessor indentProcessor,
-            ILocater locater,
-            ITemplateLoader templateLoader,
-            ITextReader textReader,
-            ITextWriter textWriter,
-            ITokenProcessor tokenProcessor)
+        internal TextTemplateProcessor(ILogger logger,
+                                       IDefaultSegmentNameGenerator defaultSegmentNameGenerator,
+                                       IIndentProcessor indentProcessor,
+                                       ILocater locater,
+                                       ITemplateLoader templateLoader,
+                                       ITextReader textReader,
+                                       ITextWriter textWriter,
+                                       ITokenProcessor tokenProcessor)
         {
-            Utility.NullDependencyCheck(
-                logger,
-                ClassNames.TextTemplateProcessorClass,
-                ServiceNames.LoggerService,
-                ServiceParameterNames.LoggerParameter);
+            Utility.NullDependencyCheck(logger,
+                                        ClassNames.TextTemplateProcessorClass,
+                                        ServiceNames.LoggerService,
+                                        ServiceParameterNames.LoggerParameter);
 
-            Utility.NullDependencyCheck(
-                defaultSegmentNameGenerator,
-                ClassNames.TextTemplateProcessorClass,
-                ServiceNames.DefaultSegmentNameGeneratorService,
-                ServiceParameterNames.DefaultSegmentNameGeneratorParameter);
+            Utility.NullDependencyCheck(defaultSegmentNameGenerator,
+                                        ClassNames.TextTemplateProcessorClass,
+                                        ServiceNames.DefaultSegmentNameGeneratorService,
+                                        ServiceParameterNames.DefaultSegmentNameGeneratorParameter);
 
-            Utility.NullDependencyCheck(
-                indentProcessor,
-                ClassNames.TextTemplateProcessorClass,
-                ServiceNames.IndentProcessorService,
-                ServiceParameterNames.IndentProcessorParameter);
+            Utility.NullDependencyCheck(indentProcessor,
+                                        ClassNames.TextTemplateProcessorClass,
+                                        ServiceNames.IndentProcessorService,
+                                        ServiceParameterNames.IndentProcessorParameter);
 
-            Utility.NullDependencyCheck(
-                locater,
-                ClassNames.TextTemplateProcessorClass,
-                ServiceNames.LocaterService,
-                ServiceParameterNames.LocaterParameter);
+            Utility.NullDependencyCheck(locater,
+                                        ClassNames.TextTemplateProcessorClass,
+                                        ServiceNames.LocaterService,
+                                        ServiceParameterNames.LocaterParameter);
 
-            Utility.NullDependencyCheck(
-                templateLoader,
-                ClassNames.TextTemplateProcessorClass,
-                ServiceNames.TemplateLoaderService,
-                ServiceParameterNames.TemplateLoaderParameter);
+            Utility.NullDependencyCheck(templateLoader,
+                                        ClassNames.TextTemplateProcessorClass,
+                                        ServiceNames.TemplateLoaderService,
+                                        ServiceParameterNames.TemplateLoaderParameter);
 
-            Utility.NullDependencyCheck(
-                textReader,
-                ClassNames.TextTemplateProcessorClass,
-                ServiceNames.TextReaderService,
-                ServiceParameterNames.TextReaderParameter);
+            Utility.NullDependencyCheck(textReader,
+                                        ClassNames.TextTemplateProcessorClass,
+                                        ServiceNames.TextReaderService,
+                                        ServiceParameterNames.TextReaderParameter);
 
-            Utility.NullDependencyCheck(
-                textWriter,
-                ClassNames.TextTemplateProcessorClass,
-                ServiceNames.TextWriterService,
-                ServiceParameterNames.TextWriterParameter);
+            Utility.NullDependencyCheck(textWriter,
+                                        ClassNames.TextTemplateProcessorClass,
+                                        ServiceNames.TextWriterService,
+                                        ServiceParameterNames.TextWriterParameter);
 
-            Utility.NullDependencyCheck(
-                tokenProcessor,
-                ClassNames.TextTemplateProcessorClass,
-                ServiceNames.TokenProcessorService,
-                ServiceParameterNames.TokenProcessorParameter);
+            Utility.NullDependencyCheck(tokenProcessor,
+                                        ClassNames.TextTemplateProcessorClass,
+                                        ServiceNames.TokenProcessorService,
+                                        ServiceParameterNames.TokenProcessorParameter);
 
             _logger = logger;
             _defaultSegmentNameGenerator = defaultSegmentNameGenerator;
@@ -219,7 +209,7 @@
         /// <param name="segmentName">
         /// The name of the segment to be generated.
         /// </param>
-        /// <param name="tokenDictionary">
+        /// <param name="tokenValues">
         /// An optional dictionary of key/value pairs where the key is a token name and the value is
         /// the substitution value for that token.
         /// </param>
@@ -227,7 +217,7 @@
         /// Each text line will indented according to the indent controls and all tokens will be
         /// replaced with their respective substitution values.
         /// </remarks>
-        public void GenerateSegment(string segmentName, Dictionary<string, string>? tokenDictionary = null)
+        public void GenerateSegment(string segmentName, Dictionary<string, string>? tokenValues = null)
         {
             CurrentSegment = segmentName is null ? string.Empty : segmentName;
             LineNumber = 0;
@@ -236,9 +226,9 @@
             {
                 ControlItem controlItem = _controlDictionary[CurrentSegment];
 
-                if (tokenDictionary is not null)
+                if (tokenValues is not null)
                 {
-                    _tokenProcessor.LoadTokenValues(tokenDictionary);
+                    _tokenProcessor.LoadTokenValues(tokenValues);
                 }
 
                 if (controlItem.ShouldGeneratePadSegment)
@@ -275,7 +265,9 @@
         {
             if (IsTemplateLoaded)
             {
-                _logger.Log(LogEntryType.Loading, MsgAttemptToLoadMoreThanOnce, _textReader.FileName);
+                _logger.Log(LogEntryType.Loading,
+                            MsgAttemptToLoadMoreThanOnce,
+                            _textReader.FileName);
             }
             else if (IsValidTemplateFilePath())
             {
@@ -284,7 +276,8 @@
             }
             else
             {
-                _logger.Log(LogEntryType.Loading, MsgTemplateFilePathNotSet);
+                _logger.Log(LogEntryType.Loading,
+                            MsgTemplateFilePathNotSet);
                 IsTemplateLoaded = false;
             }
         }
@@ -305,16 +298,21 @@
             {
                 if (IsTemplateLoaded && TemplateFilePath == lastFilePath)
                 {
-                    _logger.Log(LogEntryType.Loading, MsgAttemptToLoadMoreThanOnce, lastFileName);
+                    _logger.Log(LogEntryType.Loading,
+                                MsgAttemptToLoadMoreThanOnce,
+                                lastFileName);
                     return;
                 }
 
                 bool isOutputFileWritten = IsOutputFileWritten;
                 ResetAll(false);
 
-                if (!(isOutputFileWritten || string.IsNullOrEmpty(lastFileName)))
+                if ((isOutputFileWritten || string.IsNullOrEmpty(lastFileName)) is false)
                 {
-                    _logger.Log(LogEntryType.Loading, MsgNextLoadRequestBeforeFirstIsWritten, _textReader.FileName, lastFileName);
+                    _logger.Log(LogEntryType.Loading,
+                                MsgNextLoadRequestBeforeFirstIsWritten,
+                                _textReader.FileName,
+                                lastFileName);
                 }
 
                 LoadTemplateLines();
@@ -345,7 +343,9 @@
 
             if (shouldDisplayMessage)
             {
-                _logger.Log(LogEntryType.Reset, MsgTemplateHasBeenReset, _textReader.FileName);
+                _logger.Log(LogEntryType.Reset,
+                            MsgTemplateHasBeenReset,
+                            _textReader.FileName);
             }
         }
 
@@ -370,7 +370,9 @@
 
             if (shouldDisplayMessage)
             {
-                _logger.Log(LogEntryType.Reset, MsgGeneratedTextHasBeenReset, _textReader.FileName);
+                _logger.Log(LogEntryType.Reset,
+                            MsgGeneratedTextHasBeenReset,
+                            _textReader.FileName);
             }
         }
 
@@ -395,7 +397,10 @@
             }
             else
             {
-                _logger.Log(LogEntryType.Generating, _locater.Location, MsgUnableToResetSegment, CurrentSegment);
+                _logger.Log(LogEntryType.Generating,
+                            _locater.Location,
+                            MsgUnableToResetSegment,
+                            CurrentSegment);
             }
         }
 
@@ -445,7 +450,7 @@
         }
 
         private static bool IsEmptyTemplateFile(IEnumerable<string> textLines)
-            => !textLines.Any() || (textLines.Count() == 1 && string.IsNullOrWhiteSpace(textLines.FirstOrDefault()));
+            => textLines.Any() is false || (textLines.Count() == 1 && string.IsNullOrWhiteSpace(textLines.FirstOrDefault()));
 
         private void GenerateTextLine(ControlItem controlItem, TextItem textItem)
         {
@@ -466,7 +471,7 @@
             _generatedText.Add(pad + text);
         }
 
-        private bool IsValidTemplateFilePath() => !string.IsNullOrWhiteSpace(_textReader.FullFilePath);
+        private bool IsValidTemplateFilePath() => string.IsNullOrWhiteSpace(_textReader.FullFilePath) is false;
 
         private bool IsValidTemplateFilePath(string filePath)
         {
@@ -480,12 +485,15 @@
 
             if (IsEmptyTemplateFile(templateLines))
             {
-                _logger.Log(LogEntryType.Loading, MsgTemplateFileIsEmpty);
+                _logger.Log(LogEntryType.Loading,
+                            MsgTemplateFileIsEmpty);
                 IsTemplateLoaded = false;
             }
             else
             {
-                _logger.Log(LogEntryType.Loading, MsgLoadingTemplateFile, _textReader.FileName);
+                _logger.Log(LogEntryType.Loading,
+                            MsgLoadingTemplateFile,
+                            _textReader.FileName);
                 _templateLoader.LoadTemplate(templateLines, _segmentDictionary, _controlDictionary);
                 IsTemplateLoaded = true;
                 IsOutputFileWritten = false;
@@ -502,22 +510,33 @@
                 {
                     if (_segmentDictionary.ContainsKey(segmentName))
                     {
-                        _logger.Log(LogEntryType.Generating, _locater.Location, MsgProcessingSegment);
+                        _logger.Log(LogEntryType.Generating,
+                                    _locater.Location,
+                                    MsgProcessingSegment);
                         result = true;
                     }
                     else
                     {
-                        _logger.Log(LogEntryType.Generating, _locater.Location, MsgSegmentHasNoTextLines, segmentName);
+                        _logger.Log(LogEntryType.Generating,
+                                    _locater.Location,
+                                    MsgSegmentHasNoTextLines,
+                                    segmentName);
                     }
                 }
                 else
                 {
-                    _logger.Log(LogEntryType.Generating, _locater.Location, MsgUnknownSegmentName, segmentName);
+                    _logger.Log(LogEntryType.Generating,
+                                _locater.Location,
+                                MsgUnknownSegmentName,
+                                segmentName);
                 }
             }
             else
             {
-                _logger.Log(LogEntryType.Generating, _locater.Location, MsgAttemptToGenerateSegmentBeforeItWasLoaded, segmentName);
+                _logger.Log(LogEntryType.Generating,
+                            _locater.Location,
+                            MsgAttemptToGenerateSegmentBeforeItWasLoaded,
+                            segmentName);
             }
 
             return result;

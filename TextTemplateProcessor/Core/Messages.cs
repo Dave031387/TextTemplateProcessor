@@ -78,6 +78,7 @@
         internal const string MsgTokenEndDelimiterIsNull = "The token end delimiter must not be null.";
         internal const string MsgTokenHasInvalidName = "Found a token with an invalid name: \"{0}\". It will be ignored.";
         internal const string MsgTokenMissingEndDelimiter = "Found a token start delimiter with no matching end delimiter. The token will be ignored.";
+        internal const string MsgTokenNameNotFound = "The token name \"{1}\" in segment {0} wasn't found in the token dictionary. It will be output as is.";
         internal const string MsgTokenStartAndTokenEndAreSame = "The token start delimiter \"{0}\" must not be the same as the same as the token end delimiter \"{1}\".";
         internal const string MsgTokenStartAndTokenEscapeAreSame = "The token start delimiter \"{0}\" must not be the same as the same as the token escape character \"{1}\".";
         internal const string MsgTokenStartDelimiterIsEmpty = "The token start delimiter must not be empty or whitespace.";

@@ -29,10 +29,9 @@
         /// <summary>
         /// Default constructor that creates an instance of the <see cref="TextLineParser" /> class.
         /// </summary>
-        public TextLineParser() : this(
-            ServiceLocater.Current.Get<ILogger>(),
-            ServiceLocater.Current.Get<ILocater>(),
-            ServiceLocater.Current.Get<ITokenProcessor>())
+        public TextLineParser() : this(ServiceLocater.Current.Get<ILogger>(),
+                                       ServiceLocater.Current.Get<ILocater>(),
+                                       ServiceLocater.Current.Get<ITokenProcessor>())
         {
         }
 
@@ -55,28 +54,24 @@
         /// Exception is thrown if any of the dependencies passed into the constructor are
         /// <see langword="null" />.
         /// </exception>
-        internal TextLineParser(
-            ILogger logger,
-            ILocater locater,
-            ITokenProcessor tokenProcessor)
+        internal TextLineParser(ILogger logger,
+                                ILocater locater,
+                                ITokenProcessor tokenProcessor)
         {
-            Utility.NullDependencyCheck(
-                logger,
-                ClassNames.TextLineParserClass,
-                ServiceNames.LoggerService,
-                ServiceParameterNames.LoggerParameter);
+            Utility.NullDependencyCheck(logger,
+                                        ClassNames.TextLineParserClass,
+                                        ServiceNames.LoggerService,
+                                        ServiceParameterNames.LoggerParameter);
 
-            Utility.NullDependencyCheck(
-                locater,
-                ClassNames.TextLineParserClass,
-                ServiceNames.LocaterService,
-                ServiceParameterNames.LocaterParameter);
+            Utility.NullDependencyCheck(locater,
+                                        ClassNames.TextLineParserClass,
+                                        ServiceNames.LocaterService,
+                                        ServiceParameterNames.LocaterParameter);
 
-            Utility.NullDependencyCheck(
-                tokenProcessor,
-                ClassNames.TextLineParserClass,
-                ServiceNames.TokenProcessorService,
-                ServiceParameterNames.TokenProcessorParameter);
+            Utility.NullDependencyCheck(tokenProcessor,
+                                        ClassNames.TextLineParserClass,
+                                        ServiceNames.TokenProcessorService,
+                                        ServiceParameterNames.TokenProcessorParameter);
 
             _logger = logger;
             _locater = locater;
@@ -121,11 +116,11 @@
         public bool IsTextLine(string templateLine)
             => templateLine[..3] is IndentUnchanged
             || ((templateLine[..2] is IndentAbsolute
-            or IndentAbsoluteOneTime
-            or IndentLeftOneTime
-            or IndentLeftRelative
-            or IndentRightOneTime
-            or IndentRightRelative)
+                                   or IndentAbsoluteOneTime
+                                   or IndentLeftOneTime
+                                   or IndentLeftRelative
+                                   or IndentRightOneTime
+                                   or IndentRightRelative)
             && templateLine[2] is >= '0' and <= '9');
 
         /// <summary>
@@ -143,13 +138,18 @@
         {
             if (templateLine.Length < 3)
             {
-                _logger.Log(LogEntryType.Parsing, _locater.Location, MsgMinimumLineLengthInTemplateFileIs3);
+                _logger.Log(LogEntryType.Parsing,
+                            _locater.Location,
+                            MsgMinimumLineLengthInTemplateFileIs3);
                 return false;
             }
 
-            if (templateLine.Length > 3 && templateLine[3] != ' ')
+            if (templateLine.Length > 3 && templateLine[3] is not ' ')
             {
-                _logger.Log(LogEntryType.Parsing, _locater.Location, MsgFourthCharacterMustBeBlank, templateLine);
+                _logger.Log(LogEntryType.Parsing,
+                            _locater.Location,
+                            MsgFourthCharacterMustBeBlank,
+                            templateLine);
                 return false;
             }
 
@@ -158,7 +158,10 @@
                 return true;
             }
 
-            _logger.Log(LogEntryType.Parsing, _locater.Location, MsgInvalidControlCode, templateLine);
+            _logger.Log(LogEntryType.Parsing,
+                        _locater.Location,
+                        MsgInvalidControlCode,
+                        templateLine);
             return false;
         }
 
@@ -181,7 +184,7 @@
             bool isRelative = true;
             bool isOneTime = false;
 
-            if (indentString != "  ")
+            if (indentString is not "  ")
             {
                 _ = int.TryParse(indentString, out indent);
             }
