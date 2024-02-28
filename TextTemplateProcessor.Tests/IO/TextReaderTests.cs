@@ -22,14 +22,10 @@
             string directoryPath = NextAbsoluteName;
             string fileName = NextFileName;
             string filePath = Path.Combine(directoryPath, fileName);
-            Expression<Action<ILogger>> loggerExpression1 = GetLoggerExpression(
-                LogEntryType.Loading,
-                MsgAttemptingToReadFile,
-                filePath);
-            Expression<Action<ILogger>> loggerExpression2 = GetLoggerExpression(
-                LogEntryType.Loading,
-                MsgErrorWhileReadingTemplateFile,
-                true);
+            Expression<Action<ILogger>> loggerExpression1 = GetLoggerExpression(MsgAttemptingToReadFile,
+                                                                                filePath);
+            Expression<Action<ILogger>> loggerExpression2 = GetLoggerExpression(MsgErrorWhileReadingTemplateFile,
+                                                                                AnyString);
             Expression<Func<IFileAndDirectoryService, string>> fileServiceExpression1 =
                 x => x.GetDirectoryName(filePath);
             Expression<Func<IFileAndDirectoryService, string>> fileServiceExpression2 =
@@ -80,13 +76,9 @@
             string directoryPath = NextAbsoluteName;
             string fileName = NextFileName;
             string filePath = Path.Combine(directoryPath, fileName);
-            Expression<Action<ILogger>> loggerExpression1 = GetLoggerExpression(
-                LogEntryType.Loading,
-                MsgAttemptingToReadFile,
-                filePath);
-            Expression<Action<ILogger>> loggerExpression2 = GetLoggerExpression(
-                LogEntryType.Loading,
-                MsgFileSuccessfullyRead);
+            Expression<Action<ILogger>> loggerExpression1 = GetLoggerExpression(MsgAttemptingToReadFile,
+                                                                                filePath);
+            Expression<Action<ILogger>> loggerExpression2 = GetLoggerExpression(MsgFileSuccessfullyRead);
             List<string> expected = new()
             {
                 "Line 1",
@@ -107,7 +99,10 @@
             _fileService.Setup(fileServiceExpression2).Returns(fileName);
             _fileService.Setup(fileServiceExpression3).Returns(expected);
             _pathValidater.Setup(pathValidaterExpression).Returns(filePath);
-            TextReader reader = new(filePath, _logger.Object, _fileService.Object, _pathValidater.Object);
+            TextReader reader = new(filePath,
+                                    _logger.Object,
+                                    _fileService.Object,
+                                    _pathValidater.Object);
 
             // Act
             List<string> actual = reader.ReadTextFile().ToList();
@@ -140,11 +135,11 @@
         public void ReadTextFile_FilePathNotSet_LogsErrorAndReturnsEmptyList()
         {
             // Arrange
-            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(
-                LogEntryType.Loading,
-                MsgTemplateFilePathNotSet);
+            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(MsgTemplateFilePathNotSet);
             _logger.Setup(loggerExpression);
-            TextReader reader = new(_logger.Object, _fileService.Object, _pathValidater.Object);
+            TextReader reader = new(_logger.Object,
+                                    _fileService.Object,
+                                    _pathValidater.Object);
 
             // Act
             IEnumerable<string> actual = reader.ReadTextFile();
@@ -173,7 +168,10 @@
             _pathValidater.Setup(x => x.ValidateFullPath(filePath, true, true)).Returns(filePath);
             _fileService.Setup(x => x.GetDirectoryName(filePath)).Returns(directoryPath);
             _fileService.Setup(x => x.GetFileName(filePath)).Returns(fileName);
-            TextReader reader = new(filePath, _logger.Object, _fileService.Object, _pathValidater.Object);
+            TextReader reader = new(filePath,
+                                    _logger.Object,
+                                    _fileService.Object,
+                                    _pathValidater.Object);
             _fileService.Reset();
             _pathValidater.Reset();
 
@@ -182,10 +180,8 @@
             Expression<Func<IPathValidater, string>> pathValidaterExpression =
                 x => x.ValidateFullPath(invalidFilePath, true, true);
             _pathValidater.Setup(pathValidaterExpression).Throws<ArgumentException>();
-            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(
-                LogEntryType.Loading,
-                MsgUnableToSetTemplateFilePath,
-                true);
+            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(MsgUnableToSetTemplateFilePath,
+                                                                               AnyString);
             _logger.Setup(loggerExpression);
 
             // Act
@@ -229,7 +225,9 @@
             _fileService.Setup(fileServiceExpression1).Returns(directoryPath);
             _fileService.Setup(fileServiceExpression2).Returns(fileName);
             _pathValidater.Setup(pathValidaterExpression).Returns(filePath);
-            TextReader reader = new(_logger.Object, _fileService.Object, _pathValidater.Object);
+            TextReader reader = new(_logger.Object,
+                                    _fileService.Object,
+                                    _pathValidater.Object);
 
             // Act
             reader.SetFilePath(filePath);
@@ -265,16 +263,14 @@
             string filePath = NextAbsoluteFilePath;
             Action action = () =>
             {
-                TextReader reader = new(
-                    filePath,
-                    _logger.Object,
-                    null!,
-                    _pathValidater.Object);
+                TextReader reader = new(filePath,
+                                        _logger.Object,
+                                        null!,
+                                        _pathValidater.Object);
             };
-            string expected = GetNullDependencyMessage(
-                ClassNames.TextReaderClass,
-                ServiceNames.FileAndDirectoryService,
-                ServiceParameterNames.FileAndDirectoryServiceParameter);
+            string expected = GetNullDependencyMessage(ClassNames.TextReaderClass,
+                                                       ServiceNames.FileAndDirectoryService,
+                                                       ServiceParameterNames.FileAndDirectoryServiceParameter);
 
             // Act/Assert
             action
@@ -290,16 +286,14 @@
             string filePath = NextAbsoluteFilePath;
             Action action = () =>
             {
-                TextReader reader = new(
-                    filePath,
-                    null!,
-                    _fileService.Object,
-                    _pathValidater.Object);
+                TextReader reader = new(filePath,
+                                        null!,
+                                        _fileService.Object,
+                                        _pathValidater.Object);
             };
-            string expected = GetNullDependencyMessage(
-                ClassNames.TextReaderClass,
-                ServiceNames.LoggerService,
-                ServiceParameterNames.LoggerParameter);
+            string expected = GetNullDependencyMessage(ClassNames.TextReaderClass,
+                                                       ServiceNames.LoggerService,
+                                                       ServiceParameterNames.LoggerParameter);
 
             // Act/Assert
             action
@@ -315,16 +309,14 @@
             string filePath = NextAbsoluteFilePath;
             Action action = () =>
             {
-                TextReader reader = new(
-                    filePath,
-                    _logger.Object,
-                    _fileService.Object,
-                    null!);
+                TextReader reader = new(filePath,
+                                        _logger.Object,
+                                        _fileService.Object,
+                                        null!);
             };
-            string expected = GetNullDependencyMessage(
-                ClassNames.TextReaderClass,
-                ServiceNames.PathValidaterService,
-                ServiceParameterNames.PathValidaterParameter);
+            string expected = GetNullDependencyMessage(ClassNames.TextReaderClass,
+                                                       ServiceNames.PathValidaterService,
+                                                       ServiceParameterNames.PathValidaterParameter);
 
             // Act/Assert
             action
@@ -340,22 +332,16 @@
             string invalidFilePath = @"C:\invalid;path\file?";
             Expression<Func<IPathValidater, string>> pathValidaterExpression =
                 x => x.ValidateFullPath(invalidFilePath, true, true);
-            _pathValidater
-                .Setup(pathValidaterExpression)
-                .Throws<ArgumentException>();
-            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(
-                LogEntryType.Loading,
-                MsgUnableToSetTemplateFilePath,
-                true);
-            _logger
-                .Setup(loggerExpression);
+            _pathValidater.Setup(pathValidaterExpression).Throws<ArgumentException>();
+            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(MsgUnableToSetTemplateFilePath,
+                                                                               AnyString);
+            _logger.Setup(loggerExpression);
 
             // Act
-            TextReader reader = new(
-                invalidFilePath,
-                _logger.Object,
-                _fileService.Object,
-                _pathValidater.Object);
+            TextReader reader = new(invalidFilePath,
+                                    _logger.Object,
+                                    _fileService.Object,
+                                    _pathValidater.Object);
 
             // Assert
             reader.DirectoryPath
@@ -385,15 +371,13 @@
             // Arrange
             Action action = () =>
             {
-                TextReader reader = new(
-                    _logger.Object,
-                    null!,
-                    _pathValidater.Object);
+                TextReader reader = new(_logger.Object,
+                                        null!,
+                                        _pathValidater.Object);
             };
-            string expected = GetNullDependencyMessage(
-                ClassNames.TextReaderClass,
-                ServiceNames.FileAndDirectoryService,
-                ServiceParameterNames.FileAndDirectoryServiceParameter);
+            string expected = GetNullDependencyMessage(ClassNames.TextReaderClass,
+                                                       ServiceNames.FileAndDirectoryService,
+                                                       ServiceParameterNames.FileAndDirectoryServiceParameter);
 
             // Act/Assert
             action
@@ -408,15 +392,13 @@
             // Arrange
             Action action = () =>
             {
-                TextReader reader = new(
-                    null!,
-                    _fileService.Object,
-                    _pathValidater.Object);
+                TextReader reader = new(null!,
+                                        _fileService.Object,
+                                        _pathValidater.Object);
             };
-            string expected = GetNullDependencyMessage(
-                ClassNames.TextReaderClass,
-                ServiceNames.LoggerService,
-                ServiceParameterNames.LoggerParameter);
+            string expected = GetNullDependencyMessage(ClassNames.TextReaderClass,
+                                                       ServiceNames.LoggerService,
+                                                       ServiceParameterNames.LoggerParameter);
 
             // Act/Assert
             action
@@ -431,15 +413,13 @@
             // Arrange
             Action action = () =>
             {
-                TextReader reader = new(
-                    _logger.Object,
-                    _fileService.Object,
-                    null!);
+                TextReader reader = new(_logger.Object,
+                                        _fileService.Object,
+                                        null!);
             };
-            string expected = GetNullDependencyMessage(
-                ClassNames.TextReaderClass,
-                ServiceNames.PathValidaterService,
-                ServiceParameterNames.PathValidaterParameter);
+            string expected = GetNullDependencyMessage(ClassNames.TextReaderClass,
+                                                       ServiceNames.PathValidaterService,
+                                                       ServiceParameterNames.PathValidaterParameter);
 
             // Act/Assert
             action
@@ -472,11 +452,10 @@
                 .Returns(expectedFileName);
 
             // Act
-            TextReader reader = new(
-                expectedFullFilePath,
-                _logger.Object,
-                _fileService.Object,
-                _pathValidater.Object);
+            TextReader reader = new(expectedFullFilePath,
+                                    _logger.Object,
+                                    _fileService.Object,
+                                    _pathValidater.Object);
 
             // Assert
             reader.DirectoryPath
@@ -506,10 +485,9 @@
         public void TextReader_ConstructWithValidServiceReferences_InitializesProperties()
         {
             // Arrange/Act
-            TextReader reader = new(
-                _logger.Object,
-                _fileService.Object,
-                _pathValidater.Object);
+            TextReader reader = new(_logger.Object,
+                                    _fileService.Object,
+                                    _pathValidater.Object);
 
             // Assert
             reader.DirectoryPath

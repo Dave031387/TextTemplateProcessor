@@ -111,18 +111,14 @@
             if (headerLine.Length < 5)
             {
                 _locater.CurrentSegment = _defaultSegmentNameGenerator.Next;
-                _logger.Log(LogEntryType.Parsing,
-                            _locater.Location,
-                            MsgSegmentNameMustStartInColumn5,
+                _logger.Log(MsgSegmentNameMustStartInColumn5,
                             _locater.CurrentSegment);
                 return controlItem;
             }
 
             if (headerLine[4] == ' ')
             {
-                _logger.Log(LogEntryType.Parsing,
-                            _locater.Location,
-                            MsgSegmentNameMustStartInColumn5,
+                _logger.Log(MsgSegmentNameMustStartInColumn5,
                             _locater.CurrentSegment);
                 headerLine = headerLine.Insert(4, _defaultSegmentNameGenerator.Next);
             }
@@ -137,9 +133,7 @@
             else
             {
                 _locater.CurrentSegment = _defaultSegmentNameGenerator.Next;
-                _logger.Log(LogEntryType.Parsing,
-                            _locater.Location,
-                            MsgInvalidSegmentName,
+                _logger.Log(MsgInvalidSegmentName,
                             segmentName,
                             _locater.CurrentSegment);
             }
@@ -164,18 +158,14 @@
             }
             else
             {
-                _logger.Log(LogEntryType.Parsing,
-                            _locater.Location,
-                            MsgInvalidFormOfOption,
+                _logger.Log(MsgInvalidFormOfOption,
                             arg);
                 return result;
             }
 
             if (optionIndex < 1)
             {
-                _logger.Log(LogEntryType.Parsing,
-                            _locater.Location,
-                            MsgOptionNameMustPrecedeEqualsSign,
+                _logger.Log(MsgOptionNameMustPrecedeEqualsSign,
                             _locater.CurrentSegment);
                 return result;
             }
@@ -184,9 +174,7 @@
 
             if (result.optionName is not FirstTimeIndentOption and not PadSegmentNameOption and not TabSizeOption)
             {
-                _logger.Log(LogEntryType.Parsing,
-                            _locater.Location,
-                            MsgUnknownSegmentOptionFound,
+                _logger.Log(MsgUnknownSegmentOptionFound,
                             _locater.CurrentSegment,
                             arg);
                 return result;
@@ -196,9 +184,7 @@
 
             if (optionIndex == arg.Length)
             {
-                _logger.Log(LogEntryType.Parsing,
-                            _locater.Location,
-                            MsgOptionValueMustFollowEqualsSign,
+                _logger.Log(MsgOptionValueMustFollowEqualsSign,
                             _locater.CurrentSegment,
                             result.optionName);
                 return result;
@@ -229,9 +215,7 @@
                     || (optionName == PadSegmentNameOption && padSegmentOptionFound)
                     || (optionName == TabSizeOption && tabOptionFound))
                 {
-                    _logger.Log(LogEntryType.Parsing,
-                                _locater.Location,
-                                MsgFoundDuplicateOptionNameOnHeaderLine,
+                    _logger.Log(MsgFoundDuplicateOptionNameOnHeaderLine,
                                 _locater.CurrentSegment,
                                 optionName);
                     continue;
@@ -268,9 +252,7 @@
             {
                 if (indentValue == 0)
                 {
-                    _logger.Log(LogEntryType.Parsing,
-                                _locater.Location,
-                                MsgFirstTimeIndentSetToZero);
+                    _logger.Log(MsgFirstTimeIndentSetToZero);
                 }
 
                 controlItem.FirstTimeIndent = indentValue;
@@ -285,9 +267,7 @@
             }
             else
             {
-                _logger.Log(LogEntryType.Parsing,
-                            _locater.Location,
-                            MsgInvalidPadSegmentName,
+                _logger.Log(MsgInvalidPadSegmentName,
                             optionValue,
                             _locater.CurrentSegment);
             }

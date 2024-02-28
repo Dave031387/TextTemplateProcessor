@@ -9,13 +9,16 @@
     /// </summary>
     internal class ConsoleLogger : ILogger
     {
+        private readonly ILocater _locater;
         private readonly List<LogEntry> _logEntries = new();
         private readonly IMessageWriter _messageWriter;
+        private LogEntryType _currentLogEntryType = LogEntryType.Setup;
 
         /// <summary>
         /// Default constructor that creates an instance of the <see cref="ConsoleLogger" /> class.
         /// </summary>
-        public ConsoleLogger() : this(ServiceLocater.Current.Get<IMessageWriter>())
+        public ConsoleLogger() : this(ServiceLocater.Current.Get<IMessageWriter>(),
+                                      ServiceLocater.Current.Get<ILocater>())
         {
         }
 
@@ -26,18 +29,27 @@
         /// <param name="messageWriter">
         /// An instance of an object that implements the <see cref="IMessageWriter" /> interface.
         /// </param>
+        /// <param name="locater">
+        /// An instance of an object that implements the <see cref="ILocater" /> interface.
+        /// </param>
         /// <exception cref="ArgumentNullException">
         /// Exception is thrown if any of the dependencies passed into the constructor are
         /// <see langword="null" />.
         /// </exception>
-        internal ConsoleLogger(IMessageWriter messageWriter)
+        internal ConsoleLogger(IMessageWriter messageWriter, ILocater locater)
         {
             Utility.NullDependencyCheck(messageWriter,
                                         ClassNames.ConsoleLoggerClass,
                                         ServiceNames.MessageWriterService,
                                         ServiceParameterNames.MessageWriterParameter);
 
+            Utility.NullDependencyCheck(locater,
+                                        ClassNames.ConsoleLoggerClass,
+                                        ServiceNames.LocaterService,
+                                        ServiceParameterNames.LocaterParameter);
+
             _messageWriter = messageWriter;
+            _locater = locater;
         }
 
         /// <summary>
@@ -55,43 +67,33 @@
         /// <summary>
         /// Adds a new <see cref="LogEntry" /> object to the <see cref="LogEntries" /> collection.
         /// </summary>
-        /// <param name="type">
-        /// The <see cref="LogEntryType" /> enum value corresponding to the type of
-        /// <see cref="LogEntry" /> object being added to the <see cref="LogEntries" /> collection.
-        /// </param>
         /// <param name="message">
         /// The log message that is being added to the <see cref="LogEntries" /> collection.
         /// </param>
-        public void Log(LogEntryType type, string message) => _logEntries.Add(new(type, string.Empty, 0, message));
-
-        /// <summary>
-        /// Adds a new <see cref="LogEntry" /> object to the <see cref="LogEntries" /> collection.
-        /// </summary>
-        /// <param name="type">
-        /// The <see cref="LogEntryType" /> enum value corresponding to the type of
-        /// <see cref="LogEntry" /> object being added to the <see cref="LogEntries" /> collection.
+        /// <param name="arg1">
+        /// An optional <see langword="string" /> value to be substituted for the first string
+        /// format argument in the <paramref name="message" /> parameter.
         /// </param>
-        /// <param name="location">
-        /// A tuple that gives the name of the segment and the line number within the segment where
-        /// the log message was triggered.
+        /// <param name="arg2">
+        /// An optional <see langword="string" /> value to be substituted for the second string
+        /// format argument in the <paramref name="message" /> parameter.
         /// </param>
-        /// <param name="message">
-        /// The log message that is being added to the <see cref="LogEntries" /> collection.
-        /// </param>
-        public void Log(LogEntryType type, (string segmentName, int lineNumber) location, string message)
+        public void Log(string message, string? arg1 = null, string? arg2 = null)
         {
-            switch (type)
+            string formattedMessage = arg1 is null ? message : arg2 is null ? string.Format(message, arg1) : string.Format(message, arg1, arg2);
+
+            switch (_currentLogEntryType)
             {
                 case LogEntryType.Setup:
                 case LogEntryType.Loading:
                 case LogEntryType.Writing:
                 case LogEntryType.Reset:
-                    Log(type, message);
+                    _logEntries.Add(new(_currentLogEntryType, string.Empty, 0, formattedMessage));
                     break;
 
                 case LogEntryType.Parsing:
                 case LogEntryType.Generating:
-                    _logEntries.Add(new(type, location.segmentName, location.lineNumber, message));
+                    _logEntries.Add(new(_currentLogEntryType, _locater.CurrentSegment, _locater.LineNumber, formattedMessage));
                     break;
 
                 default:
@@ -100,110 +102,12 @@
         }
 
         /// <summary>
-        /// Adds a new <see cref="LogEntry" /> object to the <see cref="LogEntries" /> collection.
+        /// Sets the current log entry type to the specified value.
         /// </summary>
-        /// <param name="type">
-        /// The <see cref="LogEntryType" /> enum value corresponding to the type of
-        /// <see cref="LogEntry" /> object being added to the <see cref="LogEntries" /> collection.
+        /// <param name="logEntryType">
+        /// The new value for the current log entry type.
         /// </param>
-        /// <param name="message">
-        /// The log message that is being added to the <see cref="LogEntries" /> collection. <br />
-        /// This must be a <see langword="string" /> that contains one string format argument.
-        /// </param>
-        /// <param name="arg">
-        /// The <see langword="string" /> value to be substituted for the string format argument in
-        /// the <paramref name="message" /> parameter.
-        /// </param>
-        public void Log(LogEntryType type, string message, string arg)
-        {
-            arg ??= string.Empty;
-            string formattedMessage = string.Format(message, arg);
-            Log(type, formattedMessage);
-        }
-
-        /// <summary>
-        /// Adds a new <see cref="LogEntry" /> object to the <see cref="LogEntries" /> collection.
-        /// </summary>
-        /// <param name="type">
-        /// The <see cref="LogEntryType" /> enum value corresponding to the type of
-        /// <see cref="LogEntry" /> object being added to the <see cref="LogEntries" /> collection.
-        /// </param>
-        /// <param name="message">
-        /// The log message that is being added to the <see cref="LogEntries" /> collection. <br />
-        /// This must be a <see langword="string" /> that contains two string format arguments.
-        /// </param>
-        /// <param name="arg1">
-        /// The <see langword="string" /> value to be substituted for the first string format
-        /// argument in the <paramref name="message" /> parameter.
-        /// </param>
-        /// <param name="arg2">
-        /// The <see langword="string" /> value to be substituted for the second string format
-        /// argument in the <paramref name="message" /> parameter.
-        /// </param>
-        public void Log(LogEntryType type, string message, string arg1, string arg2)
-        {
-            arg1 ??= string.Empty;
-            arg2 ??= string.Empty;
-            string formattedMessage = string.Format(message, arg1, arg2);
-            Log(type, formattedMessage);
-        }
-
-        /// <summary>
-        /// Adds a new <see cref="LogEntry" /> object to the <see cref="LogEntries" /> collection.
-        /// </summary>
-        /// <param name="type">
-        /// The <see cref="LogEntryType" /> enum value corresponding to the type of
-        /// <see cref="LogEntry" /> object being added to the <see cref="LogEntries" /> collection.
-        /// </param>
-        /// <param name="location">
-        /// A tuple that gives the name of the segment and the line number within the segment where
-        /// the log message was triggered.
-        /// </param>
-        /// <param name="message">
-        /// The log message that is being added to the <see cref="LogEntries" /> collection. <br />
-        /// This must be a <see langword="string" /> that contains one string format argument.
-        /// </param>
-        /// <param name="arg">
-        /// The <see langword="string" /> value to be substituted for the string format argument in
-        /// the <paramref name="message" /> parameter.
-        /// </param>
-        public void Log(LogEntryType type, (string segmentName, int lineNumber) location, string message, string arg)
-        {
-            arg ??= string.Empty;
-            string formattedMessage = string.Format(message, arg);
-            Log(type, location, formattedMessage);
-        }
-
-        /// <summary>
-        /// Adds a new <see cref="LogEntry" /> object to the <see cref="LogEntries" /> collection.
-        /// </summary>
-        /// <param name="type">
-        /// The <see cref="LogEntryType" /> enum value corresponding to the type of
-        /// <see cref="LogEntry" /> object being added to the <see cref="LogEntries" /> collection.
-        /// </param>
-        /// <param name="location">
-        /// A tuple that gives the name of the segment and the line number within the segment where
-        /// the log message was triggered.
-        /// </param>
-        /// <param name="message">
-        /// The log message that is being added to the <see cref="LogEntries" /> collection. <br />
-        /// This must be a <see langword="string" /> that contains two string format arguments.
-        /// </param>
-        /// <param name="arg1">
-        /// The <see langword="string" /> value to be substituted for the first string format
-        /// argument in the <paramref name="message" /> parameter.
-        /// </param>
-        /// <param name="arg2">
-        /// The <see langword="string" /> value to be substituted for the second string format
-        /// argument in the <paramref name="message" /> parameter.
-        /// </param>
-        public void Log(LogEntryType type, (string segmentName, int lineNumber) location, string message, string arg1, string arg2)
-        {
-            arg1 ??= string.Empty;
-            arg2 ??= string.Empty;
-            string formattedMessage = string.Format(message, arg1, arg2);
-            Log(type, location, formattedMessage);
-        }
+        public void SetLogEntryType(LogEntryType logEntryType) => _currentLogEntryType = logEntryType;
 
         /// <summary>
         /// Writes the contents of the <see cref="LogEntries" /> collection to the

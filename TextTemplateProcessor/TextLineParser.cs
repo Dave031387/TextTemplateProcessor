@@ -22,7 +22,6 @@
         private const char OneTimeIndent = 'O';
         private const string SegmentHeaderCode = "###";
 
-        private readonly ILocater _locater;
         private readonly ILogger _logger;
         private readonly ITokenProcessor _tokenProcessor;
 
@@ -30,7 +29,6 @@
         /// Default constructor that creates an instance of the <see cref="TextLineParser" /> class.
         /// </summary>
         public TextLineParser() : this(ServiceLocater.Current.Get<ILogger>(),
-                                       ServiceLocater.Current.Get<ILocater>(),
                                        ServiceLocater.Current.Get<ITokenProcessor>())
         {
         }
@@ -42,10 +40,6 @@
         /// <param name="logger">
         /// A reference to a logger object for logging messages.
         /// </param>
-        /// <param name="locater">
-        /// A reference to a locater object for keeping track of our location within the text
-        /// template file.
-        /// </param>
         /// <param name="tokenProcessor">
         /// A reference to a token processor object for parsing and extracting tokens from the text
         /// template file.
@@ -55,7 +49,6 @@
         /// <see langword="null" />.
         /// </exception>
         internal TextLineParser(ILogger logger,
-                                ILocater locater,
                                 ITokenProcessor tokenProcessor)
         {
             Utility.NullDependencyCheck(logger,
@@ -63,18 +56,12 @@
                                         ServiceNames.LoggerService,
                                         ServiceParameterNames.LoggerParameter);
 
-            Utility.NullDependencyCheck(locater,
-                                        ClassNames.TextLineParserClass,
-                                        ServiceNames.LocaterService,
-                                        ServiceParameterNames.LocaterParameter);
-
             Utility.NullDependencyCheck(tokenProcessor,
                                         ClassNames.TextLineParserClass,
                                         ServiceNames.TokenProcessorService,
                                         ServiceParameterNames.TokenProcessorParameter);
 
             _logger = logger;
-            _locater = locater;
             _tokenProcessor = tokenProcessor;
         }
 
@@ -138,17 +125,13 @@
         {
             if (templateLine.Length < 3)
             {
-                _logger.Log(LogEntryType.Parsing,
-                            _locater.Location,
-                            MsgMinimumLineLengthInTemplateFileIs3);
+                _logger.Log(MsgMinimumLineLengthInTemplateFileIs3);
                 return false;
             }
 
             if (templateLine.Length > 3 && templateLine[3] is not ' ')
             {
-                _logger.Log(LogEntryType.Parsing,
-                            _locater.Location,
-                            MsgFourthCharacterMustBeBlank,
+                _logger.Log(MsgFourthCharacterMustBeBlank,
                             templateLine);
                 return false;
             }
@@ -158,9 +141,7 @@
                 return true;
             }
 
-            _logger.Log(LogEntryType.Parsing,
-                        _locater.Location,
-                        MsgInvalidControlCode,
+            _logger.Log(MsgInvalidControlCode,
                         templateLine);
             return false;
         }

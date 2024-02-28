@@ -36,15 +36,14 @@
             int expectedCurrentIndent = initialIndent * DefaultTabSize;
             int expectedReturnValue = 0;
 
-            Test_GetFirstTimeIndent(
-                firstTimeOffset,
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentIndent,
-                expectedReturnValue,
-                MsgLeftIndentHasBeenTruncated);
+            Test_GetFirstTimeIndent(firstTimeOffset,
+                                    initialIndent,
+                                    textIndent,
+                                    isRelative,
+                                    isOneTime,
+                                    expectedCurrentIndent,
+                                    expectedReturnValue,
+                                    MsgLeftIndentHasBeenTruncated);
         }
 
         // Case 02 / firstTimeOffset = 0 / isRelative = true / indent < 0 / calculated value < 0 /
@@ -60,15 +59,14 @@
             int expectedCurrentIndent = 0;
             int expectedReturnValue = 0;
 
-            Test_GetFirstTimeIndent(
-                firstTimeOffset,
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentIndent,
-                expectedReturnValue,
-                MsgLeftIndentHasBeenTruncated);
+            Test_GetFirstTimeIndent(firstTimeOffset,
+                                    initialIndent,
+                                    textIndent,
+                                    isRelative,
+                                    isOneTime,
+                                    expectedCurrentIndent,
+                                    expectedReturnValue,
+                                    MsgLeftIndentHasBeenTruncated);
         }
 
         // Case 03 / firstTimeOffset = 0 / isRelative = true / indent < 0 / calculated value = 0 /
@@ -84,14 +82,13 @@
             int expectedCurrentIndent = initialIndent * DefaultTabSize;
             int expectedReturnValue = (initialIndent + textIndent) * DefaultTabSize;
 
-            Test_GetFirstTimeIndent(
-                firstTimeOffset,
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentIndent,
-                expectedReturnValue);
+            Test_GetFirstTimeIndent(firstTimeOffset,
+                                    initialIndent,
+                                    textIndent,
+                                    isRelative,
+                                    isOneTime,
+                                    expectedCurrentIndent,
+                                    expectedReturnValue);
         }
 
         // Case 04 / firstTimeOffset = 0 / isRelative = true / indent < 0 / calculated value = 0 /
@@ -107,14 +104,13 @@
             int expectedCurrentIndent = (initialIndent + textIndent) * DefaultTabSize;
             int expectedReturnValue = (initialIndent + textIndent) * DefaultTabSize;
 
-            Test_GetFirstTimeIndent(
-                firstTimeOffset,
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentIndent,
-                expectedReturnValue);
+            Test_GetFirstTimeIndent(firstTimeOffset,
+                                    initialIndent,
+                                    textIndent,
+                                    isRelative,
+                                    isOneTime,
+                                    expectedCurrentIndent,
+                                    expectedReturnValue);
         }
 
         // Case 05 / firstTimeOffset = 0 / isRelative = true / indent < 0 / calculated value > 0 /
@@ -130,14 +126,13 @@
             int expectedCurrentIndent = initialIndent * DefaultTabSize;
             int expectedReturnValue = (initialIndent + textIndent) * DefaultTabSize;
 
-            Test_GetFirstTimeIndent(
-                firstTimeOffset,
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentIndent,
-                expectedReturnValue);
+            Test_GetFirstTimeIndent(firstTimeOffset,
+                                    initialIndent,
+                                    textIndent,
+                                    isRelative,
+                                    isOneTime,
+                                    expectedCurrentIndent,
+                                    expectedReturnValue);
         }
 
         // Case 06 / firstTimeOffset = 0 / isRelative = true / indent < 0 / calculated value > 0 /
@@ -153,14 +148,13 @@
             int expectedCurrentIndent = (initialIndent + textIndent) * DefaultTabSize;
             int expectedReturnValue = (initialIndent + textIndent) * DefaultTabSize;
 
-            Test_GetFirstTimeIndent(
-                firstTimeOffset,
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentIndent,
-                expectedReturnValue);
+            Test_GetFirstTimeIndent(firstTimeOffset,
+                                    initialIndent,
+                                    textIndent,
+                                    isRelative,
+                                    isOneTime,
+                                    expectedCurrentIndent,
+                                    expectedReturnValue);
         }
 
         // Case 07 / firstTimeOffset = 0 / isRelative = true / indent = 0 / calculated value n/a /
@@ -177,14 +171,13 @@
             int expectedCurrentIndent = initialIndent * DefaultTabSize;
             int expectedReturnValue = (initialIndent + textIndent) * DefaultTabSize;
 
-            Test_GetFirstTimeIndent(
-                firstTimeOffset,
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentIndent,
-                expectedReturnValue);
+            Test_GetFirstTimeIndent(firstTimeOffset,
+                                    initialIndent,
+                                    textIndent,
+                                    isRelative,
+                                    isOneTime,
+                                    expectedCurrentIndent,
+                                    expectedReturnValue);
         }
 
         // Case 08 / firstTimeOffset = 0 / isRelative = true / indent > 0 / calculated value > 0 /
@@ -200,14 +193,13 @@
             int expectedCurrentIndent = initialIndent * DefaultTabSize;
             int expectedReturnValue = (initialIndent + textIndent) * DefaultTabSize;
 
-            Test_GetFirstTimeIndent(
-                firstTimeOffset,
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentIndent,
-                expectedReturnValue);
+            Test_GetFirstTimeIndent(firstTimeOffset,
+                                    initialIndent,
+                                    textIndent,
+                                    isRelative,
+                                    isOneTime,
+                                    expectedCurrentIndent,
+                                    expectedReturnValue);
         }
 
         // Case 09 / firstTimeOffset = 0 / isRelative = true / indent > 0 / calculated value > 0 /
@@ -223,14 +215,13 @@
             int expectedCurrentIndent = (initialIndent + textIndent) * DefaultTabSize;
             int expectedReturnValue = (initialIndent + textIndent) * DefaultTabSize;
 
-            Test_GetFirstTimeIndent(
-                firstTimeOffset,
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentIndent,
-                expectedReturnValue);
+            Test_GetFirstTimeIndent(firstTimeOffset,
+                                    initialIndent,
+                                    textIndent,
+                                    isRelative,
+                                    isOneTime,
+                                    expectedCurrentIndent,
+                                    expectedReturnValue);
         }
 
         // Case 10 / firstTimeOffset = 0 / isRelative = false / indent < 0 / calculated value n/a /
@@ -246,15 +237,14 @@
             int expectedCurrentIndent = initialIndent * DefaultTabSize;
             int expectedReturnValue = 0;
 
-            Test_GetFirstTimeIndent(
-                firstTimeOffset,
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentIndent,
-                expectedReturnValue,
-                MsgLeftIndentHasBeenTruncated);
+            Test_GetFirstTimeIndent(firstTimeOffset,
+                                    initialIndent,
+                                    textIndent,
+                                    isRelative,
+                                    isOneTime,
+                                    expectedCurrentIndent,
+                                    expectedReturnValue,
+                                    MsgLeftIndentHasBeenTruncated);
         }
 
         // Case 11 / firstTimeOffset = 0 / isRelative = false / indent < 0 / calculated value n/a /
@@ -270,15 +260,14 @@
             int expectedCurrentIndent = 0;
             int expectedReturnValue = 0;
 
-            Test_GetFirstTimeIndent(
-                firstTimeOffset,
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentIndent,
-                expectedReturnValue,
-                MsgLeftIndentHasBeenTruncated);
+            Test_GetFirstTimeIndent(firstTimeOffset,
+                                    initialIndent,
+                                    textIndent,
+                                    isRelative,
+                                    isOneTime,
+                                    expectedCurrentIndent,
+                                    expectedReturnValue,
+                                    MsgLeftIndentHasBeenTruncated);
         }
 
         // Case 12 / firstTimeOffset = 0 / isRelative = false / indent > 0 / calculated value n/a /
@@ -294,14 +283,13 @@
             int expectedCurrentIndent = initialIndent * DefaultTabSize;
             int expectedReturnValue = 0;
 
-            Test_GetFirstTimeIndent(
-                firstTimeOffset,
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentIndent,
-                expectedReturnValue);
+            Test_GetFirstTimeIndent(firstTimeOffset,
+                                    initialIndent,
+                                    textIndent,
+                                    isRelative,
+                                    isOneTime,
+                                    expectedCurrentIndent,
+                                    expectedReturnValue);
         }
 
         // Case 13 / firstTimeOffset = 0 / isRelative = false / indent > 0 / calculated value n/a /
@@ -317,14 +305,13 @@
             int expectedCurrentIndent = 0;
             int expectedReturnValue = 0;
 
-            Test_GetFirstTimeIndent(
-                firstTimeOffset,
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentIndent,
-                expectedReturnValue);
+            Test_GetFirstTimeIndent(firstTimeOffset,
+                                    initialIndent,
+                                    textIndent,
+                                    isRelative,
+                                    isOneTime,
+                                    expectedCurrentIndent,
+                                    expectedReturnValue);
         }
 
         // Case 14 / firstTimeOffset = 0 / isRelative = false / indent > 0 / calculated value n/a /
@@ -340,14 +327,13 @@
             int expectedCurrentIndent = initialIndent * DefaultTabSize;
             int expectedReturnValue = textIndent * DefaultTabSize;
 
-            Test_GetFirstTimeIndent(
-                firstTimeOffset,
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentIndent,
-                expectedReturnValue);
+            Test_GetFirstTimeIndent(firstTimeOffset,
+                                    initialIndent,
+                                    textIndent,
+                                    isRelative,
+                                    isOneTime,
+                                    expectedCurrentIndent,
+                                    expectedReturnValue);
         }
 
         // Case 15 / firstTimeOffset = 0 / isRelative = false / indent > 0 / calculated value n/a /
@@ -363,14 +349,13 @@
             int expectedCurrentIndent = textIndent * DefaultTabSize;
             int expectedReturnValue = textIndent * DefaultTabSize;
 
-            Test_GetFirstTimeIndent(
-                firstTimeOffset,
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentIndent,
-                expectedReturnValue);
+            Test_GetFirstTimeIndent(firstTimeOffset,
+                                    initialIndent,
+                                    textIndent,
+                                    isRelative,
+                                    isOneTime,
+                                    expectedCurrentIndent,
+                                    expectedReturnValue);
         }
 
         // Case 16 / firstTimeOffset < 0 / isRelative = n/a / indent n/a / calculated value < 0 /
@@ -388,15 +373,14 @@
             int expectedCurrentIndent = 0;
             int expectedReturnValue = 0;
 
-            Test_GetFirstTimeIndent(
-                firstTimeOffset,
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentIndent,
-                expectedReturnValue,
-                MsgFirstTimeIndentHasBeenTruncated);
+            Test_GetFirstTimeIndent(firstTimeOffset,
+                                    initialIndent,
+                                    textIndent,
+                                    isRelative,
+                                    isOneTime,
+                                    expectedCurrentIndent,
+                                    expectedReturnValue,
+                                    MsgFirstTimeIndentHasBeenTruncated);
         }
 
         // Case 17 / firstTimeOffset < 0 / isRelative = n/a / indent n/a / calculated value = 0 /
@@ -414,14 +398,13 @@
             int expectedCurrentIndent = (initialIndent + firstTimeOffset) * DefaultTabSize;
             int expectedReturnValue = (initialIndent + firstTimeOffset) * DefaultTabSize;
 
-            Test_GetFirstTimeIndent(
-                firstTimeOffset,
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentIndent,
-                expectedReturnValue);
+            Test_GetFirstTimeIndent(firstTimeOffset,
+                                    initialIndent,
+                                    textIndent,
+                                    isRelative,
+                                    isOneTime,
+                                    expectedCurrentIndent,
+                                    expectedReturnValue);
         }
 
         // Case 18 / firstTimeOffset < 0 / isRelative = n/a / indent n/a / calculated value > 0 /
@@ -439,14 +422,13 @@
             int expectedCurrentIndent = (initialIndent + firstTimeOffset) * DefaultTabSize;
             int expectedReturnValue = (initialIndent + firstTimeOffset) * DefaultTabSize;
 
-            Test_GetFirstTimeIndent(
-                firstTimeOffset,
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentIndent,
-                expectedReturnValue);
+            Test_GetFirstTimeIndent(firstTimeOffset,
+                                    initialIndent,
+                                    textIndent,
+                                    isRelative,
+                                    isOneTime,
+                                    expectedCurrentIndent,
+                                    expectedReturnValue);
         }
 
         // Case 19 / firstTimeOffset < 0 / isRelative = n/a / indent n/a / calculated value > 0 /
@@ -464,14 +446,13 @@
             int expectedCurrentIndent = (initialIndent + firstTimeOffset) * DefaultTabSize;
             int expectedReturnValue = (initialIndent + firstTimeOffset) * DefaultTabSize;
 
-            Test_GetFirstTimeIndent(
-                firstTimeOffset,
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentIndent,
-                expectedReturnValue);
+            Test_GetFirstTimeIndent(firstTimeOffset,
+                                    initialIndent,
+                                    textIndent,
+                                    isRelative,
+                                    isOneTime,
+                                    expectedCurrentIndent,
+                                    expectedReturnValue);
         }
 
         // Case01 / indent < 0 / isRelative = true / isOneTime = true / calculated value < 0
@@ -485,14 +466,13 @@
             int expectedCurrentValue = initialIndent * DefaultTabSize;
             int expectedReturnValue = 0;
 
-            Test_GetIndent(
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentValue,
-                expectedReturnValue,
-                MsgLeftIndentHasBeenTruncated);
+            Test_GetIndent(initialIndent,
+                           textIndent,
+                           isRelative,
+                           isOneTime,
+                           expectedCurrentValue,
+                           expectedReturnValue,
+                           MsgLeftIndentHasBeenTruncated);
         }
 
         // Case02 / indent < 0 / isRelative = true / isOneTime = false / calculated value < 0
@@ -506,14 +486,13 @@
             int expectedCurrentValue = 0;
             int expectedReturnValue = 0;
 
-            Test_GetIndent(
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentValue,
-                expectedReturnValue,
-                MsgLeftIndentHasBeenTruncated);
+            Test_GetIndent(initialIndent,
+                           textIndent,
+                           isRelative,
+                           isOneTime,
+                           expectedCurrentValue,
+                           expectedReturnValue,
+                           MsgLeftIndentHasBeenTruncated);
         }
 
         // Case03 / indent < 0 / isRelative = true / isOneTime = true / calculated value = 0
@@ -527,13 +506,12 @@
             int expectedCurrentValue = initialIndent * DefaultTabSize;
             int expectedReturnValue = (initialIndent + textIndent) * DefaultTabSize;
 
-            Test_GetIndent(
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentValue,
-                expectedReturnValue);
+            Test_GetIndent(initialIndent,
+                           textIndent,
+                           isRelative,
+                           isOneTime,
+                           expectedCurrentValue,
+                           expectedReturnValue);
         }
 
         // Case04 / indent < 0 / isRelative = true / isOneTime = false / calculated value = 0
@@ -547,13 +525,12 @@
             int expectedCurrentValue = (initialIndent + textIndent) * DefaultTabSize;
             int expectedReturnValue = (initialIndent + textIndent) * DefaultTabSize;
 
-            Test_GetIndent(
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentValue,
-                expectedReturnValue);
+            Test_GetIndent(initialIndent,
+                           textIndent,
+                           isRelative,
+                           isOneTime,
+                           expectedCurrentValue,
+                           expectedReturnValue);
         }
 
         // Case05 / indent < 0 / isRelative = true / isOneTime = true / calculated value > 0
@@ -567,13 +544,12 @@
             int expectedCurrentValue = initialIndent * DefaultTabSize;
             int expectedReturnValue = (initialIndent + textIndent) * DefaultTabSize;
 
-            Test_GetIndent(
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentValue,
-                expectedReturnValue);
+            Test_GetIndent(initialIndent,
+                           textIndent,
+                           isRelative,
+                           isOneTime,
+                           expectedCurrentValue,
+                           expectedReturnValue);
         }
 
         // Case06 / indent < 0 / isRelative = true / isOneTime = false / calculated value > 0
@@ -587,13 +563,12 @@
             int expectedCurrentValue = (initialIndent + textIndent) * DefaultTabSize;
             int expectedReturnValue = (initialIndent + textIndent) * DefaultTabSize;
 
-            Test_GetIndent(
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentValue,
-                expectedReturnValue);
+            Test_GetIndent(initialIndent,
+                           textIndent,
+                           isRelative,
+                           isOneTime,
+                           expectedCurrentValue,
+                           expectedReturnValue);
         }
 
         // Case07 / indent = 0 / isRelative = true / isOneTime = n/a / calculated value n/a
@@ -608,13 +583,12 @@
             int expectedCurrentValue = initialIndent * DefaultTabSize;
             int expectedReturnValue = (initialIndent + textIndent) * DefaultTabSize;
 
-            Test_GetIndent(
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentValue,
-                expectedReturnValue);
+            Test_GetIndent(initialIndent,
+                           textIndent,
+                           isRelative,
+                           isOneTime,
+                           expectedCurrentValue,
+                           expectedReturnValue);
         }
 
         // Case08 / indent > 0 / isRelative = true / isOneTime = true / calculated value n/a
@@ -628,13 +602,12 @@
             int expectedCurrentValue = initialIndent * DefaultTabSize;
             int expectedReturnValue = (initialIndent + textIndent) * DefaultTabSize;
 
-            Test_GetIndent(
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentValue,
-                expectedReturnValue);
+            Test_GetIndent(initialIndent,
+                           textIndent,
+                           isRelative,
+                           isOneTime,
+                           expectedCurrentValue,
+                           expectedReturnValue);
         }
 
         // Case09 / indent > 0 / isRelative = true / isOneTime = false / calculated value n/a
@@ -648,13 +621,12 @@
             int expectedCurrentValue = (initialIndent + textIndent) * DefaultTabSize;
             int expectedReturnValue = (initialIndent + textIndent) * DefaultTabSize;
 
-            Test_GetIndent(
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentValue,
-                expectedReturnValue);
+            Test_GetIndent(initialIndent,
+                           textIndent,
+                           isRelative,
+                           isOneTime,
+                           expectedCurrentValue,
+                           expectedReturnValue);
         }
 
         // Case10 / indent < 0 / isRelative = false / isOneTime = true / calculated value n/a
@@ -668,14 +640,13 @@
             int expectedCurrentValue = initialIndent * DefaultTabSize;
             int expectedReturnValue = 0;
 
-            Test_GetIndent(
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentValue,
-                expectedReturnValue,
-                MsgLeftIndentHasBeenTruncated);
+            Test_GetIndent(initialIndent,
+                           textIndent,
+                           isRelative,
+                           isOneTime,
+                           expectedCurrentValue,
+                           expectedReturnValue,
+                           MsgLeftIndentHasBeenTruncated);
         }
 
         // Case11 / indent < 0 / isRelative = false / isOneTime = false / calculated value n/a
@@ -689,14 +660,13 @@
             int expectedCurrentValue = 0;
             int expectedReturnValue = 0;
 
-            Test_GetIndent(
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentValue,
-                expectedReturnValue,
-                MsgLeftIndentHasBeenTruncated);
+            Test_GetIndent(initialIndent,
+                           textIndent,
+                           isRelative,
+                           isOneTime,
+                           expectedCurrentValue,
+                           expectedReturnValue,
+                           MsgLeftIndentHasBeenTruncated);
         }
 
         // Case12 / indent = 0 / isRelative = false / isOneTime = true / calculated value n/a
@@ -710,13 +680,12 @@
             int expectedCurrentValue = initialIndent * DefaultTabSize;
             int expectedReturnValue = 0;
 
-            Test_GetIndent(
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentValue,
-                expectedReturnValue);
+            Test_GetIndent(initialIndent,
+                           textIndent,
+                           isRelative,
+                           isOneTime,
+                           expectedCurrentValue,
+                           expectedReturnValue);
         }
 
         // Case13 / indent = 0 / isRelative = false / isOneTime = false / calculated value n/a
@@ -730,13 +699,12 @@
             int expectedCurrentValue = 0;
             int expectedReturnValue = 0;
 
-            Test_GetIndent(
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentValue,
-                expectedReturnValue);
+            Test_GetIndent(initialIndent,
+                           textIndent,
+                           isRelative,
+                           isOneTime,
+                           expectedCurrentValue,
+                           expectedReturnValue);
         }
 
         // Case14 / indent > 0 / isRelative = false / isOneTime = true / calculated value n/a
@@ -750,13 +718,12 @@
             int expectedCurrentValue = initialIndent * DefaultTabSize;
             int expectedReturnValue = textIndent * DefaultTabSize;
 
-            Test_GetIndent(
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentValue,
-                expectedReturnValue);
+            Test_GetIndent(initialIndent,
+                           textIndent,
+                           isRelative,
+                           isOneTime,
+                           expectedCurrentValue,
+                           expectedReturnValue);
         }
 
         // Case15 / indent > 0 / isRelative = false / isOneTime = false / calculated value n/a
@@ -770,13 +737,12 @@
             int expectedCurrentValue = textIndent * DefaultTabSize;
             int expectedReturnValue = textIndent * DefaultTabSize;
 
-            Test_GetIndent(
-                initialIndent,
-                textIndent,
-                isRelative,
-                isOneTime,
-                expectedCurrentValue,
-                expectedReturnValue);
+            Test_GetIndent(initialIndent,
+                           textIndent,
+                           isRelative,
+                           isOneTime,
+                           expectedCurrentValue,
+                           expectedReturnValue);
         }
 
         [Fact]
@@ -836,11 +802,8 @@
         public void IsValidIndentValue_StringIsNotANumber_LogsMessageAndReturnsFalse(string? numberString)
         {
             // Arrange
-            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(
-                LogEntryType.Parsing,
-                _location,
-                MsgIndentValueMustBeValidNumber,
-                numberString!);
+            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(MsgIndentValueMustBeValidNumber,
+                                                                               numberString!);
             _logger.Setup(loggerExpression);
             IndentProcessor processor = new(_logger.Object, _locater.Object);
 
@@ -856,8 +819,6 @@
                 .Be(0);
             _logger
                 .Verify(loggerExpression, Times.Once);
-            _locater
-                .Verify(_locationExpression, Times.Once);
             _logger
                 .VerifyNoOtherCalls();
             _locater
@@ -903,11 +864,8 @@
         public void IsValidIndentValue_ValueIsOutOfRange_LogsMessageAndReturnsFalse(string numberString)
         {
             // Arrange
-            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(
-                LogEntryType.Parsing,
-                _location,
-                MsgIndentValueOutOfRange,
-                numberString);
+            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(MsgIndentValueOutOfRange,
+                                                                               numberString);
             _logger.Setup(loggerExpression);
             IndentProcessor processor = new(_logger.Object, _locater.Object);
 
@@ -923,8 +881,6 @@
                 .Be(0);
             _logger
                 .Verify(loggerExpression, Times.Once);
-            _locater
-                .Verify(_locationExpression, Times.Once);
             _logger
                 .VerifyNoOtherCalls();
             _locater
@@ -939,11 +895,8 @@
         public void IsValidTabSizeValue_StringIsNotANumber_LogsMessageAndReturnsFalse(string? numberString)
         {
             // Arrange
-            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(
-                LogEntryType.Parsing,
-                _location,
-                MsgTabSizeValueMustBeValidNumber,
-                numberString!);
+            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(MsgTabSizeValueMustBeValidNumber,
+                                                                               numberString!);
             _logger.Setup(loggerExpression);
             IndentProcessor processor = new(_logger.Object, _locater.Object);
 
@@ -959,8 +912,6 @@
                 .Be(0);
             _logger
                 .Verify(loggerExpression, Times.Once);
-            _locater
-                .Verify(_locationExpression, Times.Once);
             _logger
                 .VerifyNoOtherCalls();
             _locater
@@ -1005,11 +956,8 @@
         public void IsValidTabSizeValue_ValueIsOutOfRange_LogsMessageAndReturnsFalse(string numberString)
         {
             // Arrange
-            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(
-                LogEntryType.Parsing,
-                _location,
-                MsgTabSizeValueOutOfRange,
-                numberString);
+            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(MsgTabSizeValueOutOfRange,
+                                                                               numberString);
             _logger.Setup(loggerExpression);
             IndentProcessor processor = new(_logger.Object, _locater.Object);
 
@@ -1025,8 +973,6 @@
                 .Be(0);
             _logger
                 .Verify(loggerExpression, Times.Once);
-            _locater
-                .Verify(_locationExpression, Times.Once);
             _logger
                 .VerifyNoOtherCalls();
             _locater
@@ -1141,10 +1087,8 @@
             // Arrange
             IndentProcessor processor = new(_logger.Object, _locater.Object);
             int expectedTabSize = 1;
-            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(
-                LogEntryType.Setup,
-                MsgTabSizeTooSmall,
-                expectedTabSize.ToString());
+            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(MsgTabSizeTooSmall,
+                                                                               expectedTabSize.ToString());
             _logger.Setup(loggerExpression);
 
             // Act
@@ -1171,10 +1115,8 @@
             // Arrange
             IndentProcessor processor = new(_logger.Object, _locater.Object);
             int expectedTabSize = 9;
-            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(
-                LogEntryType.Setup,
-                MsgTabSizeTooLarge,
-                expectedTabSize.ToString());
+            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(MsgTabSizeTooLarge,
+                                                                               expectedTabSize.ToString());
             _logger.Setup(loggerExpression);
 
             // Act
@@ -1222,26 +1164,22 @@
             processor.GetIndent(textItem);
         }
 
-        private void Test_GetFirstTimeIndent(
-            int firstTimeOffset,
-            int initialIndent,
-            int textIndent,
-            bool isRelative,
-            bool isOneTime,
-            int expectedCurrentIndent,
-            int expectedReturnValue,
-            string? message = null)
+        private void Test_GetFirstTimeIndent(int firstTimeOffset,
+                                             int initialIndent,
+                                             int textIndent,
+                                             bool isRelative,
+                                             bool isOneTime,
+                                             int expectedCurrentIndent,
+                                             int expectedReturnValue,
+                                             string? message = null)
         {
             // Arrange
             Expression<Action<ILogger>>? loggerExpression = null;
 
             if (message is not null)
             {
-                loggerExpression = GetLoggerExpression(
-                    LogEntryType.Generating,
-                    _location,
-                    message,
-                    SegmentName);
+                loggerExpression = GetLoggerExpression(message,
+                                                       SegmentName);
 
                 _logger.Setup(loggerExpression);
             }
@@ -1267,8 +1205,6 @@
                     .Verify(loggerExpression!, Times.Once);
                 _locater
                     .Verify(_currentSegmentExpression, Times.Once);
-                _locater
-                    .Verify(_locationExpression, Times.Once);
             }
 
             _logger
@@ -1277,25 +1213,21 @@
                 .VerifyNoOtherCalls();
         }
 
-        private void Test_GetIndent(
-            int initialIndent,
-            int textIndent,
-            bool isRelative,
-            bool isOneTime,
-            int expectedCurrentIndent,
-            int expectedReturnValue,
-            string? message = null)
+        private void Test_GetIndent(int initialIndent,
+                                    int textIndent,
+                                    bool isRelative,
+                                    bool isOneTime,
+                                    int expectedCurrentIndent,
+                                    int expectedReturnValue,
+                                    string? message = null)
         {
             // Arrange
             Expression<Action<ILogger>>? loggerExpression = null;
 
             if (message is not null)
             {
-                loggerExpression = GetLoggerExpression(
-                    LogEntryType.Generating,
-                    _location,
-                    message,
-                    SegmentName);
+                loggerExpression = GetLoggerExpression(message,
+                                                       SegmentName);
 
                 _logger.Setup(loggerExpression);
             }
@@ -1321,8 +1253,6 @@
                     .Verify(loggerExpression!, Times.Once);
                 _locater
                     .Verify(_currentSegmentExpression, Times.Once);
-                _locater
-                    .Verify(_locationExpression, Times.Once);
             }
 
             _logger

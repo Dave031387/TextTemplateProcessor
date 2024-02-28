@@ -108,9 +108,7 @@
 
                 if (indent < 0)
                 {
-                    _logger.Log(LogEntryType.Generating,
-                                _locater.Location,
-                                MsgFirstTimeIndentHasBeenTruncated,
+                    _logger.Log(MsgFirstTimeIndentHasBeenTruncated,
                                 _locater.CurrentSegment);
                     indent = 0;
                 }
@@ -149,9 +147,7 @@
 
             if (indent < 0)
             {
-                _logger.Log(LogEntryType.Generating,
-                            _locater.Location,
-                            MsgLeftIndentHasBeenTruncated,
+                _logger.Log(MsgLeftIndentHasBeenTruncated,
                             _locater.CurrentSegment);
                 indent = 0;
             }
@@ -188,9 +184,7 @@
             {
                 if (indentValue is < MinIndentValue or > MaxIndentValue)
                 {
-                    _logger.Log(LogEntryType.Parsing,
-                                _locater.Location,
-                                MsgIndentValueOutOfRange,
+                    _logger.Log(MsgIndentValueOutOfRange,
                                 indentValue.ToString());
                 }
                 else
@@ -201,9 +195,7 @@
             }
             else
             {
-                _logger.Log(LogEntryType.Parsing,
-                            _locater.Location,
-                            MsgIndentValueMustBeValidNumber,
+                _logger.Log(MsgIndentValueMustBeValidNumber,
                             stringValue);
             }
 
@@ -234,9 +226,7 @@
             {
                 if (tabValue is < MinTabSize or > MaxTabSize)
                 {
-                    _logger.Log(LogEntryType.Parsing,
-                                _locater.Location,
-                                MsgTabSizeValueOutOfRange,
+                    _logger.Log(MsgTabSizeValueOutOfRange,
                                 tabValue.ToString());
                 }
                 else
@@ -247,9 +237,7 @@
             }
             else
             {
-                _logger.Log(LogEntryType.Parsing,
-                            _locater.Location,
-                            MsgTabSizeValueMustBeValidNumber,
+                _logger.Log(MsgTabSizeValueMustBeValidNumber,
                             stringValue);
             }
 
@@ -311,15 +299,13 @@
         {
             if (tabSize < MinTabSize)
             {
-                _logger.Log(LogEntryType.Setup,
-                            MsgTabSizeTooSmall,
+                _logger.Log(MsgTabSizeTooSmall,
                             MinTabSize.ToString());
                 TabSize = MinTabSize;
             }
             else if (tabSize > MaxTabSize)
             {
-                _logger.Log(LogEntryType.Setup,
-                            MsgTabSizeTooLarge,
+                _logger.Log(MsgTabSizeTooLarge,
                             MaxTabSize.ToString());
                 TabSize = MaxTabSize;
             }

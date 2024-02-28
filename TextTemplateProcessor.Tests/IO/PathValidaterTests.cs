@@ -12,12 +12,11 @@
             string fullFilePath = Path.Combine(CurrentDirectory, fileName);
 
             // Act/Assert
-            AssertValidCall(
-                filePath,
-                true,
-                false,
-                fullFilePath,
-                true);
+            AssertValidCall(filePath,
+                            true,
+                            false,
+                            fullFilePath,
+                            true);
         }
 
         [Theory]
@@ -28,12 +27,11 @@
             string filePath = $@"{VolumeRoot}\x{invalidChar}x\{NextFileName}";
 
             // Act/Assert
-            AssertException(
-                filePath,
-                true,
-                false,
-                MsgInvalidDirectoryCharacters,
-                true);
+            AssertException(filePath,
+                            true,
+                            false,
+                            MsgInvalidDirectoryCharacters,
+                            true);
         }
 
         [Theory]
@@ -44,12 +42,11 @@
             string filePath = $@"{NextAbsoluteName}\x{invalidChar}x.test";
 
             // Act/Assert
-            AssertException(
-                filePath,
-                true,
-                false,
-                MsgInvalidFileNameCharacters,
-                true);
+            AssertException(filePath,
+                            true,
+                            false,
+                            MsgInvalidFileNameCharacters,
+                            true);
         }
 
         [Theory]
@@ -60,12 +57,11 @@
             string filePath = $@"{NextAbsoluteName}\{whitespace}";
 
             // Act/Assert
-            AssertException(
-                filePath,
-                true,
-                false,
-                MsgMissingFileName,
-                true);
+            AssertException(filePath,
+                            true,
+                            false,
+                            MsgMissingFileName,
+                            true);
         }
 
         [Theory]
@@ -73,12 +69,11 @@
         public void ValidateFullPath_FilePathIsEmptyOrWhitespace_ThrowsException(string whitespace)
         {
             // Act/Assert
-            AssertException(
-                whitespace,
-                true,
-                false,
-                MsgFilePathIsEmptyOrWhitespace,
-                true);
+            AssertException(whitespace,
+                            true,
+                            false,
+                            MsgFilePathIsEmptyOrWhitespace,
+                            true);
         }
 
         [Fact]
@@ -88,12 +83,11 @@
             string absolutePath = NextAbsoluteName;
 
             // Act/Assert
-            AssertValidCall(
-                absolutePath,
-                false,
-                false,
-                absolutePath,
-                true);
+            AssertValidCall(absolutePath,
+                            false,
+                            false,
+                            absolutePath,
+                            true);
         }
 
         [Fact]
@@ -103,12 +97,11 @@
             string filePath = NextAbsoluteFilePath;
 
             // Act/Assert
-            AssertValidCall(
-                filePath,
-                true,
-                false,
-                filePath,
-                true);
+            AssertValidCall(filePath,
+                            true,
+                            false,
+                            filePath,
+                            true);
         }
 
         [Fact]
@@ -119,12 +112,11 @@
             string fullFilePath = Path.Combine(CurrentDirectory, relativePath);
 
             // Act/Assert
-            AssertValidCall(
-                relativePath,
-                false,
-                false,
-                fullFilePath,
-                true);
+            AssertValidCall(relativePath,
+                            false,
+                            false,
+                            fullFilePath,
+                            true);
         }
 
         [Fact]
@@ -135,12 +127,11 @@
             string fullFilePath = Path.Combine(CurrentDirectory, filePath);
 
             // Act/Assert
-            AssertValidCall(
-                filePath,
-                true,
-                false,
-                fullFilePath,
-                true);
+            AssertValidCall(filePath,
+                            true,
+                            false,
+                            fullFilePath,
+                            true);
         }
 
         [Theory]
@@ -151,12 +142,11 @@
             string filePath = $@"{VolumeRoot}\x{invalidChar}x";
 
             // Act/Assert
-            AssertException(
-                filePath,
-                false,
-                false,
-                MsgInvalidDirectoryCharacters,
-                true);
+            AssertException(filePath,
+                            false,
+                            false,
+                            MsgInvalidDirectoryCharacters,
+                            true);
         }
 
         [Theory]
@@ -164,24 +154,22 @@
         public void ValidateFullPath_PathIsEmptyOrWhitespace_ThrowsException(string whitespace)
         {
             // Act/Assert
-            AssertException(
-                whitespace,
-                false,
-                false,
-                MsgDirectoryPathIsEmptyOrWhitespace,
-                true);
+            AssertException(whitespace,
+                            false,
+                            false,
+                            MsgDirectoryPathIsEmptyOrWhitespace,
+                            true);
         }
 
         [Fact]
         public void ValidateFullPath_PathIsNull_ThrowsException()
         {
             // Act/Assert
-            AssertException(
-                null,
-                false,
-                false,
-                MsgNullDirectoryPath,
-                true);
+            AssertException(null,
+                            false,
+                            false,
+                            MsgNullDirectoryPath,
+                            true);
         }
 
         [Fact]
@@ -192,12 +180,11 @@
             CreateTestFiles(absolutePath, true);
 
             // Act/Assert
-            AssertValidCall(
-                absolutePath,
-                false,
-                true,
-                absolutePath,
-                true);
+            AssertValidCall(absolutePath,
+                            false,
+                            true,
+                            absolutePath,
+                            true);
 
             // Cleanup
             DeleteTestFiles(absolutePath);
@@ -210,12 +197,11 @@
             string absolutePath = NextAbsoluteName;
 
             // Act/Assert
-            AssertException(
-                absolutePath,
-                false,
-                true,
-                MsgDirectoryNotFound + absolutePath,
-                true);
+            AssertException(absolutePath,
+                            false,
+                            true,
+                            MsgDirectoryNotFound + absolutePath,
+                            true);
         }
 
         [Fact]
@@ -227,12 +213,11 @@
             string filePath = $@"{absolutePath}\{fileName}";
 
             // Act/Assert
-            AssertValidCall(
-                filePath,
-                true,
-                true,
-                filePath,
-                true);
+            AssertValidCall(filePath,
+                            true,
+                            true,
+                            filePath,
+                            true);
 
             // Cleanup
             DeleteTestFiles(absolutePath);
@@ -245,12 +230,11 @@
             string filePath = NextAbsoluteFilePath;
 
             // Act/Assert
-            AssertException(
-                filePath,
-                true,
-                true,
-                MsgFileNotFound + filePath,
-                true);
+            AssertException(filePath,
+                            true,
+                            true,
+                            MsgFileNotFound + filePath,
+                            true);
         }
 
         [Fact]
@@ -262,12 +246,11 @@
             CreateTestFiles(fullDirectoryPath, true);
 
             // Act/Assert
-            AssertValidCall(
-                relativePath,
-                false,
-                true,
-                fullDirectoryPath,
-                true);
+            AssertValidCall(relativePath,
+                            false,
+                            true,
+                            fullDirectoryPath,
+                            true);
 
             // Cleanup
             DeleteTestFiles(fullDirectoryPath);
@@ -281,12 +264,11 @@
             string fullDirectoryPath = Path.Combine(CurrentDirectory, relativePath);
 
             // Act/Assert
-            AssertException(
-                relativePath,
-                false,
-                true,
-                MsgDirectoryNotFound + fullDirectoryPath,
-                true);
+            AssertException(relativePath,
+                            false,
+                            true,
+                            MsgDirectoryNotFound + fullDirectoryPath,
+                            true);
         }
 
         [Fact]
@@ -300,12 +282,11 @@
             string fullFilePath = Path.Combine(CurrentDirectory, filePath);
 
             // Act/Assert
-            AssertValidCall(
-                filePath,
-                true,
-                true,
-                fullFilePath,
-                true);
+            AssertValidCall(filePath,
+                            true,
+                            true,
+                            fullFilePath,
+                            true);
 
             // Cleanup
             DeleteTestFiles(fullDirectoryPath);
@@ -319,12 +300,11 @@
             string fullFilePath = Path.Combine(CurrentDirectory, filePath);
 
             // Act/Assert
-            AssertException(
-                filePath,
-                true,
-                true,
-                MsgFileNotFound + fullFilePath,
-                true);
+            AssertException(filePath,
+                            true,
+                            true,
+                            MsgFileNotFound + fullFilePath,
+                            true);
         }
 
         [Theory]
@@ -335,12 +315,11 @@
             string filePath = $@"{VolumeRoot}\x{invalidChar}x\{NextFileName}";
 
             // Act/Assert
-            AssertException(
-                filePath,
-                true,
-                false,
-                MsgInvalidDirectoryCharacters,
-                false);
+            AssertException(filePath,
+                            true,
+                            false,
+                            MsgInvalidDirectoryCharacters,
+                            false);
         }
 
         [Theory]
@@ -351,12 +330,11 @@
             string filePath = $@"{whitespace}\{NextFileName}";
 
             // Act/Assert
-            AssertValidCall(
-                filePath,
-                true,
-                false,
-                string.Empty,
-                false);
+            AssertValidCall(filePath,
+                            true,
+                            false,
+                            string.Empty,
+                            false);
         }
 
         [Theory]
@@ -367,12 +345,11 @@
             string filePath = $@"{NextAbsoluteName}\x{invalidChar}x.test";
 
             // Act/Assert
-            AssertException(
-                filePath,
-                true,
-                false,
-                MsgInvalidFileNameCharacters,
-                false);
+            AssertException(filePath,
+                            true,
+                            false,
+                            MsgInvalidFileNameCharacters,
+                            false);
         }
 
         [Theory]
@@ -383,12 +360,11 @@
             string filePath = $@"{NextAbsoluteName}\{whitespace}";
 
             // Act/Assert
-            AssertException(
-                filePath,
-                true,
-                false,
-                MsgMissingFileName,
-                false);
+            AssertException(filePath,
+                            true,
+                            false,
+                            MsgMissingFileName,
+                            false);
         }
 
         [Theory]
@@ -396,60 +372,55 @@
         public void ValidatePath_FilePathIsEmptyOrWhitespace_ThrowsException(string whitespace)
         {
             // Act/Assert
-            AssertException(
-                whitespace,
-                true,
-                false,
-                MsgFilePathIsEmptyOrWhitespace,
-                false);
+            AssertException(whitespace,
+                            true,
+                            false,
+                            MsgFilePathIsEmptyOrWhitespace,
+                            false);
         }
 
         [Fact]
         public void ValidatePath_OkayIfAbsoluteDirectoryPathNotFound_DoesNotThrow()
         {
             // Act/Assert
-            AssertValidCall(
-                NextAbsoluteName,
-                false,
-                false,
-                string.Empty,
-                false);
+            AssertValidCall(NextAbsoluteName,
+                            false,
+                            false,
+                            string.Empty,
+                            false);
         }
 
         [Fact]
         public void ValidatePath_OkayIfAbsoluteFilePathNotFound_DoesNotThrow()
         {
             // Act/Assert
-            AssertValidCall(
-                NextAbsoluteFilePath,
-                true,
-                false,
-                string.Empty,
-                false);
+            AssertValidCall(NextAbsoluteFilePath,
+                            true,
+                            false,
+                            string.Empty,
+                            false);
         }
 
         [Fact]
         public void ValidatePath_OkayIfRelativeDirectoryPathNotFound_DoesNotThrow()
         {
             // Act/Assert
-            AssertValidCall(
-                NextRelativeName,
-                false,
-                false,
-                string.Empty,
-                false);
+            AssertValidCall(NextRelativeName,
+                            false,
+                            false,
+                            string.Empty,
+                            false);
         }
 
         [Fact]
         public void ValidatePath_OkayIfRelativeFilePathNotFound_DoesNotThrow()
         {
             // Act/Assert
-            AssertValidCall(
-                NextRelativeFilePath,
-                true,
-                false,
-                string.Empty,
-                false);
+            AssertValidCall(NextRelativeFilePath,
+                            true,
+                            false,
+                            string.Empty,
+                            false);
         }
 
         [Theory]
@@ -460,12 +431,11 @@
             string filePath = $@"{VolumeRoot}\x{invalidChar}x";
 
             // Act/Assert
-            AssertException(
-                filePath,
-                false,
-                false,
-                MsgInvalidDirectoryCharacters,
-                false);
+            AssertException(filePath,
+                            false,
+                            false,
+                            MsgInvalidDirectoryCharacters,
+                            false);
         }
 
         [Theory]
@@ -473,24 +443,22 @@
         public void ValidatePath_PathIsEmptyOrWhitespace_ThrowsException(string whitespace)
         {
             // Act/Assert
-            AssertException(
-                whitespace,
-                false,
-                false,
-                MsgDirectoryPathIsEmptyOrWhitespace,
-                false);
+            AssertException(whitespace,
+                            false,
+                            false,
+                            MsgDirectoryPathIsEmptyOrWhitespace,
+                            false);
         }
 
         [Fact]
         public void ValidatePath_PathIsNull_ThrowsException()
         {
             // Act/Assert
-            AssertException(
-                null,
-                false,
-                false,
-                MsgNullDirectoryPath,
-                false);
+            AssertException(null,
+                            false,
+                            false,
+                            MsgNullDirectoryPath,
+                            false);
         }
 
         [Fact]
@@ -501,12 +469,11 @@
             CreateTestFiles(path, true);
 
             // Act/Assert
-            AssertValidCall(
-                path,
-                false,
-                true,
-                string.Empty,
-                false);
+            AssertValidCall(path,
+                            false,
+                            true,
+                            string.Empty,
+                            false);
 
             // Cleanup
             DeleteTestFiles(path);
@@ -519,12 +486,11 @@
             string path = NextAbsoluteName;
 
             // Act/Assert
-            AssertException(
-                path,
-                false,
-                true,
-                MsgDirectoryNotFound + path,
-                false);
+            AssertException(path,
+                            false,
+                            true,
+                            MsgDirectoryNotFound + path,
+                            false);
         }
 
         [Fact]
@@ -536,12 +502,11 @@
             string filePath = $@"{absolutePath}\{fileName}";
 
             // Act/Assert
-            AssertValidCall(
-                filePath,
-                true,
-                true,
-                string.Empty,
-                false);
+            AssertValidCall(filePath,
+                            true,
+                            true,
+                            string.Empty,
+                            false);
 
             // Cleanup
             DeleteTestFiles(absolutePath);
@@ -554,12 +519,11 @@
             string filePath = NextAbsoluteFilePath;
 
             // Act/Assert
-            AssertException(
-                filePath,
-                true,
-                true,
-                MsgFileNotFound + filePath,
-                false);
+            AssertException(filePath,
+                            true,
+                            true,
+                            MsgFileNotFound + filePath,
+                            false);
         }
 
         [Fact]
@@ -571,12 +535,11 @@
             CreateTestFiles(fullDirectoryPath, true);
 
             // Act/Assert
-            AssertValidCall(
-                relativePath,
-                false,
-                true,
-                string.Empty,
-                false);
+            AssertValidCall(relativePath,
+                            false,
+                            true,
+                            string.Empty,
+                            false);
 
             // Cleanup
             DeleteTestFiles(fullDirectoryPath);
@@ -590,12 +553,11 @@
             string fullDirectoryPath = Path.Combine(CurrentDirectory, relativePath);
 
             // Act/Assert
-            AssertException(
-                relativePath,
-                false,
-                true,
-                MsgDirectoryNotFound + fullDirectoryPath,
-                false);
+            AssertException(relativePath,
+                            false,
+                            true,
+                            MsgDirectoryNotFound + fullDirectoryPath,
+                            false);
         }
 
         [Fact]
@@ -608,12 +570,11 @@
             string filePath = $@"{relativePath}\{fileName}";
 
             // Act/Assert
-            AssertValidCall(
-                filePath,
-                true,
-                true,
-                string.Empty,
-                false);
+            AssertValidCall(filePath,
+                            true,
+                            true,
+                            string.Empty,
+                            false);
 
             // Cleanup
             DeleteTestFiles(fullDirectoryPath);
@@ -627,20 +588,18 @@
             string fullFilePath = Path.Combine(CurrentDirectory, filePath);
 
             // Act/Assert
-            AssertException(
-                filePath,
-                true,
-                true,
-                MsgFileNotFound + fullFilePath,
-                false);
+            AssertException(filePath,
+                            true,
+                            true,
+                            MsgFileNotFound + fullFilePath,
+                            false);
         }
 
-        private static void AssertException(
-            string? path,
-            bool isFilePath,
-            bool shouldExist,
-            string expectedMessage,
-            bool validateFullPath)
+        private static void AssertException(string? path,
+                                            bool isFilePath,
+                                            bool shouldExist,
+                                            string expectedMessage,
+                                            bool validateFullPath)
         {
             // Arrange
             PathValidater pathValidater = new();
@@ -661,7 +620,11 @@
                 .WithMessage(expectedMessage);
         }
 
-        private static void AssertValidCall(string path, bool isFilePath, bool shouldExist, string expected, bool validateFullPath)
+        private static void AssertValidCall(string path,
+                                            bool isFilePath,
+                                            bool shouldExist,
+                                            string expected,
+                                            bool validateFullPath)
         {
             // Arrange
             PathValidater pathValidater = new();

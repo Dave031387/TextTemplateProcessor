@@ -91,13 +91,13 @@
                 {
                     ValidateOutputFilePath(filePath);
                     _fileAndDirectoryService.CreateDirectory(_directoryPath);
-                    _logger.Log(LogEntryType.Writing, MsgWritingTextFile, _fileName);
+                    _logger.Log(MsgWritingTextFile,
+                                _fileName);
                     _fileAndDirectoryService.WriteTextFile(_filePath, textLines);
                 }
                 catch (Exception ex)
                 {
-                    _logger.Log(LogEntryType.Writing,
-                                MsgUnableToWriteFile,
+                    _logger.Log(MsgUnableToWriteFile,
                                 ex.Message);
                     isValid = false;
                 }
@@ -110,15 +110,13 @@
         {
             if (textLines is null)
             {
-                _logger.Log(LogEntryType.Writing,
-                            MsgGeneratedTextIsNull);
+                _logger.Log(MsgGeneratedTextIsNull);
                 return false;
             }
 
             if (textLines.Any() is false)
             {
-                _logger.Log(LogEntryType.Writing,
-                            MsgGeneratedTextIsEmpty);
+                _logger.Log(MsgGeneratedTextIsEmpty);
                 return false;
             }
 

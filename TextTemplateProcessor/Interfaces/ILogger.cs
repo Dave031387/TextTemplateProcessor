@@ -23,114 +23,26 @@
         /// <summary>
         /// Adds a new <see cref="LogEntry" /> object to the <see cref="LogEntries" /> collection.
         /// </summary>
-        /// <param name="type">
-        /// The <see cref="LogEntryType" /> enum value corresponding to the type of
-        /// <see cref="LogEntry" /> object being added to the <see cref="LogEntries" /> collection.
-        /// </param>
         /// <param name="message">
         /// The log message that is being added to the <see cref="LogEntries" /> collection.
         /// </param>
-        void Log(LogEntryType type, string message);
-
-        /// <summary>
-        /// Adds a new <see cref="LogEntry" /> object to the <see cref="LogEntries" /> collection.
-        /// </summary>
-        /// <param name="type">
-        /// The <see cref="LogEntryType" /> enum value corresponding to the type of
-        /// <see cref="LogEntry" /> object being added to the <see cref="LogEntries" /> collection.
-        /// </param>
-        /// <param name="location">
-        /// A tuple that gives the name of the segment and the line number within the segment where
-        /// the log message was triggered.
-        /// </param>
-        /// <param name="message">
-        /// The log message that is being added to the <see cref="LogEntries" /> collection.
-        /// </param>
-        void Log(LogEntryType type, (string segmentName, int lineNumber) location, string message);
-
-        /// <summary>
-        /// Adds a new <see cref="LogEntry" /> object to the <see cref="LogEntries" /> collection.
-        /// </summary>
-        /// <param name="type">
-        /// The <see cref="LogEntryType" /> enum value corresponding to the type of
-        /// <see cref="LogEntry" /> object being added to the <see cref="LogEntries" /> collection.
-        /// </param>
-        /// <param name="message">
-        /// The log message that is being added to the <see cref="LogEntries" /> collection. <br />
-        /// This must be a <see langword="string" /> that contains one string format argument.
-        /// </param>
-        /// <param name="arg">
-        /// The <see langword="string" /> value to be substituted for the string format argument in
-        /// the <paramref name="message" /> parameter.
-        /// </param>
-        void Log(LogEntryType type, string message, string arg);
-
-        /// <summary>
-        /// Adds a new <see cref="LogEntry" /> object to the <see cref="LogEntries" /> collection.
-        /// </summary>
-        /// <param name="type">
-        /// The <see cref="LogEntryType" /> enum value corresponding to the type of
-        /// <see cref="LogEntry" /> object being added to the <see cref="LogEntries" /> collection.
-        /// </param>
-        /// <param name="message">
-        /// The log message that is being added to the <see cref="LogEntries" /> collection. <br />
-        /// This must be a <see langword="string" /> that contains two string format arguments.
-        /// </param>
         /// <param name="arg1">
-        /// The <see langword="string" /> value to be substituted for the first string format
-        /// argument in the <paramref name="message" /> parameter.
+        /// An optional <see langword="string" /> value to be substituted for the first string
+        /// format argument in the <paramref name="message" /> parameter.
         /// </param>
         /// <param name="arg2">
-        /// The <see langword="string" /> value to be substituted for the second string format
-        /// argument in the <paramref name="message" /> parameter.
+        /// An optional <see langword="string" /> value to be substituted for the second string
+        /// format argument in the <paramref name="message" /> parameter.
         /// </param>
-        void Log(LogEntryType type, string message, string arg1, string arg2);
+        void Log(string message, string? arg1 = null, string? arg2 = null);
 
         /// <summary>
-        /// Adds a new <see cref="LogEntry" /> object to the <see cref="LogEntries" /> collection.
+        /// Sets the current log entry type to the specified value.
         /// </summary>
-        /// <param name="type">
-        /// The <see cref="LogEntryType" /> enum value corresponding to the type of
-        /// <see cref="LogEntry" /> object being added to the <see cref="LogEntries" /> collection.
+        /// <param name="logEntryType">
+        /// The new value for the current log entry type.
         /// </param>
-        /// <param name="location">
-        /// A tuple that gives the name of the segment and the line number within the segment where
-        /// the log message was triggered.
-        /// </param>
-        /// <param name="message">
-        /// The log message that is being added to the <see cref="LogEntries" /> collection. <br />
-        /// This must be a <see langword="string" /> that contains one string format argument.
-        /// </param>
-        /// <param name="arg">
-        /// The <see langword="string" /> value to be substituted for the string format argument in
-        /// the <paramref name="message" /> parameter.
-        /// </param>
-        void Log(LogEntryType type, (string segmentName, int lineNumber) location, string message, string arg);
-
-        /// <summary>
-        /// Adds a new <see cref="LogEntry" /> object to the <see cref="LogEntries" /> collection.
-        /// </summary>
-        /// <param name="type">
-        /// The <see cref="LogEntryType" /> enum value corresponding to the type of
-        /// <see cref="LogEntry" /> object being added to the <see cref="LogEntries" /> collection.
-        /// </param>
-        /// <param name="location">
-        /// A tuple that gives the name of the segment and the line number within the segment where
-        /// the log message was triggered.
-        /// </param>
-        /// <param name="message">
-        /// The log message that is being added to the <see cref="LogEntries" /> collection. <br />
-        /// This must be a <see langword="string" /> that contains two string format arguments.
-        /// </param>
-        /// <param name="arg1">
-        /// The <see langword="string" /> value to be substituted for the first string format
-        /// argument in the <paramref name="message" /> parameter.
-        /// </param>
-        /// <param name="arg2">
-        /// The <see langword="string" /> value to be substituted for the second string format
-        /// argument in the <paramref name="message" /> parameter.
-        /// </param>
-        void Log(LogEntryType type, (string segmentName, int lineNumber) location, string message, string arg1, string arg2);
+        void SetLogEntryType(LogEntryType logEntryType);
 
         /// <summary>
         /// Writes the contents of the <see cref="LogEntries" /> collection to the

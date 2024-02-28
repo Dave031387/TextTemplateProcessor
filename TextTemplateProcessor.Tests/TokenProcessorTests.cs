@@ -12,7 +12,7 @@
         private readonly string _tokenEnd = "#>";
         private readonly char _tokenEscapeChar = '\\';
         private readonly string _tokenStart = "<#=";
-        private Expression<Action<ILogger>> _loggerExpression = x => x.Log(LogEntryType.Setup, "test");
+        private Expression<Action<ILogger>> _loggerExpression = x => x.Log("test", null, null);
         private Expression<Func<INameValidater, bool>> _nameValidaterExpression1 = x => x.IsValidName("test");
         private Expression<Func<INameValidater, bool>> _nameValidaterExpression2 = x => x.IsValidName("test");
 
@@ -173,13 +173,7 @@
             // Arrange
             string text = $"text{_tokenStart}token";
             string expected = $"text{_tokenEscapeChar}{_tokenStart}token";
-            string segmentName = "Segment1";
-            int lineNumber = 7;
-            SetupLocater(segmentName, lineNumber);
-            SetupLogger(GetLoggerExpression(LogEntryType.Parsing,
-                                            segmentName,
-                                            lineNumber,
-                                            MsgTokenMissingEndDelimiter));
+            SetupLogger(GetLoggerExpression(MsgTokenMissingEndDelimiter));
             TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
 
             // Act
@@ -192,7 +186,7 @@
             text
                 .Should()
                 .Be(expected);
-            VerifyMocks(1, 1, 0, 0, 0);
+            VerifyMocks(1, 0, 0, 0, 0);
         }
 
         [Fact]
@@ -255,14 +249,8 @@
             string token = GenerateToken(tokenName);
             string text = $"text{token}text";
             string expected = $"text{_tokenEscapeChar}{token}text";
-            string segmentName = "Segment1";
-            int lineNumber = 7;
-            SetupLocater(segmentName, lineNumber);
             SetupNameValidater(tokenName, false);
-            SetupLogger(GetLoggerExpression(LogEntryType.Parsing,
-                                            segmentName,
-                                            lineNumber,
-                                            MsgTokenHasInvalidName,
+            SetupLogger(GetLoggerExpression(MsgTokenHasInvalidName,
                                             tokenName));
             TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
 
@@ -276,7 +264,7 @@
             text
                 .Should()
                 .Be(expected);
-            VerifyMocks(1, 1, 0, 1, 0);
+            VerifyMocks(1, 0, 0, 1, 0);
         }
 
         [Fact]
@@ -285,13 +273,7 @@
             // Arrange
             string text = $"text{_tokenStart}{Whitespace}{_tokenEnd}text";
             string expected = $"text{_tokenEscapeChar}{_tokenStart}{Whitespace}{_tokenEnd}text";
-            string segmentName = "Segment1";
-            int lineNumber = 7;
-            SetupLocater(segmentName, lineNumber);
-            SetupLogger(GetLoggerExpression(LogEntryType.Parsing,
-                                            segmentName,
-                                            lineNumber,
-                                            MsgMissingTokenName));
+            SetupLogger(GetLoggerExpression(MsgMissingTokenName));
             TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
 
             // Act
@@ -304,7 +286,7 @@
             text
                 .Should()
                 .Be(expected);
-            VerifyMocks(1, 1, 0, 0, 0);
+            VerifyMocks(1, 0, 0, 0, 0);
         }
 
         [Fact]
@@ -314,10 +296,7 @@
             string segmentName = "Segment1";
             int lineNumber = 1;
             SetupLocater(segmentName, lineNumber);
-            SetupLogger(GetLoggerExpression(LogEntryType.Generating,
-                                            segmentName,
-                                            lineNumber,
-                                            MsgTokenDictionaryIsEmpty,
+            SetupLogger(GetLoggerExpression(MsgTokenDictionaryIsEmpty,
                                             segmentName));
             TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
             Dictionary<string, string> tokenValues = new();
@@ -326,7 +305,7 @@
             processor.LoadTokenValues(tokenValues);
 
             // Assert
-            VerifyMocks(1, 1, 1, 0, 0);
+            VerifyMocks(1, 0, 1, 0, 0);
         }
 
         [Fact]
@@ -336,10 +315,7 @@
             string segmentName = "Segment1";
             int lineNumber = 1;
             SetupLocater(segmentName, lineNumber);
-            SetupLogger(GetLoggerExpression(LogEntryType.Generating,
-                                            segmentName,
-                                            lineNumber,
-                                            MsgTokenDictionaryIsNull,
+            SetupLogger(GetLoggerExpression(MsgTokenDictionaryIsNull,
                                             segmentName));
             TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
 
@@ -347,7 +323,7 @@
             processor.LoadTokenValues(null!);
 
             // Assert
-            VerifyMocks(1, 1, 1, 0, 0);
+            VerifyMocks(1, 0, 1, 0, 0);
         }
 
         [Fact]
@@ -359,10 +335,7 @@
             int lineNumber = 11;
             SetupLocater(segmentName, lineNumber);
             SetupNameValidater(tokenName, false);
-            SetupLogger(GetLoggerExpression(LogEntryType.Generating,
-                                            segmentName,
-                                            lineNumber,
-                                            MsgTokenDictionaryContainsInvalidTokenName,
+            SetupLogger(GetLoggerExpression(MsgTokenDictionaryContainsInvalidTokenName,
                                             segmentName,
                                             tokenName));
             TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
@@ -375,7 +348,7 @@
             processor.LoadTokenValues(tokenValues);
 
             // Assert
-            VerifyMocks(1, 1, 1, 1, 0);
+            VerifyMocks(1, 0, 1, 1, 0);
         }
 
         [Fact]
@@ -387,10 +360,7 @@
             int lineNumber = 1;
             SetupLocater(segmentName, lineNumber);
             SetupNameValidater(tokenName, true);
-            SetupLogger(GetLoggerExpression(LogEntryType.Generating,
-                                            segmentName,
-                                            lineNumber,
-                                            MsgTokenWithEmptyValue,
+            SetupLogger(GetLoggerExpression(MsgTokenWithEmptyValue,
                                             segmentName,
                                             tokenName));
             TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
@@ -407,7 +377,7 @@
             processor.TokenDictionary[tokenName]
                 .Should()
                 .BeEmpty();
-            VerifyMocks(1, 1, 1, 1, 0);
+            VerifyMocks(1, 0, 1, 1, 0);
         }
 
         [Fact]
@@ -444,10 +414,7 @@
             int lineNumber = 1;
             SetupLocater(segmentName, lineNumber);
             SetupNameValidater(tokenName, true);
-            SetupLogger(GetLoggerExpression(LogEntryType.Generating,
-                                            segmentName,
-                                            lineNumber,
-                                            MsgTokenWithNullValue,
+            SetupLogger(GetLoggerExpression(MsgTokenWithNullValue,
                                             segmentName,
                                             tokenName));
             TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
@@ -464,7 +431,7 @@
             processor.TokenDictionary[tokenName]
                 .Should()
                 .BeEmpty();
-            VerifyMocks(1, 1, 1, 1, 0);
+            VerifyMocks(1, 0, 1, 1, 0);
         }
 
         [Fact]
@@ -476,10 +443,7 @@
             int lineNumber = 3;
             SetupLocater(segmentName, lineNumber);
             SetupNameValidater(tokenName, true);
-            SetupLogger(GetLoggerExpression(LogEntryType.Generating,
-                                            segmentName,
-                                            lineNumber,
-                                            MsgUnknownTokenName,
+            SetupLogger(GetLoggerExpression(MsgUnknownTokenName,
                                             segmentName,
                                             tokenName));
             TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
@@ -492,11 +456,11 @@
             processor.LoadTokenValues(tokenValues);
 
             // Assert
-            VerifyMocks(1, 1, 1, 1, 0);
+            VerifyMocks(1, 0, 1, 1, 0);
         }
 
         [Fact]
-        public void ReplaceTokens_TextContainsEscapedTokens_RemovesTheEscapeCharacter()
+        public void ReplaceTokens_TextContainsEscapedTokens_RemovesTheEscapeCharacters()
         {
             // Arrange
             TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);

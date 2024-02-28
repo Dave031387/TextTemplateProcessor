@@ -97,6 +97,7 @@
                                         ServiceParameterNames.PathValidaterParameter);
 
             _logger = logger;
+            _logger.SetLogEntryType(LogEntryType.Setup);
             _consoleReader = consoleReader;
             _messageWriter = messageWriter;
             _fileAndDirectoryService = fileAndDirectoryService;
@@ -109,8 +110,7 @@
             }
             catch (Exception ex)
             {
-                _logger.Log(LogEntryType.Setup,
-                            MsgErrorWhenLocatingSolutionDirectory,
+                _logger.Log(MsgErrorWhenLocatingSolutionDirectory,
                             ex.Message);
                 SolutionDirectory = string.Empty;
             }
@@ -140,6 +140,8 @@
         /// </remarks>
         public void ClearOutputDirectory()
         {
+            _logger.SetLogEntryType(LogEntryType.Reset);
+
             if (string.IsNullOrWhiteSpace(OutputDirectory) is false)
             {
                 _messageWriter.WriteLine(MsgClearTheOutputDirectory, OutputDirectory);
@@ -150,13 +152,11 @@
                     try
                     {
                         _fileAndDirectoryService.ClearDirectory(OutputDirectory);
-                        _logger.Log(LogEntryType.Reset,
-                                    MsgOutputDirectoryCleared);
+                        _logger.Log(MsgOutputDirectoryCleared);
                     }
                     catch (Exception ex)
                     {
-                        _logger.Log(LogEntryType.Reset,
-                                    MsgErrorWhenClearingOutputDirectory,
+                        _logger.Log(MsgErrorWhenClearingOutputDirectory,
                                     ex.Message);
                     }
                 }
@@ -173,6 +173,8 @@
         /// </param>
         public new void LoadTemplate(string filePath)
         {
+            _logger.SetLogEntryType(LogEntryType.Loading);
+
             try
             {
                 string fullFilePath = _fileAndDirectoryService.GetFullPath(filePath, SolutionDirectory, true);
@@ -181,8 +183,7 @@
             }
             catch (Exception ex)
             {
-                _logger.Log(LogEntryType.Loading,
-                            MsgUnableToLoadTemplateFile,
+                _logger.Log(MsgUnableToLoadTemplateFile,
                             ex.Message);
                 ResetAll();
             }
@@ -199,6 +200,8 @@
         /// </param>
         public void SetOutputDirectory(string directoryPath)
         {
+            _logger.SetLogEntryType(LogEntryType.Setup);
+
             try
             {
                 _pathValidater.ValidatePath(directoryPath);
@@ -206,8 +209,7 @@
             }
             catch (Exception ex)
             {
-                _logger.Log(LogEntryType.Setup,
-                            MsgErrorWhenCreatingOutputDirectory,
+                _logger.Log(MsgErrorWhenCreatingOutputDirectory,
                             ex.Message);
                 OutputDirectory = string.Empty;
             }
@@ -232,6 +234,7 @@
         public string ShowContinuationPrompt(string message = MsgContinuationPrompt)
         {
             _logger.WriteLogEntries();
+            _logger.SetLogEntryType(LogEntryType.Setup);
             _messageWriter.WriteLine("\n" + message + "\n");
             string userResponse;
 
@@ -241,8 +244,7 @@
             }
             catch (Exception ex)
             {
-                _logger.Log(LogEntryType.Setup,
-                            MsgErrorWhileReadingUserResponse,
+                _logger.Log(MsgErrorWhileReadingUserResponse,
                             ex.Message);
                 return string.Empty;
             }
@@ -264,11 +266,11 @@
         public new void WriteGeneratedTextToFile(string fileName, bool resetGeneratedText = true)
         {
             string filePath;
+            _logger.SetLogEntryType(LogEntryType.Writing);
 
             if (string.IsNullOrWhiteSpace(OutputDirectory))
             {
-                _logger.Log(LogEntryType.Writing,
-                            MsgOutputDirectoryNotSet);
+                _logger.Log(MsgOutputDirectoryNotSet);
             }
             else
             {
@@ -280,8 +282,7 @@
                 }
                 catch (Exception ex)
                 {
-                    _logger.Log(LogEntryType.Writing,
-                                MsgErrorWhileConstructingFilePath,
+                    _logger.Log(MsgErrorWhileConstructingFilePath,
                                 ex.Message);
                     filePath = string.Empty;
                 }

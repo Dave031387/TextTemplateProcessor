@@ -5,6 +5,7 @@
 
     public static class Globals
     {
+        public const string AnyString = "ANY";
         public const string DefaultSegmentName1 = "DefaultSegment1";
         public const string DefaultSegmentName2 = "DefaultSegment2";
         public const string FileNameWithoutDirectoryPath = "test.file";
@@ -144,67 +145,53 @@
         public static string GetNullDependencyMessage(string className, string serviceName, string parameterName)
             => string.Format(MsgDependencyIsNull, className, serviceName) + $" (Parameter '{parameterName}')";
 
-        internal static Expression<Action<ILogger>> GetLoggerExpression(
-            LogEntryType logEntryType,
-            string message)
-            => x => x.Log(logEntryType, message);
-
-        internal static Expression<Action<ILogger>> GetLoggerExpression(
-            LogEntryType logEntryType,
-            string message,
-            string arg)
-            => x => x.Log(logEntryType, message, arg);
-
-        internal static Expression<Action<ILogger>> GetLoggerExpression(
-            LogEntryType logEntryType,
-            string message,
-            bool _)
-            => x => x.Log(logEntryType, message, It.IsAny<string>());
-
-        internal static Expression<Action<ILogger>> GetLoggerExpression(
-            LogEntryType logEntryType,
-            string message,
-            string arg1,
-            string arg2)
-            => x => x.Log(logEntryType, message, arg1, arg2);
-
-        internal static Expression<Action<ILogger>> GetLoggerExpression(
-            LogEntryType logEntryType,
-            string segmentName,
-            int lineNumber,
-            string message)
+        internal static Expression<Action<ILogger>> GetLoggerExpression(string message,
+                                                                        string? arg1 = null,
+                                                                        string? arg2 = null)
         {
-            (string, int) location = (segmentName, lineNumber);
-            return x => x.Log(logEntryType, location, message);
+            if (arg1 is null)
+            {
+                return x => x.Log(message, null, null);
+            }
+            else
+            {
+                if (arg2 is null)
+                {
+                    if (arg1 is AnyString)
+                    {
+                        return x => x.Log(message, It.IsAny<string>(), null);
+                    }
+                    else
+                    {
+                        return x => x.Log(message, arg1, null);
+                    }
+                }
+                else
+                {
+                    if (arg1 is AnyString)
+                    {
+                        if (arg2 is AnyString)
+                        {
+                            return x => x.Log(message, It.IsAny<string>(), It.IsAny<string>());
+                        }
+                        else
+                        {
+                            return x => x.Log(message, It.IsAny<string>(), arg2);
+                        }
+                    }
+                    else
+                    {
+                        if (arg2 is AnyString)
+                        {
+                            return x => x.Log(message, arg1, It.IsAny<string>());
+                        }
+                        else
+                        {
+                            return x => x.Log(message, arg1, arg2);
+                        }
+                    }
+                }
+            }
         }
-
-        internal static Expression<Action<ILogger>> GetLoggerExpression(
-            LogEntryType logEntryType,
-            string segmentName,
-            int lineNumber,
-            string message,
-            string arg)
-        {
-            (string, int) location = (segmentName, lineNumber);
-            return x => x.Log(logEntryType, location, message, arg);
-        }
-
-        internal static Expression<Action<ILogger>> GetLoggerExpression(
-            LogEntryType logEntryType,
-            string segmentName,
-            int lineNumber,
-            string message,
-            string arg1,
-            string arg2)
-        {
-            (string, int) location = (segmentName, lineNumber);
-            return x => x.Log(logEntryType, location, message, arg1, arg2);
-        }
-
-        internal static Expression<Action<ILogger>> GetLoggerExpression(
-            LogEntryType type,
-            (string segmentName, int lineNumber) location,
-            string message,
-            string arg) => x => x.Log(type, location, message, arg);
     }
 }

@@ -130,24 +130,20 @@
 
             if (_isFilePathSet is false)
             {
-                _logger.Log(LogEntryType.Loading,
-                            MsgTemplateFilePathNotSet);
+                _logger.Log(MsgTemplateFilePathNotSet);
                 return textLines;
             }
 
             try
             {
-                _logger.Log(LogEntryType.Loading,
-                            MsgAttemptingToReadFile,
+                _logger.Log(MsgAttemptingToReadFile,
                             FullFilePath);
                 textLines = _fileAndDirectoryService.ReadTextFile(FullFilePath).ToList();
-                _logger.Log(LogEntryType.Loading,
-                            MsgFileSuccessfullyRead);
+                _logger.Log(MsgFileSuccessfullyRead);
             }
             catch (Exception ex)
             {
-                _logger.Log(LogEntryType.Loading,
-                            MsgErrorWhileReadingTemplateFile,
+                _logger.Log(MsgErrorWhileReadingTemplateFile,
                             ex.Message);
             }
 
@@ -172,8 +168,7 @@
             catch (Exception ex)
             {
                 InitializeProperties();
-                _logger.Log(LogEntryType.Loading,
-                            MsgUnableToSetTemplateFilePath,
+                _logger.Log(MsgUnableToSetTemplateFilePath,
                             ex.Message);
             }
         }

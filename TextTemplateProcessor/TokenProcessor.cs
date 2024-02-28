@@ -72,7 +72,7 @@
         /// Gets a dictionary of key/value pairs where the keys are token names and the values are
         /// substitution values for each token.
         /// </summary>
-        public Dictionary<string, string> TokenDictionary { get; } = new();
+        internal Dictionary<string, string> TokenDictionary { get; } = new();
 
         /// <summary>
         /// Clears all tokens from the token dictionary.
@@ -112,8 +112,8 @@
         }
 
         /// <summary>
-        /// This method is used to load substitution values into the <see cref="TokenDictionary" />
-        /// for the given token names.
+        /// This method is used to load token substitution values into the Token Dictionary for the
+        /// given token names.
         /// </summary>
         /// <param name="tokenValues">
         /// A dictionary of key/value pairs where the key is the token name and the value is the
@@ -121,8 +121,8 @@
         /// </param>
         /// <remarks>
         /// The token names in the <paramref name="tokenValues" /> dictionary passed into this
-        /// method must already exist in the <see cref="TokenDictionary" />. Any token names not
-        /// found will be ignored.
+        /// method must already exist in the Token Dictionary. Any token names not found will be
+        /// ignored.
         /// </remarks>
         public void LoadTokenValues(Dictionary<string, string> tokenValues)
         {
@@ -137,17 +137,13 @@
                 }
                 else
                 {
-                    _logger.Log(LogEntryType.Generating,
-                                _locater.Location,
-                                MsgTokenDictionaryIsEmpty,
+                    _logger.Log(MsgTokenDictionaryIsEmpty,
                                 _locater.CurrentSegment);
                 }
             }
             else
             {
-                _logger.Log(LogEntryType.Generating,
-                            _locater.Location,
-                            MsgTokenDictionaryIsNull,
+                _logger.Log(MsgTokenDictionaryIsNull,
                             _locater.CurrentSegment);
             }
         }
@@ -185,20 +181,16 @@
                 {
                     if (string.IsNullOrEmpty(TokenDictionary[tokenName]))
                     {
-                        _logger.Log(LogEntryType.Generating,
-                                    _locater.Location,
-                                    MsgTokenValueIsEmpty,
+                        _logger.Log(MsgTokenValueIsEmpty,
                                     _locater.CurrentSegment,
                                     tokenName);
                     }
 
-                    _ = builder.Replace(token, TokenDictionary[tokenName]); 
+                    _ = builder.Replace(token, TokenDictionary[tokenName]);
                 }
                 else
                 {
-                    _logger.Log(LogEntryType.Generating,
-                                _locater.Location,
-                                MsgTokenNameNotFound,
+                    _logger.Log(MsgTokenNameNotFound,
                                 _locater.CurrentSegment,
                                 tokenName);
                 }
@@ -209,8 +201,7 @@
         }
 
         /// <summary>
-        /// Resets all token substitution values in the <see cref="TokenDictionary" /> to empty
-        /// strings.
+        /// Resets all token substitution values in the Token Dictionary to empty strings.
         /// </summary>
         public void ResetTokens()
         {
@@ -241,36 +232,31 @@
         {
             if (tokenStart is null)
             {
-                _logger.Log(LogEntryType.Setup,
-                            MsgTokenStartDelimiterIsNull);
+                _logger.Log(MsgTokenStartDelimiterIsNull);
                 return false;
             }
 
             if (tokenEnd is null)
             {
-                _logger.Log(LogEntryType.Setup,
-                            MsgTokenEndDelimiterIsNull);
+                _logger.Log(MsgTokenEndDelimiterIsNull);
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(tokenStart))
             {
-                _logger.Log(LogEntryType.Setup,
-                            MsgTokenStartDelimiterIsEmpty);
+                _logger.Log(MsgTokenStartDelimiterIsEmpty);
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(tokenEnd))
             {
-                _logger.Log(LogEntryType.Setup,
-                            MsgTokenEndDelimiterIsEmpty);
+                _logger.Log(MsgTokenEndDelimiterIsEmpty);
                 return false;
             }
 
             if (tokenStart == tokenEnd)
             {
-                _logger.Log(LogEntryType.Setup,
-                            MsgTokenStartAndTokenEndAreSame,
+                _logger.Log(MsgTokenStartAndTokenEndAreSame,
                             tokenStart,
                             tokenEnd);
                 return false;
@@ -278,8 +264,7 @@
 
             if (tokenStart == tokenEscapeChar.ToString())
             {
-                _logger.Log(LogEntryType.Setup,
-                            MsgTokenStartAndTokenEscapeAreSame,
+                _logger.Log(MsgTokenStartAndTokenEscapeAreSame,
                             tokenStart,
                             tokenEscapeChar.ToString());
                 return false;
@@ -287,8 +272,7 @@
 
             if (tokenEnd == tokenEscapeChar.ToString())
             {
-                _logger.Log(LogEntryType.Setup,
-                            MsgTokenEndAndTokenEscapeAreSame,
+                _logger.Log(MsgTokenEndAndTokenEscapeAreSame,
                             tokenEnd,
                             tokenEscapeChar.ToString());
                 return false;
@@ -311,16 +295,12 @@
 
             if (string.IsNullOrWhiteSpace(tokenName))
             {
-                _logger.Log(LogEntryType.Parsing,
-                            _locater.Location,
-                            MsgMissingTokenName);
+                _logger.Log(MsgMissingTokenName);
                 isValidToken = false;
             }
             else if (_nameValidater.IsValidName(tokenName) is false)
             {
-                _logger.Log(LogEntryType.Parsing,
-                            _locater.Location,
-                            MsgTokenHasInvalidName,
+                _logger.Log(MsgTokenHasInvalidName,
                             tokenName);
                 isValidToken = false;
             }
@@ -379,9 +359,7 @@
 
             if (tokenEnd < 0)
             {
-                _logger.Log(LogEntryType.Parsing,
-                            _locater.Location,
-                            MsgTokenMissingEndDelimiter);
+                _logger.Log(MsgTokenMissingEndDelimiter);
                 text = InsertEscapeCharacter(tokenStart, text);
                 return (false, text.Length);
             }
@@ -411,18 +389,14 @@
                 {
                     if (tokenValue is null)
                     {
-                        _logger.Log(LogEntryType.Generating,
-                                    _locater.Location,
-                                    MsgTokenWithNullValue,
+                        _logger.Log(MsgTokenWithNullValue,
                                     _locater.CurrentSegment,
                                     tokenName);
                         tokenValue = string.Empty;
                     }
                     else if (string.IsNullOrEmpty(tokenValue))
                     {
-                        _logger.Log(LogEntryType.Generating,
-                                    _locater.Location,
-                                    MsgTokenWithEmptyValue,
+                        _logger.Log(MsgTokenWithEmptyValue,
                                     _locater.CurrentSegment,
                                     tokenName);
                     }
@@ -431,18 +405,14 @@
                 }
                 else
                 {
-                    _logger.Log(LogEntryType.Generating,
-                                _locater.Location,
-                                MsgUnknownTokenName,
+                    _logger.Log(MsgUnknownTokenName,
                                 _locater.CurrentSegment,
                                 tokenName);
                 }
             }
             else
             {
-                _logger.Log(LogEntryType.Generating,
-                            _locater.Location,
-                            MsgTokenDictionaryContainsInvalidTokenName,
+                _logger.Log(MsgTokenDictionaryContainsInvalidTokenName,
                             _locater.CurrentSegment,
                             tokenName);
             }

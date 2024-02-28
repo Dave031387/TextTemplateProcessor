@@ -9,12 +9,6 @@
     internal interface ITokenProcessor
     {
         /// <summary>
-        /// Gets a dictionary of key/value pairs where the keys are token names and the values are
-        /// substitution values for each token.
-        /// </summary>
-        Dictionary<string, string> TokenDictionary { get; }
-
-        /// <summary>
         /// Clears all tokens from the token dictionary.
         /// </summary>
         void ClearTokens();
@@ -34,8 +28,8 @@
         void ExtractTokens(ref string text);
 
         /// <summary>
-        /// This method is used to load substitution values into the <see cref="TokenDictionary" />
-        /// for the given token names.
+        /// This method is used to load token substitution values into the Token Dictionary for the
+        /// given token names.
         /// </summary>
         /// <param name="tokenValues">
         /// A dictionary of key/value pairs where the key is the token name and the value is the
@@ -43,8 +37,8 @@
         /// </param>
         /// <remarks>
         /// The token names in the <paramref name="tokenValues" /> dictionary passed into this
-        /// method must already exist in the <see cref="TokenDictionary" />. Any token names not
-        /// found will be ignored.
+        /// method must already exist in the Token Dictionary. Any token names not found will be
+        /// ignored.
         /// </remarks>
         void LoadTokenValues(Dictionary<string, string> tokenValues);
 
@@ -66,8 +60,7 @@
         string ReplaceTokens(string text);
 
         /// <summary>
-        /// Resets all token substitution values in the <see cref="TokenDictionary" /> to empty
-        /// strings.
+        /// Resets all token substitution values in the Token Dictionary to empty strings.
         /// </summary>
         void ResetTokens();
 

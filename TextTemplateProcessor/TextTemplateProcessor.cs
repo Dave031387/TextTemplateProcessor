@@ -45,7 +45,10 @@
         /// The file path of the text template file to be processed.
         /// </param>
         public TextTemplateProcessor(string templateFilePath) : this()
-            => _textReader.SetFilePath(templateFilePath);
+        {
+            _logger.SetLogEntryType(LogEntryType.Setup);
+            _textReader.SetFilePath(templateFilePath);
+        }
 
         /// <summary>
         /// Constructor that creates an instance of the <see cref="TextTemplateProcessor" /> class
@@ -163,7 +166,27 @@
         /// <summary>
         /// Gets the collection of strings that make up the generated text buffer.
         /// </summary>
-        public IEnumerable<string> GeneratedText => _generatedText;
+        /// <remarks>
+        /// Note that this method returns a copy of the generated text buffer. Any changes made to
+        /// the collection returned from this method will have absolutely no effect on the actual
+        /// generated text buffer that is maintained by the <see cref="TextTemplateProcessor" />
+        /// class object.
+        /// </remarks>
+        public IEnumerable<string> GeneratedText
+        {
+            get
+            {
+                List<string> generatedText = new();
+
+                foreach (string textLine in _generatedText)
+                {
+                    string text = textLine;
+                    generatedText.Add(text);
+                }
+
+                return generatedText;
+            }
+        }
 
         /// <summary>
         /// Gets a boolean value that is <see langword="true" /> if the generated text buffer has
@@ -219,6 +242,7 @@
         /// </remarks>
         public void GenerateSegment(string segmentName, Dictionary<string, string>? tokenValues = null)
         {
+            _logger.SetLogEntryType(LogEntryType.Generating);
             CurrentSegment = segmentName is null ? string.Empty : segmentName;
             LineNumber = 0;
 
@@ -263,21 +287,22 @@
         /// </remarks>
         public void LoadTemplate()
         {
+            _logger.SetLogEntryType(LogEntryType.Loading);
+
             if (IsTemplateLoaded)
             {
-                _logger.Log(LogEntryType.Loading,
-                            MsgAttemptToLoadMoreThanOnce,
+                _logger.Log(MsgAttemptToLoadMoreThanOnce,
                             _textReader.FileName);
             }
             else if (IsValidTemplateFilePath())
             {
                 ResetAll(false);
+                _logger.SetLogEntryType(LogEntryType.Loading);
                 LoadTemplateLines();
             }
             else
             {
-                _logger.Log(LogEntryType.Loading,
-                            MsgTemplateFilePathNotSet);
+                _logger.Log(MsgTemplateFilePathNotSet);
                 IsTemplateLoaded = false;
             }
         }
@@ -291,6 +316,8 @@
         /// </param>
         public void LoadTemplate(string filePath)
         {
+            _logger.SetLogEntryType(LogEntryType.Loading);
+
             string lastFileName = _textReader.FileName;
             string lastFilePath = TemplateFilePath;
 
@@ -298,19 +325,18 @@
             {
                 if (IsTemplateLoaded && TemplateFilePath == lastFilePath)
                 {
-                    _logger.Log(LogEntryType.Loading,
-                                MsgAttemptToLoadMoreThanOnce,
+                    _logger.Log(MsgAttemptToLoadMoreThanOnce,
                                 lastFileName);
                     return;
                 }
 
                 bool isOutputFileWritten = IsOutputFileWritten;
                 ResetAll(false);
+                _logger.SetLogEntryType(LogEntryType.Loading);
 
                 if ((isOutputFileWritten || string.IsNullOrEmpty(lastFileName)) is false)
                 {
-                    _logger.Log(LogEntryType.Loading,
-                                MsgNextLoadRequestBeforeFirstIsWritten,
+                    _logger.Log(MsgNextLoadRequestBeforeFirstIsWritten,
                                 _textReader.FileName,
                                 lastFileName);
                 }
@@ -333,6 +359,7 @@
         /// </param>
         public void ResetAll(bool shouldDisplayMessage = true)
         {
+            _logger.SetLogEntryType(LogEntryType.Reset);
             ResetGeneratedText(false);
             _segmentDictionary.Clear();
             _controlDictionary.Clear();
@@ -343,8 +370,7 @@
 
             if (shouldDisplayMessage)
             {
-                _logger.Log(LogEntryType.Reset,
-                            MsgTemplateHasBeenReset,
+                _logger.Log(MsgTemplateHasBeenReset,
                             _textReader.FileName);
             }
         }
@@ -359,6 +385,7 @@
         /// </param>
         public void ResetGeneratedText(bool shouldDisplayMessage = true)
         {
+            _logger.SetLogEntryType(LogEntryType.Reset);
             _generatedText.Clear();
             _locater.Reset();
             _indentProcessor.Reset();
@@ -370,8 +397,7 @@
 
             if (shouldDisplayMessage)
             {
-                _logger.Log(LogEntryType.Reset,
-                            MsgGeneratedTextHasBeenReset,
+                _logger.Log(MsgGeneratedTextHasBeenReset,
                             _textReader.FileName);
             }
         }
@@ -388,6 +414,7 @@
         /// </remarks>
         public void ResetSegment(string segmentName)
         {
+            _logger.SetLogEntryType(LogEntryType.Reset);
             CurrentSegment = segmentName is null ? string.Empty : segmentName;
             LineNumber = 0;
 
@@ -397,9 +424,7 @@
             }
             else
             {
-                _logger.Log(LogEntryType.Generating,
-                            _locater.Location,
-                            MsgUnableToResetSegment,
+                _logger.Log(MsgUnableToResetSegment,
                             CurrentSegment);
             }
         }
@@ -410,7 +435,11 @@
         /// <param name="tabSize">
         /// The new tab size value.
         /// </param>
-        public void SetTabSize(int tabSize) => _indentProcessor.SetTabSize(tabSize);
+        public void SetTabSize(int tabSize)
+        {
+            _logger.SetLogEntryType(LogEntryType.Setup);
+            _indentProcessor.SetTabSize(tabSize);
+        }
 
         /// <summary>
         /// Sets the template file path to the given value.
@@ -418,7 +447,34 @@
         /// <param name="templateFilePath">
         /// The file path of an existing text template file.
         /// </param>
-        public void SetTemplateFilePath(string templateFilePath) => _textReader.SetFilePath(templateFilePath);
+        public void SetTemplateFilePath(string templateFilePath)
+        {
+            _logger.SetLogEntryType(LogEntryType.Setup);
+            _textReader.SetFilePath(templateFilePath);
+        }
+
+        /// <summary>
+        /// Sets the token start and token end delimiters and the token escape character to the
+        /// specified values.
+        /// </summary>
+        /// <param name="tokenStart">
+        /// The new token start delimiter string.
+        /// </param>
+        /// <param name="tokenEnd">
+        /// The new token end delimiter string.
+        /// </param>
+        /// <param name="tokenEscapeChar">
+        /// The new token escape character.
+        /// </param>
+        /// <returns>
+        /// <see langword="true" /> if the delimiter values were successfully changed. Otherwise,
+        /// returns <see langword="false" />.
+        /// </returns>
+        public bool SetTokenDelimiters(string tokenStart, string tokenEnd, char tokenEscapeChar)
+        {
+            _logger.SetLogEntryType(LogEntryType.Setup);
+            return _tokenProcessor.SetTokenDelimiters(tokenStart, tokenEnd, tokenEscapeChar);
+        }
 
         /// <summary>
         /// Writes the generated text buffer to the given output file path and optionally clears the
@@ -438,6 +494,8 @@
         /// </remarks>
         public void WriteGeneratedTextToFile(string filePath, bool resetGeneratedText = true)
         {
+            _logger.SetLogEntryType(LogEntryType.Writing);
+
             if (_textWriter.WriteTextFile(filePath, _generatedText))
             {
                 if (resetGeneratedText)
@@ -485,14 +543,12 @@
 
             if (IsEmptyTemplateFile(templateLines))
             {
-                _logger.Log(LogEntryType.Loading,
-                            MsgTemplateFileIsEmpty);
+                _logger.Log(MsgTemplateFileIsEmpty);
                 IsTemplateLoaded = false;
             }
             else
             {
-                _logger.Log(LogEntryType.Loading,
-                            MsgLoadingTemplateFile,
+                _logger.Log(MsgLoadingTemplateFile,
                             _textReader.FileName);
                 _templateLoader.LoadTemplate(templateLines, _segmentDictionary, _controlDictionary);
                 IsTemplateLoaded = true;
@@ -510,32 +566,24 @@
                 {
                     if (_segmentDictionary.ContainsKey(segmentName))
                     {
-                        _logger.Log(LogEntryType.Generating,
-                                    _locater.Location,
-                                    MsgProcessingSegment);
+                        _logger.Log(MsgProcessingSegment);
                         result = true;
                     }
                     else
                     {
-                        _logger.Log(LogEntryType.Generating,
-                                    _locater.Location,
-                                    MsgSegmentHasNoTextLines,
+                        _logger.Log(MsgSegmentHasNoTextLines,
                                     segmentName);
                     }
                 }
                 else
                 {
-                    _logger.Log(LogEntryType.Generating,
-                                _locater.Location,
-                                MsgUnknownSegmentName,
+                    _logger.Log(MsgUnknownSegmentName,
                                 segmentName);
                 }
             }
             else
             {
-                _logger.Log(LogEntryType.Generating,
-                            _locater.Location,
-                            MsgAttemptToGenerateSegmentBeforeItWasLoaded,
+                _logger.Log(MsgAttemptToGenerateSegmentBeforeItWasLoaded,
                             segmentName);
             }
 

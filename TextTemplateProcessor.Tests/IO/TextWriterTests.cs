@@ -20,10 +20,9 @@
         {
             // Arrange
             Action action = () => { TextWriter writer = new(_logger.Object, null!, _pathValidater.Object); };
-            string expected = GetNullDependencyMessage(
-                ClassNames.TextWriterClass,
-                ServiceNames.FileAndDirectoryService,
-                ServiceParameterNames.FileAndDirectoryServiceParameter);
+            string expected = GetNullDependencyMessage(ClassNames.TextWriterClass,
+                                                       ServiceNames.FileAndDirectoryService,
+                                                       ServiceParameterNames.FileAndDirectoryServiceParameter);
 
             // Act/Assert
             action
@@ -37,10 +36,9 @@
         {
             // Arrange
             Action action = () => { TextWriter writer = new(null!, _fileService.Object, _pathValidater.Object); };
-            string expected = GetNullDependencyMessage(
-                ClassNames.TextWriterClass,
-                ServiceNames.LoggerService,
-                ServiceParameterNames.LoggerParameter);
+            string expected = GetNullDependencyMessage(ClassNames.TextWriterClass,
+                                                       ServiceNames.LoggerService,
+                                                       ServiceParameterNames.LoggerParameter);
 
             // Act/Assert
             action
@@ -54,10 +52,9 @@
         {
             // Arrange
             Action action = () => { TextWriter writer = new(_logger.Object, _fileService.Object, null!); };
-            string expected = GetNullDependencyMessage(
-                ClassNames.TextWriterClass,
-                ServiceNames.PathValidaterService,
-                ServiceParameterNames.PathValidaterParameter);
+            string expected = GetNullDependencyMessage(ClassNames.TextWriterClass,
+                                                       ServiceNames.PathValidaterService,
+                                                       ServiceParameterNames.PathValidaterParameter);
 
             // Act/Assert
             action
@@ -89,7 +86,8 @@
         {
             // Arrange
             string filePath = @"C:\invalid|path\file?name";
-            Expression<Action<ILogger>> loggerExpression = x => x.Log(LogEntryType.Writing, MsgUnableToWriteFile, It.IsAny<string>());
+            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(MsgUnableToWriteFile,
+                                                                                AnyString);
             _logger.Setup(loggerExpression);
             Expression<Action<IPathValidater>> pathValidaterExpression = x => x.ValidateFullPath(filePath, true, false);
             _pathValidater.Setup(pathValidaterExpression).Throws<ArgumentException>();
@@ -124,7 +122,7 @@
         {
             // Arrange
             string filePath = NextAbsoluteFilePath;
-            Expression<Action<ILogger>> loggerExpression = x => x.Log(LogEntryType.Writing, MsgGeneratedTextIsEmpty);
+            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(MsgGeneratedTextIsEmpty);
             _logger.Setup(loggerExpression);
             TextWriter writer = new(_logger.Object, _fileService.Object, _pathValidater.Object);
 
@@ -150,7 +148,7 @@
         {
             // Arrange
             string filePath = NextAbsoluteFilePath;
-            Expression<Action<ILogger>> loggerExpression = x => x.Log(LogEntryType.Writing, MsgGeneratedTextIsNull);
+            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(MsgGeneratedTextIsNull);
             _logger.Setup(loggerExpression);
             TextWriter writer = new(_logger.Object, _fileService.Object, _pathValidater.Object);
 
@@ -183,7 +181,8 @@
                 "Line 1",
                 "Line 2"
             };
-            Expression<Action<ILogger>> loggerExpression = x => x.Log(LogEntryType.Writing, MsgWritingTextFile, fileName);
+            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(MsgWritingTextFile,
+                                                                               fileName);
             _logger.Setup(loggerExpression);
             Expression<Func<IPathValidater, string>> pathValidaterExpression = x => x.ValidateFullPath(filePath, true, false);
             _pathValidater.Setup(pathValidaterExpression).Returns(filePath);

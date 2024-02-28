@@ -25,6 +25,12 @@
         /// <summary>
         /// Gets the collection of strings that make up the generated text buffer.
         /// </summary>
+        /// <remarks>
+        /// Note that this method returns a copy of the generated text buffer. Any changes made to
+        /// the collection returned from this method will have absolutely no effect on the actual
+        /// generated text buffer that is maintained by the <see cref="TextTemplateProcessor" />
+        /// class object.
+        /// </remarks>
         IEnumerable<string> GeneratedText { get; }
 
         /// <summary>
@@ -143,6 +149,25 @@
         /// The file path of an existing text template file.
         /// </param>
         void SetTemplateFilePath(string templateFilePath);
+
+        /// <summary>
+        /// Sets the token start and token end delimiters and the token escape character to the
+        /// specified values.
+        /// </summary>
+        /// <param name="tokenStart">
+        /// The new token start delimiter string.
+        /// </param>
+        /// <param name="tokenEnd">
+        /// The new token end delimiter string.
+        /// </param>
+        /// <param name="tokenEscapeChar">
+        /// The new token escape character.
+        /// </param>
+        /// <returns>
+        /// <see langword="true" /> if the delimiter values were successfully changed. Otherwise,
+        /// returns <see langword="false" />.
+        /// </returns>
+        bool SetTokenDelimiters(string tokenStart, string tokenEnd, char tokenEscapeChar);
 
         /// <summary>
         /// Writes the generated text buffer to the given output file path and optionally clears the

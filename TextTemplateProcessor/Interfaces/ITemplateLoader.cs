@@ -26,7 +26,7 @@
         /// </param>
         void LoadTemplate(
             IEnumerable<string> templateLines,
-            Dictionary<string, List<Core.TextItem>> segmentDictionary,
-            Dictionary<string, Core.ControlItem> controlDictionary);
+            Dictionary<string, List<TextItem>> segmentDictionary,
+            Dictionary<string, ControlItem> controlDictionary);
     }
 }

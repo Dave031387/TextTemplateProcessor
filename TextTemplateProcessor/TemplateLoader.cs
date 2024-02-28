@@ -106,6 +106,7 @@
                                  Dictionary<string, List<TextItem>> segmentDictionary,
                                  Dictionary<string, ControlItem> controlDictionary)
         {
+            _logger.SetLogEntryType(LogEntryType.Parsing);
             _segmentDictionary = segmentDictionary;
             _controlDictionary = controlDictionary;
             _locater.LineNumber = 0;
@@ -132,18 +133,14 @@
             if (_controlDictionary.ContainsKey(segmentName))
             {
                 _locater.CurrentSegment = _defaultSegmentNameGenerator.Next;
-                _logger.Log(LogEntryType.Parsing,
-                            _locater.Location,
-                            MsgFoundDuplicateSegmentName,
+                _logger.Log(MsgFoundDuplicateSegmentName,
                             segmentName,
                             _locater.CurrentSegment);
             }
 
             if (IsPadSegmentInvalid(segmentName, controlItem.PadSegment))
             {
-                _logger.Log(LogEntryType.Parsing,
-                            _locater.Location,
-                            MsgPadSegmentsMustBeDefinedEarlier,
+                _logger.Log(MsgPadSegmentsMustBeDefinedEarlier,
                             segmentName,
                             controlItem.PadSegment);
                 controlItem.PadSegment = string.Empty;
@@ -151,9 +148,7 @@
 
             _controlDictionary[_locater.CurrentSegment] = controlItem;
             _textLineCount = 0;
-            _logger.Log(LogEntryType.Parsing,
-                        _locater.Location,
-                        MsgSegmentHasBeenAdded);
+            _logger.Log(MsgSegmentHasBeenAdded);
         }
 
         private void AddTextItemToSegmentDictionary(TextItem textItem)
@@ -174,9 +169,7 @@
         {
             if (_locater.HasValidSegmentName && _textLineCount == 0)
             {
-                _logger.Log(LogEntryType.Parsing,
-                            _locater.Location,
-                            MsgNoTextLinesFollowingSegmentHeader,
+                _logger.Log(MsgNoTextLinesFollowingSegmentHeader,
                             _locater.CurrentSegment);
             }
         }
@@ -186,9 +179,7 @@
             if (_locater.HasEmptySegmentName)
             {
                 CreateDefaultSegment();
-                _logger.Log(LogEntryType.Parsing,
-                            _locater.Location,
-                            MsgMissingInitialSegmentHeader,
+                _logger.Log(MsgMissingInitialSegmentHeader,
                             _locater.CurrentSegment);
             }
         }
