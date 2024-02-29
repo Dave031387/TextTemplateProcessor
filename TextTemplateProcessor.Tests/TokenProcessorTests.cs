@@ -460,6 +460,76 @@
         }
 
         [Fact]
+        public void ReplaceTokens_MultipleTokenErrors_LogsAllErrors()
+        {
+            // Arrange
+            string tokenName1 = "noEndDelimiter";
+            string tokenName2 = Whitespace;
+            string tokenName3 = "invalidName";
+            string tokenName4 = "escapedToken";
+            string tokenName5 = "unknownToken";
+            string tokenName6 = "tokenWithEmptyValue";
+            string tokenName7 = "validToken";
+            string tokenValue3 = "unused";
+            string tokenValue4 = "unused";
+            string tokenValue6 = "";
+            string tokenValue7 = "value";
+            string token1 = $"{_tokenStart}{tokenName1}";
+            string token2 = GenerateToken(tokenName2);
+            string token3 = GenerateToken(tokenName3);
+            string token4 = GenerateToken(tokenName4);
+            string token5 = GenerateToken(tokenName5);
+            string token6 = GenerateToken(tokenName6);
+            string token7 = GenerateToken(tokenName7);
+            string segmentName = "Segment1";
+            int lineNumber = 11;
+            SetupLocater(segmentName, lineNumber);
+            Expression<Func<INameValidater, bool>> nameValidaterInvalid = x => x.IsValidName(tokenName3);
+            Expression<Func<INameValidater, bool>> nameValidaterUnknown = x => x.IsValidName(tokenName5);
+            Expression<Func<INameValidater, bool>> nameValidaterEmpty = x => x.IsValidName(tokenName6);
+            Expression<Func<INameValidater, bool>> nameValidaterValid = x => x.IsValidName(tokenName7);
+            _nameValidater.Setup(nameValidaterInvalid).Returns(false);
+            _nameValidater.Setup(nameValidaterUnknown).Returns(true);
+            _nameValidater.Setup(nameValidaterEmpty).Returns(true);
+            _nameValidater.Setup(nameValidaterValid).Returns(true);
+            Expression<Action<ILogger>> loggerNoDelimiter = GetLoggerExpression(MsgTokenMissingEndDelimiter);
+            Expression<Action<ILogger>> loggerMissingName = GetLoggerExpression(MsgMissingTokenName);
+            Expression<Action<ILogger>> loggerInvalidName = GetLoggerExpression(MsgTokenHasInvalidName, tokenName3);
+            Expression<Action<ILogger>> loggerUnknownName = GetLoggerExpression(MsgTokenNameNotFound, segmentName, tokenName5);
+            Expression<Action<ILogger>> loggerEmptyValue = GetLoggerExpression(MsgTokenValueIsEmpty, segmentName, tokenName6);
+            _logger.Setup(loggerNoDelimiter);
+            _logger.Setup(loggerMissingName);
+            _logger.Setup(loggerInvalidName);
+            _logger.Setup(loggerUnknownName);
+            _logger.Setup(loggerEmptyValue);
+            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            processor.TokenDictionary.Add(tokenName3, tokenValue3);
+            processor.TokenDictionary.Add(tokenName4, tokenValue4);
+            processor.TokenDictionary.Add(tokenName6, tokenValue6);
+            processor.TokenDictionary.Add(tokenName7, tokenValue7);
+            string text = $"Text {token2} {_tokenEscapeChar}{token4} {token3} {token7} {token5} {token6} {token1}";
+            string expected = $"Text {token2} {token4} {token3} {tokenValue7} {token5}  {token1}";
+
+            // Act
+            string actual = processor.ReplaceTokens(text);
+
+            // Assert
+            actual
+                .Should()
+                .Be(expected);
+            _nameValidater.Verify(nameValidaterInvalid, Times.Once);
+            _nameValidater.Verify(nameValidaterUnknown, Times.Once);
+            _nameValidater.Verify(nameValidaterEmpty, Times.Once);
+            _nameValidater.Verify(nameValidaterValid, Times.Once);
+            _logger.Verify(loggerNoDelimiter, Times.Once);
+            _logger.Verify(loggerMissingName, Times.Once);
+            _logger.Verify(loggerInvalidName, Times.Once);
+            _logger.Verify(loggerUnknownName, Times.Once);
+            _logger.Verify(loggerEmptyValue, Times.Once);
+            VerifyMocks(0, 0, 2, 0, 0);
+        }
+
+        [Fact]
         public void ReplaceTokens_TextContainsEscapedTokens_RemovesTheEscapeCharacters()
         {
             // Arrange
@@ -497,6 +567,186 @@
                 .Be(expected);
             VerifyMocks(0, 0, 0, 0, 0);
         }
+
+        [Fact]
+        public void ReplaceTokens_TokenIsMissingEndDelimiter_LogsMessageAndOutputsTokenUnchanged()
+        {
+            // Arrange
+            SetupLogger(GetLoggerExpression(MsgTokenMissingEndDelimiter));
+            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            string tokenName = "token";
+            string expected = $"Text line with {_tokenStart}{tokenName}";
+            processor.TokenDictionary.Add(tokenName, "value");
+
+            // Act
+            string actual = processor.ReplaceTokens(expected);
+
+            // Assert
+            actual
+                .Should()
+                .Be(expected);
+            VerifyMocks(1, 0, 0, 0, 0);
+        }
+
+        [Fact]
+        public void ReplaceTokens_TokenNameIsInvalid_LogsMessageAndOutputsTokenUnchanged()
+        {
+            // Arrange
+            string tokenName = "invalid name";
+            SetupNameValidater(tokenName, false);
+            SetupLogger(GetLoggerExpression(MsgTokenHasInvalidName,
+                                            tokenName));
+            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            string expected = $"Text line {_tokenStart}{tokenName}{_tokenEnd} end";
+            processor.TokenDictionary.Add(tokenName, "value");
+
+            // Act
+            string actual = processor.ReplaceTokens(expected);
+
+            // Assert
+            actual
+                .Should()
+                .Be(expected);
+            VerifyMocks(1, 0, 0, 1, 0);
+        }
+
+        [Fact]
+        public void ReplaceTokens_TokenNameIsWhitespace_LogsMessageAndOutputsTokenUnchanged()
+        {
+            // Arrange
+            SetupLogger(GetLoggerExpression(MsgMissingTokenName));
+            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            string expected = $"Text line {_tokenStart}{Whitespace}{_tokenEnd} end";
+
+            // Act
+            string actual = processor.ReplaceTokens(expected);
+
+            // Assert
+            actual
+                .Should()
+                .Be(expected);
+            VerifyMocks(1, 0, 0, 0, 0);
+        }
+
+        [Fact]
+        public void ReplaceTokens_TokenNameNotInTokenDictionary_LogsMessageAndOutputsTokenUnchanged()
+        {
+            // Arrange
+            string tokenName = "token";
+            SetupNameValidater(tokenName, true);
+            string segmentName = "Segment1";
+            SetupLocater(segmentName, 10);
+            SetupLogger(GetLoggerExpression(MsgTokenNameNotFound,
+                                            segmentName,
+                                            tokenName));
+            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            string expected = $"Text line {_tokenStart}{tokenName}{_tokenEnd} end";
+            processor.TokenDictionary.Add("anotherToken", "value");
+
+            // Act
+            string actual = processor.ReplaceTokens(expected);
+
+            // Assert
+            actual
+                .Should()
+                .Be(expected);
+            VerifyMocks(1, 0, 1, 1, 0);
+        }
+
+        [Fact]
+        public void ReplaceTokens_TokenValueIsEmptyString_LogsMessageAndRemovesToken()
+        {
+            // Arrange
+            string tokenName = "token";
+            SetupNameValidater(tokenName, true);
+            string segmentName = "Segment1";
+            SetupLocater(segmentName, 10);
+            SetupLogger(GetLoggerExpression(MsgTokenValueIsEmpty,
+                                            segmentName,
+                                            tokenName));
+            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            string text = $"Text line {_tokenStart}{tokenName}{_tokenEnd} end";
+            string expected = "Text line  end";
+            processor.TokenDictionary.Add(tokenName, "");
+
+            // Act
+            string actual = processor.ReplaceTokens(text);
+
+            // Assert
+            actual
+                .Should()
+                .Be(expected);
+            VerifyMocks(1, 0, 1, 1, 0);
+        }
+
+        [Fact]
+        public void ReplaceTokens_TokenValueIsNotEmpty_ReplacesTokenWithTokenValue()
+        {
+            // Arrange
+            string tokenName = "token";
+            string tokenValue = "value";
+            SetupNameValidater(tokenName, true);
+            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            string text = $"Text line {_tokenStart}{tokenName}{_tokenEnd} end";
+            string expected = $"Text line {tokenValue} end";
+            processor.TokenDictionary.Add(tokenName, tokenValue);
+
+            // Act
+            string actual = processor.ReplaceTokens(text);
+
+            // Assert
+            actual
+                .Should()
+                .Be(expected);
+            VerifyMocks(0, 0, 0, 1, 0);
+        }
+
+        [Fact]
+        public void SetTokenDelimiters_TokenEndAndTokenEscapeAreSameValue_LogsMessageAndReturnsFalse()
+        {
+            char escape = '!';
+            string delimiter = escape.ToString();
+            SetTokenDelimiters_Test("<<", delimiter, escape, MsgTokenEndAndTokenEscapeAreSame, delimiter, delimiter);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(Whitespace)]
+        public void SetTokenDelimiters_TokenEndIsEmptyOrWhitespace_LogsMessageAndReturnsFalse(string tokenEnd)
+            => SetTokenDelimiters_Test("<<", tokenEnd, '!', MsgTokenEndDelimiterIsEmpty);
+
+        [Fact]
+        public void SetTokenDelimiters_TokenEndIsNull_LogsMessageAndReturnsFalse()
+            => SetTokenDelimiters_Test("<<", null!, '!', MsgTokenEndDelimiterIsNull);
+
+        [Fact]
+        public void SetTokenDelimiters_TokenStartAndTokenEndAreSameValue_LogsMessageAndReturnsFalse()
+        {
+            string delimiter = "##";
+            SetTokenDelimiters_Test(delimiter, delimiter, '!', MsgTokenStartAndTokenEndAreSame, delimiter, delimiter);
+        }
+
+        [Fact]
+        public void SetTokenDelimiters_TokenStartAndTokenEscapeAreSameValue_LogsMessageAndReturnsFalse()
+        {
+            char escape = '!';
+            string delimiter = escape.ToString();
+            SetTokenDelimiters_Test(delimiter, ">>", escape, MsgTokenStartAndTokenEscapeAreSame, delimiter, delimiter);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(Whitespace)]
+        public void SetTokenDelimiters_TokenStartIsEmptyOrWhitespace_LogsMessageAndReturnsFalse(string tokenStart)
+            => SetTokenDelimiters_Test(tokenStart, ">>", '!', MsgTokenStartDelimiterIsEmpty);
+
+        [Fact]
+        public void SetTokenDelimiters_TokenStartIsNull_LogsMessageAndReturnsFalse()
+            => SetTokenDelimiters_Test(null!, ">>", '!', MsgTokenStartDelimiterIsNull);
+
+        [Fact]
+        public void SetTokenDelimiters_ValidDelimiters_SetsDelimiterValuesAndReturnsTrue()
+            => SetTokenDelimiters_Test("<<", ">>", '!');
 
         [Fact]
         public void TokenDictionary_AddItemsToDictionary_DictionaryShouldContainAddedItems()
@@ -591,6 +841,62 @@
             => isEscaped
             ? $"{_tokenEscapeChar}{_tokenStart}{tokenName}{_tokenEnd}"
             : $"{_tokenStart}{tokenName}{_tokenEnd}";
+
+        private void SetTokenDelimiters_Test(string tokenStart,
+                                             string tokenEnd,
+                                             char tokenEscapeChar,
+                                             string? message = null,
+                                             string? arg1 = null,
+                                             string? arg2 = null)
+        {
+            // Arrange
+            bool expected = true;
+            int loggerCount = 0;
+
+            if (message is not null)
+            {
+                SetupLogger(GetLoggerExpression(message, arg1, arg2));
+                expected = false;
+                loggerCount = 1;
+            }
+
+            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+
+            // Act
+            bool actual = processor.SetTokenDelimiters(tokenStart, tokenEnd, tokenEscapeChar);
+
+            // Assert
+            actual
+                .Should()
+                .Be(expected);
+
+            if (message is null)
+            {
+                processor.TokenStart
+                    .Should()
+                    .Be(tokenStart);
+                processor.TokenEnd
+                    .Should()
+                    .Be(tokenEnd);
+                processor.TokenEscapeChar
+                    .Should()
+                    .Be(tokenEscapeChar);
+            }
+            else
+            {
+                processor.TokenStart
+                    .Should()
+                    .Be(_tokenStart);
+                processor.TokenEnd
+                    .Should()
+                    .Be(_tokenEnd);
+                processor.TokenEscapeChar
+                    .Should()
+                    .Be(_tokenEscapeChar);
+            }
+
+            VerifyMocks(loggerCount, 0, 0, 0, 0);
+        }
 
         private void SetupLocater(string segmentName, int lineNumber)
         {

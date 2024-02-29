@@ -14,9 +14,6 @@
         private readonly ILocater _locater;
         private readonly ILogger _logger;
         private readonly INameValidater _nameValidater;
-        private string _tokenEnd = "#>";
-        private char _tokenEscapeChar = '\\';
-        private string _tokenStart = "<#=";
 
         /// <summary>
         /// The default constructor that creates an instance of the <see cref="TokenProcessor" />
@@ -68,11 +65,13 @@
             _nameValidater = nameValidater;
         }
 
-        /// <summary>
-        /// Gets a dictionary of key/value pairs where the keys are token names and the values are
-        /// substitution values for each token.
-        /// </summary>
         internal Dictionary<string, string> TokenDictionary { get; } = new();
+
+        internal string TokenEnd { get; private set; } = "#>";
+
+        internal char TokenEscapeChar { get; private set; } = '\\';
+
+        internal string TokenStart { get; private set; } = "<#=";
 
         /// <summary>
         /// Clears all tokens from the token dictionary.
@@ -196,19 +195,8 @@
                 }
             }
 
-            builder = builder.Replace(_tokenEscapeChar + _tokenStart, _tokenStart);
+            builder = builder.Replace(TokenEscapeChar + TokenStart, TokenStart);
             return builder.ToString();
-        }
-
-        /// <summary>
-        /// Resets all token substitution values in the Token Dictionary to empty strings.
-        /// </summary>
-        public void ResetTokens()
-        {
-            foreach (string tokenName in TokenDictionary.Keys)
-            {
-                TokenDictionary[tokenName] = string.Empty;
-            }
         }
 
         /// <summary>
@@ -278,17 +266,17 @@
                 return false;
             }
 
-            _tokenStart = tokenStart;
-            _tokenEnd = tokenEnd;
-            _tokenEscapeChar = tokenEscapeChar;
+            TokenStart = tokenStart;
+            TokenEnd = tokenEnd;
+            TokenEscapeChar = tokenEscapeChar;
             return true;
         }
 
         private (string token, string tokenName) ExtractToken(int tokenStart, ref int tokenEnd, ref string text)
         {
-            int tokenNameStart = tokenStart + _tokenStart.Length;
+            int tokenNameStart = tokenStart + TokenStart.Length;
             int tokenNameEnd = tokenEnd;
-            tokenEnd += _tokenEnd.Length;
+            tokenEnd += TokenEnd.Length;
             string token = text[tokenStart..tokenEnd];
             string tokenName = text[tokenNameStart..tokenNameEnd].Trim();
             bool isValidToken = true;
@@ -351,11 +339,11 @@
             return result;
         }
 
-        private string InsertEscapeCharacter(int tokenStart, string text) => text.Insert(tokenStart, _tokenEscapeChar.ToString());
+        private string InsertEscapeCharacter(int tokenStart, string text) => text.Insert(tokenStart, TokenEscapeChar.ToString());
 
         private (bool isValidTokenEnd, int tokenEnd) LocateTokenEndDelimiter(int tokenStart, ref string text)
         {
-            int tokenEnd = text.IndexOf(_tokenEnd, tokenStart, StringComparison.Ordinal);
+            int tokenEnd = text.IndexOf(TokenEnd, tokenStart, StringComparison.Ordinal);
 
             if (tokenEnd < 0)
             {
@@ -369,12 +357,12 @@
 
         private (bool isValidTokenStart, int newIndexValue) LocateTokenStartDelimiter(int startIndex, string text)
         {
-            int tokenStart = text.IndexOf(_tokenStart, startIndex, StringComparison.Ordinal);
+            int tokenStart = text.IndexOf(TokenStart, startIndex, StringComparison.Ordinal);
 
             return tokenStart < 0
                 ? (false, text.Length)
-                : tokenStart > 0 && text[tokenStart - 1] == _tokenEscapeChar
-                ? (false, tokenStart + _tokenStart.Length)
+                : tokenStart > 0 && text[tokenStart - 1] == TokenEscapeChar
+                ? (false, tokenStart + TokenStart.Length)
                 : (true, tokenStart);
         }
 

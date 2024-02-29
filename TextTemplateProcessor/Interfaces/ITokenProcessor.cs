@@ -60,11 +60,6 @@
         string ReplaceTokens(string text);
 
         /// <summary>
-        /// Resets all token substitution values in the Token Dictionary to empty strings.
-        /// </summary>
-        void ResetTokens();
-
-        /// <summary>
         /// Sets the token start and token end delimiters and the token escape character to the
         /// specified values.
         /// </summary>
