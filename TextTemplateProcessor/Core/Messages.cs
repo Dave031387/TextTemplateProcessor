@@ -28,14 +28,14 @@
         internal const string MsgFoundDuplicateOptionNameOnHeaderLine = "The option \"{1}\" appears more than once for segment \"{0}\". Only the first occurrence will be used.";
         internal const string MsgFoundDuplicateSegmentName = "Segment name \"{0}\" appears more than once in the template file. Default name \"{1}\" will be used in place of the duplicate.";
         internal const string MsgFoundSolutionDirectoryPath = "The solution directory path was determined to be: {0}";
-        internal const string MsgFourthCharacterMustBeBlank = "The fourth character of each template line should be blank:\n{0}";
+        internal const string MsgFourthCharacterMustBeBlank = "The fourth character of each template line should be blank:\n{0}\n   ^";
         internal const string MsgFullPathCannotBeDetermined = "The full path can't be determined because the solution directory path is unknown.";
         internal const string MsgGeneratedTextHasBeenReset = "The generated text cache for template file \"{0}\" has been reset.";
         internal const string MsgGeneratedTextIsEmpty = "Unable to write the output file because the generated text is empty.";
         internal const string MsgGeneratedTextIsNull = "Unable to write to the output file because the generated text is null.";
         internal const string MsgIndentValueMustBeValidNumber = "The indent value \"{0}\" is not a valid integer value.";
         internal const string MsgIndentValueOutOfRange = "The FTI option value must be a number between -9 and 9. The value given was {0}.";
-        internal const string MsgInvalidControlCode = "The following template line doesn't begin with a valid control code:\n{0}";
+        internal const string MsgInvalidControlCode = "The following template line doesn't begin with a valid control code:\n{0}\n^^^";
         internal const string MsgInvalidDirectoryCharacters = "The directory path contains invalid characters.";
         internal const string MsgInvalidFileNameCharacters = "The file name contains invalid characters.";
         internal const string MsgInvalidFormOfOption = "Segment options must follow the form \"option=value\" with no intervening spaces. Found this instead: \"{0}\"";

@@ -157,6 +157,10 @@
         /// a <see cref="TextItem" /> object containing the text from the text line plus the control
         /// information.
         /// </returns>
+        /// <remarks>
+        /// This method assumes that the <paramref name="textLine" /> that is passed into the method
+        /// has already been validated to ensure it is a valid text line.
+        /// </remarks>
         public TextItem ParseTextLine(string textLine)
         {
             string indentString = textLine[1..3].Replace('=', '+');

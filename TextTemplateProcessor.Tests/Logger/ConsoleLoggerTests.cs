@@ -1,7 +1,5 @@
 ﻿namespace TextTemplateProcessor.Logger
 {
-    using System.Linq.Expressions;
-
     public class ConsoleLoggerTests
     {
         private const int LineNumber = 10;
@@ -13,15 +11,13 @@
         private readonly string _formatStringOneArg = "This {0} test";
         private readonly string _formatStringTwoArgs = "This {0} {1}";
         private readonly Mock<ILocater> _locater = new();
-        private readonly Expression<Func<ILocater, string>> _locaterCurrentSegmentExpression = x => x.CurrentSegment;
-        private readonly Expression<Func<ILocater, int>> _locaterLineNumberExpression = x => x.LineNumber;
         private readonly Mock<IMessageWriter> _messageWriter = new();
 
         public ConsoleLoggerTests()
         {
             _locater.Reset();
-            _locater.Setup(_locaterCurrentSegmentExpression).Returns(SegmentName);
-            _locater.Setup(_locaterLineNumberExpression).Returns(LineNumber);
+            _locater.Setup(CurrentSegmentExpression).Returns(SegmentName);
+            _locater.Setup(LineNumberExpression).Returns(LineNumber);
             _messageWriter.Reset();
         }
 
@@ -331,8 +327,8 @@
         {
             if (locaterCallCount > 0)
             {
-                _locater.Verify(_locaterCurrentSegmentExpression, Times.Exactly(locaterCallCount));
-                _locater.Verify(_locaterLineNumberExpression, Times.Exactly(locaterCallCount));
+                _locater.Verify(CurrentSegmentExpression, Times.Exactly(locaterCallCount));
+                _locater.Verify(LineNumberExpression, Times.Exactly(locaterCallCount));
             }
 
             _locater.VerifyNoOtherCalls();

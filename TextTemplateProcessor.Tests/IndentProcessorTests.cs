@@ -7,20 +7,14 @@
         private const int DefaultTabSize = 4;
         private const int LineNumber = 5;
         private const string SegmentName = "Segment1";
-        private readonly Expression<Func<ILocater, string>> _currentSegmentExpression = x => x.CurrentSegment;
-        private readonly Expression<Func<ILocater, int>> _lineNumberExpression = x => x.LineNumber;
         private readonly Mock<ILocater> _locater = new();
-        private readonly (string, int) _location = (SegmentName, LineNumber);
-        private readonly Expression<Func<ILocater, (string, int)>> _locationExpression = x => x.Location;
         private readonly Mock<ILogger> _logger = new();
 
         public IndentProcessorTests()
         {
             _locater.Reset();
             _logger.Reset();
-            _locater.Setup(_currentSegmentExpression).Returns(SegmentName);
-            _locater.Setup(_lineNumberExpression).Returns(LineNumber);
-            _locater.Setup(_locationExpression).Returns(_location);
+            SetupLocater(_locater, SegmentName, LineNumber);
         }
 
         // Case 01 / firstTimeOffset = 0 / isRelative = true / indent < 0 / calculated value < 0 /
@@ -792,6 +786,10 @@
             processor.TabSize
                 .Should()
                 .Be(4);
+            _logger
+                .VerifyNoOtherCalls();
+            _locater
+                .VerifyNoOtherCalls();
         }
 
         [Theory]
@@ -802,9 +800,9 @@
         public void IsValidIndentValue_StringIsNotANumber_LogsMessageAndReturnsFalse(string? numberString)
         {
             // Arrange
-            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(MsgIndentValueMustBeValidNumber,
-                                                                               numberString!);
-            _logger.Setup(loggerExpression);
+            Expression<Action<ILogger>> loggerExpression = SetupLogger(_logger,
+                                                                       MsgIndentValueMustBeValidNumber,
+                                                                       numberString!);
             IndentProcessor processor = new(_logger.Object, _locater.Object);
 
             // Act
@@ -864,9 +862,9 @@
         public void IsValidIndentValue_ValueIsOutOfRange_LogsMessageAndReturnsFalse(string numberString)
         {
             // Arrange
-            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(MsgIndentValueOutOfRange,
-                                                                               numberString);
-            _logger.Setup(loggerExpression);
+            Expression<Action<ILogger>> loggerExpression = SetupLogger(_logger,
+                                                                       MsgIndentValueOutOfRange,
+                                                                       numberString);
             IndentProcessor processor = new(_logger.Object, _locater.Object);
 
             // Act
@@ -895,9 +893,9 @@
         public void IsValidTabSizeValue_StringIsNotANumber_LogsMessageAndReturnsFalse(string? numberString)
         {
             // Arrange
-            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(MsgTabSizeValueMustBeValidNumber,
-                                                                               numberString!);
-            _logger.Setup(loggerExpression);
+            Expression<Action<ILogger>> loggerExpression = SetupLogger(_logger,
+                                                                       MsgTabSizeValueMustBeValidNumber,
+                                                                       numberString!);
             IndentProcessor processor = new(_logger.Object, _locater.Object);
 
             // Act
@@ -956,9 +954,9 @@
         public void IsValidTabSizeValue_ValueIsOutOfRange_LogsMessageAndReturnsFalse(string numberString)
         {
             // Arrange
-            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(MsgTabSizeValueOutOfRange,
-                                                                               numberString);
-            _logger.Setup(loggerExpression);
+            Expression<Action<ILogger>> loggerExpression = SetupLogger(_logger,
+                                                                       MsgTabSizeValueOutOfRange,
+                                                                       numberString);
             IndentProcessor processor = new(_logger.Object, _locater.Object);
 
             // Act
@@ -1033,18 +1031,6 @@
         public void RestoreCurrentIndentLocation_SavedLocationExists_RestoresSavedLocation()
         {
             // Arrange
-            static void currentSegmentAction(ILocater x)
-            {
-                x.CurrentSegment = SegmentName;
-            }
-
-            static void lineNumberAction(ILocater x)
-            {
-                x.LineNumber = LineNumber;
-            }
-
-            _locater.SetupSet(currentSegmentAction);
-            _locater.SetupSet(lineNumberAction);
             IndentProcessor processor = new(_logger.Object, _locater.Object);
             int expectedTabSize = DefaultTabSize + 1;
             processor.SetTabSize(expectedTabSize);
@@ -1067,13 +1053,13 @@
             _logger
                 .VerifyNoOtherCalls();
             _locater
-                .Verify(_currentSegmentExpression, Times.Once);
+                .Verify(CurrentSegmentExpression, Times.Once);
             _locater
-                .Verify(_lineNumberExpression, Times.Once);
+                .Verify(LineNumberExpression, Times.Once);
             _locater
-                .VerifySet(currentSegmentAction, Times.Once);
+                .VerifySet(SetCurrentSegmentAction, Times.Once);
             _locater
-                .VerifySet(lineNumberAction, Times.Once);
+                .VerifySet(SetLineNumberAction, Times.Once);
             _locater
                 .VerifyNoOtherCalls();
         }
@@ -1087,9 +1073,9 @@
             // Arrange
             IndentProcessor processor = new(_logger.Object, _locater.Object);
             int expectedTabSize = 1;
-            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(MsgTabSizeTooSmall,
-                                                                               expectedTabSize.ToString());
-            _logger.Setup(loggerExpression);
+            Expression<Action<ILogger>> loggerExpression = SetupLogger(_logger,
+                                                                       MsgTabSizeTooSmall,
+                                                                       expectedTabSize.ToString());
 
             // Act
             processor.SetTabSize(tabSize);
@@ -1115,9 +1101,9 @@
             // Arrange
             IndentProcessor processor = new(_logger.Object, _locater.Object);
             int expectedTabSize = 9;
-            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(MsgTabSizeTooLarge,
-                                                                               expectedTabSize.ToString());
-            _logger.Setup(loggerExpression);
+            Expression<Action<ILogger>> loggerExpression = SetupLogger(_logger,
+                                                                       MsgTabSizeTooLarge,
+                                                                       expectedTabSize.ToString());
 
             // Act
             processor.SetTabSize(tabSize);
@@ -1178,10 +1164,9 @@
 
             if (message is not null)
             {
-                loggerExpression = GetLoggerExpression(message,
-                                                       SegmentName);
-
-                _logger.Setup(loggerExpression);
+                loggerExpression = SetupLogger(_logger,
+                                               message,
+                                               SegmentName);
             }
 
             IndentProcessor processor = new(_logger.Object, _locater.Object);
@@ -1204,7 +1189,7 @@
                 _logger
                     .Verify(loggerExpression!, Times.Once);
                 _locater
-                    .Verify(_currentSegmentExpression, Times.Once);
+                    .Verify(CurrentSegmentExpression, Times.Once);
             }
 
             _logger
@@ -1226,10 +1211,9 @@
 
             if (message is not null)
             {
-                loggerExpression = GetLoggerExpression(message,
-                                                       SegmentName);
-
-                _logger.Setup(loggerExpression);
+                loggerExpression = SetupLogger(_logger,
+                                               message,
+                                               SegmentName);
             }
 
             IndentProcessor processor = new(_logger.Object, _locater.Object);
@@ -1252,7 +1236,7 @@
                 _logger
                     .Verify(loggerExpression!, Times.Once);
                 _locater
-                    .Verify(_currentSegmentExpression, Times.Once);
+                    .Verify(CurrentSegmentExpression, Times.Once);
             }
 
             _logger

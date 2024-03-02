@@ -86,9 +86,9 @@
         {
             // Arrange
             string filePath = @"C:\invalid|path\file?name";
-            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(MsgUnableToWriteFile,
-                                                                                AnyString);
-            _logger.Setup(loggerExpression);
+            Expression<Action<ILogger>> loggerExpression = SetupLogger(_logger,
+                                                                       MsgUnableToWriteFile,
+                                                                       AnyString);
             Expression<Action<IPathValidater>> pathValidaterExpression = x => x.ValidateFullPath(filePath, true, false);
             _pathValidater.Setup(pathValidaterExpression).Throws<ArgumentException>();
             TextWriter writer = new(_logger.Object, _fileService.Object, _pathValidater.Object);
@@ -122,8 +122,8 @@
         {
             // Arrange
             string filePath = NextAbsoluteFilePath;
-            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(MsgGeneratedTextIsEmpty);
-            _logger.Setup(loggerExpression);
+            Expression<Action<ILogger>> loggerExpression = SetupLogger(_logger,
+                                                                       MsgGeneratedTextIsEmpty);
             TextWriter writer = new(_logger.Object, _fileService.Object, _pathValidater.Object);
 
             // Act
@@ -148,8 +148,8 @@
         {
             // Arrange
             string filePath = NextAbsoluteFilePath;
-            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(MsgGeneratedTextIsNull);
-            _logger.Setup(loggerExpression);
+            Expression<Action<ILogger>> loggerExpression = SetupLogger(_logger,
+                                                                       MsgGeneratedTextIsNull);
             TextWriter writer = new(_logger.Object, _fileService.Object, _pathValidater.Object);
 
             // Act
@@ -181,9 +181,9 @@
                 "Line 1",
                 "Line 2"
             };
-            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(MsgWritingTextFile,
-                                                                               fileName);
-            _logger.Setup(loggerExpression);
+            Expression<Action<ILogger>> loggerExpression = SetupLogger(_logger,
+                                                                       MsgWritingTextFile,
+                                                                       fileName);
             Expression<Func<IPathValidater, string>> pathValidaterExpression = x => x.ValidateFullPath(filePath, true, false);
             _pathValidater.Setup(pathValidaterExpression).Returns(filePath);
             Expression<Func<IFileAndDirectoryService, string>> fileServiceExpression1 =

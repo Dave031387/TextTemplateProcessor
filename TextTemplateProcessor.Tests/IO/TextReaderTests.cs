@@ -22,10 +22,12 @@
             string directoryPath = NextAbsoluteName;
             string fileName = NextFileName;
             string filePath = Path.Combine(directoryPath, fileName);
-            Expression<Action<ILogger>> loggerExpression1 = GetLoggerExpression(MsgAttemptingToReadFile,
-                                                                                filePath);
-            Expression<Action<ILogger>> loggerExpression2 = GetLoggerExpression(MsgErrorWhileReadingTemplateFile,
-                                                                                AnyString);
+            Expression<Action<ILogger>> loggerExpression1 = SetupLogger(_logger,
+                                                                        MsgAttemptingToReadFile,
+                                                                        filePath);
+            Expression<Action<ILogger>> loggerExpression2 = SetupLogger(_logger,
+                                                                        MsgErrorWhileReadingTemplateFile,
+                                                                        AnyString);
             Expression<Func<IFileAndDirectoryService, string>> fileServiceExpression1 =
                 x => x.GetDirectoryName(filePath);
             Expression<Func<IFileAndDirectoryService, string>> fileServiceExpression2 =
@@ -34,8 +36,6 @@
                 x => x.ReadTextFile(filePath);
             Expression<Func<IPathValidater, string>> pathValidaterExpression =
                 x => x.ValidateFullPath(filePath, true, true);
-            _logger.Setup(loggerExpression1);
-            _logger.Setup(loggerExpression2);
             _fileService.Setup(fileServiceExpression1).Returns(directoryPath);
             _fileService.Setup(fileServiceExpression2).Returns(fileName);
             _fileService.Setup(fileServiceExpression3).Throws<ArgumentException>();
@@ -76,15 +76,17 @@
             string directoryPath = NextAbsoluteName;
             string fileName = NextFileName;
             string filePath = Path.Combine(directoryPath, fileName);
-            Expression<Action<ILogger>> loggerExpression1 = GetLoggerExpression(MsgAttemptingToReadFile,
-                                                                                filePath);
-            Expression<Action<ILogger>> loggerExpression2 = GetLoggerExpression(MsgFileSuccessfullyRead);
             List<string> expected = new()
             {
                 "Line 1",
                 "Line 2",
                 "Line 3"
             };
+            Expression<Action<ILogger>> loggerExpression1 = SetupLogger(_logger,
+                                                                        MsgAttemptingToReadFile,
+                                                                        filePath);
+            Expression<Action<ILogger>> loggerExpression2 = SetupLogger(_logger,
+                                                                        MsgFileSuccessfullyRead);
             Expression<Func<IFileAndDirectoryService, string>> fileServiceExpression1 =
                 x => x.GetDirectoryName(filePath);
             Expression<Func<IFileAndDirectoryService, string>> fileServiceExpression2 =
@@ -93,8 +95,6 @@
                 x => x.ReadTextFile(filePath);
             Expression<Func<IPathValidater, string>> pathValidaterExpression =
                 x => x.ValidateFullPath(filePath, true, true);
-            _logger.Setup(loggerExpression1);
-            _logger.Setup(loggerExpression2);
             _fileService.Setup(fileServiceExpression1).Returns(directoryPath);
             _fileService.Setup(fileServiceExpression2).Returns(fileName);
             _fileService.Setup(fileServiceExpression3).Returns(expected);
@@ -135,8 +135,8 @@
         public void ReadTextFile_FilePathNotSet_LogsErrorAndReturnsEmptyList()
         {
             // Arrange
-            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(MsgTemplateFilePathNotSet);
-            _logger.Setup(loggerExpression);
+            Expression<Action<ILogger>> loggerExpression = SetupLogger(_logger,
+                                                                       MsgTemplateFilePathNotSet);
             TextReader reader = new(_logger.Object,
                                     _fileService.Object,
                                     _pathValidater.Object);
@@ -180,9 +180,9 @@
             Expression<Func<IPathValidater, string>> pathValidaterExpression =
                 x => x.ValidateFullPath(invalidFilePath, true, true);
             _pathValidater.Setup(pathValidaterExpression).Throws<ArgumentException>();
-            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(MsgUnableToSetTemplateFilePath,
-                                                                               AnyString);
-            _logger.Setup(loggerExpression);
+            Expression<Action<ILogger>> loggerExpression = SetupLogger(_logger,
+                                                                       MsgUnableToSetTemplateFilePath,
+                                                                       AnyString);
 
             // Act
             reader.SetFilePath(invalidFilePath);
@@ -333,9 +333,9 @@
             Expression<Func<IPathValidater, string>> pathValidaterExpression =
                 x => x.ValidateFullPath(invalidFilePath, true, true);
             _pathValidater.Setup(pathValidaterExpression).Throws<ArgumentException>();
-            Expression<Action<ILogger>> loggerExpression = GetLoggerExpression(MsgUnableToSetTemplateFilePath,
-                                                                               AnyString);
-            _logger.Setup(loggerExpression);
+            Expression<Action<ILogger>> loggerExpression = SetupLogger(_logger,
+                                                                       MsgUnableToSetTemplateFilePath,
+                                                                       AnyString);
 
             // Act
             TextReader reader = new(invalidFilePath,
