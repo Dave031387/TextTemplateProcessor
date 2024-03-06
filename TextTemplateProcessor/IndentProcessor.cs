@@ -261,7 +261,7 @@
         /// This method exits without doing anything if the current indent, tab size, and location
         /// wasn't previously saved.
         /// </remarks>
-        public void RestoreCurrentIndentLocation()
+        public void RestoreCurrentState()
         {
             if (_isCurrentIndentSaved)
             {
@@ -276,7 +276,7 @@
         /// <summary>
         /// Save the current indent, tab size, and location so that they can be restored later.
         /// </summary>
-        public void SaveCurrentIndentLocation()
+        public void SaveCurrentState()
         {
             _saveCurrentIndent = CurrentIndent;
             _saveTabSize = TabSize;

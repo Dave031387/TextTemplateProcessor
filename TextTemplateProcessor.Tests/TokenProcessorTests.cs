@@ -6,10 +6,8 @@
     {
         private readonly Mock<ILocater> _locater = new();
         private readonly Mock<ILogger> _logger = new();
+        private readonly MockHelper _mh = new();
         private readonly Mock<INameValidater> _nameValidater = new();
-        private readonly string _tokenEnd = "#>";
-        private readonly char _tokenEscapeChar = '\\';
-        private readonly string _tokenStart = "<#=";
         private Expression<Action<ILogger>> _loggerExpression = x => x.Log("test", null, null);
         private Expression<Func<INameValidater, bool>> _nameValidaterExpression1 = x => x.IsValidName("test");
         private Expression<Func<INameValidater, bool>> _nameValidaterExpression2 = x => x.IsValidName("test");
@@ -25,7 +23,7 @@
         public void ClearTokens_TokenDictionaryContainsTokens_ClearsTheTokenDictionary()
         {
             // Arrange
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            TokenProcessor processor = GetTokenProcessor();
             processor.TokenDictionary.Add("token1", "value1");
             processor.TokenDictionary.Add("token2", "value2");
             processor.TokenDictionary.Add("token3", "value3");
@@ -48,10 +46,8 @@
             string token = GenerateToken(tokenName);
             string text = $"text {token} text {token} text";
             string expected = $"text {token} text {token} text";
-            _nameValidaterExpression1 = SetupNameValidater(_nameValidater,
-                                                           tokenName,
-                                                           true);
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, true);
+            TokenProcessor processor = GetTokenProcessor();
 
             // Act
             processor.ExtractTokens(ref text);
@@ -81,7 +77,7 @@
             string token = GenerateToken(tokenName, true);
             string text = $"{text1}{token}{text2}";
             string expected = $"{text1}{token}{text2}";
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            TokenProcessor processor = GetTokenProcessor();
 
             // Act
             processor.ExtractTokens(ref text);
@@ -114,9 +110,9 @@
             string token2 = GenerateToken(tokenName2);
             string text = $"{text1}{token1}{text2}{token2}{text3}";
             string expected = $"{text1}{token1}{text2}{token2}{text3}";
-            _nameValidaterExpression1 = SetupNameValidater(_nameValidater, tokenName1, true);
-            _nameValidaterExpression2 = SetupNameValidater(_nameValidater, tokenName2, true);
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName1, true);
+            _nameValidaterExpression2 = MockHelper.SetupNameValidater(_nameValidater, tokenName2, true);
+            TokenProcessor processor = GetTokenProcessor();
 
             // Act
             processor.ExtractTokens(ref text);
@@ -149,8 +145,8 @@
             string token = GenerateToken(tokenName);
             string text = $"{text1}{token}{text2}";
             string expected = $"{text1}{token}{text2}";
-            _nameValidaterExpression1 = SetupNameValidater(_nameValidater, tokenName, true);
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, true);
+            TokenProcessor processor = GetTokenProcessor();
 
             // Act
             processor.ExtractTokens(ref text);
@@ -172,10 +168,11 @@
         public void ExtractTokens_LineContainsTokenWithMissingEndDelimiter_EscapesTokenAndLogsMessage()
         {
             // Arrange
-            string text = $"text{_tokenStart}token";
-            string expected = $"text{_tokenEscapeChar}{_tokenStart}token";
-            _loggerExpression = SetupLogger(_logger, MsgTokenMissingEndDelimiter);
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            string text = $"text{TokenStart}token";
+            string expected = $"text{TokenEscapeChar}{TokenStart}token";
+            _loggerExpression = MockHelper.SetupLogger(_logger,
+                                                       MsgTokenMissingEndDelimiter);
+            TokenProcessor processor = GetTokenProcessor();
 
             // Act
             processor.ExtractTokens(ref text);
@@ -196,7 +193,7 @@
             // Arrange
             string text = "this is a text line";
             string expected = "this is a text line";
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            TokenProcessor processor = GetTokenProcessor();
 
             // Act
             processor.ExtractTokens(ref text);
@@ -223,8 +220,8 @@
             string token = GenerateToken(paddedName);
             string text = $"text{token}text";
             string expected = $"text{token}text";
-            _nameValidaterExpression1 = SetupNameValidater(_nameValidater, tokenName, true);
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, true);
+            TokenProcessor processor = GetTokenProcessor();
 
             // Act
             processor.ExtractTokens(ref text);
@@ -249,12 +246,12 @@
             string tokenName = "1badName";
             string token = GenerateToken(tokenName);
             string text = $"text{token}text";
-            string expected = $"text{_tokenEscapeChar}{token}text";
-            _nameValidaterExpression1 = SetupNameValidater(_nameValidater, tokenName, false);
-            _loggerExpression = SetupLogger(_logger,
-                                            MsgTokenHasInvalidName,
-                                            tokenName);
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            string expected = $"text{TokenEscapeChar}{token}text";
+            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, false);
+            _loggerExpression = MockHelper.SetupLogger(_logger,
+                                                       MsgTokenHasInvalidName,
+                                                       tokenName);
+            TokenProcessor processor = GetTokenProcessor();
 
             // Act
             processor.ExtractTokens(ref text);
@@ -273,10 +270,11 @@
         public void ExtractTokens_TokenNameIsWhitespace_EscapesTokenAndLogsMessage()
         {
             // Arrange
-            string text = $"text{_tokenStart}{Whitespace}{_tokenEnd}text";
-            string expected = $"text{_tokenEscapeChar}{_tokenStart}{Whitespace}{_tokenEnd}text";
-            _loggerExpression = SetupLogger(_logger, MsgMissingTokenName);
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            string text = $"text{TokenStart}{Whitespace}{TokenEnd}text";
+            string expected = $"text{TokenEscapeChar}{TokenStart}{Whitespace}{TokenEnd}text";
+            _loggerExpression = MockHelper.SetupLogger(_logger,
+                                                       MsgMissingTokenName);
+            TokenProcessor processor = GetTokenProcessor();
 
             // Act
             processor.ExtractTokens(ref text);
@@ -297,11 +295,11 @@
             // Arrange
             string segmentName = "Segment1";
             int lineNumber = 1;
-            SetupLocater(_locater, segmentName, lineNumber);
-            _loggerExpression = SetupLogger(_logger,
-                                            MsgTokenDictionaryIsEmpty,
-                                            segmentName);
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            _mh.SetupLocater(_locater, segmentName, lineNumber);
+            _loggerExpression = MockHelper.SetupLogger(_logger,
+                                                       MsgTokenDictionaryIsEmpty,
+                                                       segmentName);
+            TokenProcessor processor = GetTokenProcessor();
             Dictionary<string, string> tokenValues = new();
 
             // Act
@@ -317,11 +315,11 @@
             // Arrange
             string segmentName = "Segment1";
             int lineNumber = 1;
-            SetupLocater(_locater, segmentName, lineNumber);
-            _loggerExpression = SetupLogger(_logger,
-                                            MsgTokenDictionaryIsNull,
-                                            segmentName);
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            _mh.SetupLocater(_locater, segmentName, lineNumber);
+            _loggerExpression = MockHelper.SetupLogger(_logger,
+                                                       MsgTokenDictionaryIsNull,
+                                                       segmentName);
+            TokenProcessor processor = GetTokenProcessor();
 
             // Act
             processor.LoadTokenValues(null!);
@@ -337,13 +335,13 @@
             string tokenName = "1badName";
             string segmentName = "Segment2";
             int lineNumber = 11;
-            SetupLocater(_locater, segmentName, lineNumber);
-            _nameValidaterExpression1 = SetupNameValidater(_nameValidater, tokenName, false);
-            _loggerExpression = SetupLogger(_logger,
-                                            MsgTokenDictionaryContainsInvalidTokenName,
-                                            segmentName,
-                                            tokenName);
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            _mh.SetupLocater(_locater, segmentName, lineNumber);
+            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, false);
+            _loggerExpression = MockHelper.SetupLogger(_logger,
+                                                       MsgTokenDictionaryContainsInvalidTokenName,
+                                                       segmentName,
+                                                       tokenName);
+            TokenProcessor processor = GetTokenProcessor();
             Dictionary<string, string> tokenValues = new()
             {
                 { tokenName, "test" }
@@ -363,13 +361,13 @@
             string tokenName = "Token";
             string segmentName = "Segment1";
             int lineNumber = 1;
-            SetupLocater(_locater, segmentName, lineNumber);
-            _nameValidaterExpression1 = SetupNameValidater(_nameValidater, tokenName, true);
-            _loggerExpression = SetupLogger(_logger,
-                                            MsgTokenWithEmptyValue,
-                                            segmentName,
-                                            tokenName);
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            _mh.SetupLocater(_locater, segmentName, lineNumber);
+            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, true);
+            _loggerExpression = MockHelper.SetupLogger(_logger,
+                                                       MsgTokenWithEmptyValue,
+                                                       segmentName,
+                                                       tokenName);
+            TokenProcessor processor = GetTokenProcessor();
             processor.TokenDictionary.Add(tokenName, "test");
             Dictionary<string, string> tokenValues = new()
             {
@@ -392,8 +390,8 @@
             // Arrange
             string tokenName = "Token2";
             string expected = "new value";
-            _nameValidaterExpression1 = SetupNameValidater(_nameValidater, tokenName, true);
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, true);
+            TokenProcessor processor = GetTokenProcessor();
             processor.TokenDictionary.Add("Token1", "test1");
             processor.TokenDictionary.Add(tokenName, "test2");
             Dictionary<string, string> tokenValues = new()
@@ -418,13 +416,13 @@
             string tokenName = "Token";
             string segmentName = "Segment1";
             int lineNumber = 1;
-            SetupLocater(_locater, segmentName, lineNumber);
-            _nameValidaterExpression1 = SetupNameValidater(_nameValidater, tokenName, true);
-            _loggerExpression = SetupLogger(_logger,
-                                            MsgTokenWithNullValue,
-                                            segmentName,
-                                            tokenName);
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            _mh.SetupLocater(_locater, segmentName, lineNumber);
+            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, true);
+            _loggerExpression = MockHelper.SetupLogger(_logger,
+                                                       MsgTokenWithNullValue,
+                                                       segmentName,
+                                                       tokenName);
+            TokenProcessor processor = GetTokenProcessor();
             processor.TokenDictionary.Add(tokenName, "test");
             Dictionary<string, string> tokenValues = new()
             {
@@ -448,13 +446,13 @@
             string tokenName = "Token";
             string segmentName = "Segment2";
             int lineNumber = 3;
-            SetupLocater(_locater, segmentName, lineNumber);
-            _nameValidaterExpression1 = SetupNameValidater(_nameValidater, tokenName, true);
-            _loggerExpression = SetupLogger(_logger,
-                                            MsgUnknownTokenName,
-                                            segmentName,
-                                            tokenName);
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            _mh.SetupLocater(_locater, segmentName, lineNumber);
+            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, true);
+            _loggerExpression = MockHelper.SetupLogger(_logger,
+                                                       MsgUnknownTokenName,
+                                                       segmentName,
+                                                       tokenName);
+            TokenProcessor processor = GetTokenProcessor();
             Dictionary<string, string> tokenValues = new()
             {
                 { tokenName, "test" }
@@ -482,7 +480,7 @@
             string tokenValue4 = "unused";
             string tokenValue6 = "";
             string tokenValue7 = "value";
-            string token1 = $"{_tokenStart}{tokenName1}";
+            string token1 = $"{TokenStart}{tokenName1}";
             string token2 = GenerateToken(tokenName2);
             string token3 = GenerateToken(tokenName3);
             string token4 = GenerateToken(tokenName4);
@@ -491,26 +489,22 @@
             string token7 = GenerateToken(tokenName7);
             string segmentName = "Segment1";
             int lineNumber = 11;
-            SetupLocater(_locater, segmentName, lineNumber);
-            Expression<Func<INameValidater, bool>> nameValidaterInvalid = x => x.IsValidName(tokenName3);
-            Expression<Func<INameValidater, bool>> nameValidaterUnknown = x => x.IsValidName(tokenName5);
-            Expression<Func<INameValidater, bool>> nameValidaterEmpty = x => x.IsValidName(tokenName6);
-            Expression<Func<INameValidater, bool>> nameValidaterValid = x => x.IsValidName(tokenName7);
-            _nameValidater.Setup(nameValidaterInvalid).Returns(false);
-            _nameValidater.Setup(nameValidaterUnknown).Returns(true);
-            _nameValidater.Setup(nameValidaterEmpty).Returns(true);
-            _nameValidater.Setup(nameValidaterValid).Returns(true);
-            Expression<Action<ILogger>> loggerNoDelimiter = SetupLogger(_logger, MsgTokenMissingEndDelimiter);
-            Expression<Action<ILogger>> loggerMissingName = SetupLogger(_logger, MsgMissingTokenName);
-            Expression<Action<ILogger>> loggerInvalidName = SetupLogger(_logger, MsgTokenHasInvalidName, tokenName3);
-            Expression<Action<ILogger>> loggerUnknownName = SetupLogger(_logger, MsgTokenNameNotFound, segmentName, tokenName5);
-            Expression<Action<ILogger>> loggerEmptyValue = SetupLogger(_logger, MsgTokenValueIsEmpty, segmentName, tokenName6);
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            _mh.SetupLocater(_locater, segmentName, lineNumber);
+            Expression<Func<INameValidater, bool>> nameValidaterInvalid = MockHelper.SetupNameValidater(_nameValidater, tokenName3, false);
+            Expression<Func<INameValidater, bool>> nameValidaterUnknown = MockHelper.SetupNameValidater(_nameValidater, tokenName5, true);
+            Expression<Func<INameValidater, bool>> nameValidaterEmpty = MockHelper.SetupNameValidater(_nameValidater, tokenName6, true);
+            Expression<Func<INameValidater, bool>> nameValidaterValid = MockHelper.SetupNameValidater(_nameValidater, tokenName7, true);
+            Expression<Action<ILogger>> loggerNoDelimiter = MockHelper.SetupLogger(_logger, MsgTokenMissingEndDelimiter);
+            Expression<Action<ILogger>> loggerMissingName = MockHelper.SetupLogger(_logger, MsgMissingTokenName);
+            Expression<Action<ILogger>> loggerInvalidName = MockHelper.SetupLogger(_logger, MsgTokenHasInvalidName, tokenName3);
+            Expression<Action<ILogger>> loggerUnknownName = MockHelper.SetupLogger(_logger, MsgTokenNameNotFound, segmentName, tokenName5);
+            Expression<Action<ILogger>> loggerEmptyValue = MockHelper.SetupLogger(_logger, MsgTokenValueIsEmpty, segmentName, tokenName6);
+            TokenProcessor processor = GetTokenProcessor();
             processor.TokenDictionary.Add(tokenName3, tokenValue3);
             processor.TokenDictionary.Add(tokenName4, tokenValue4);
             processor.TokenDictionary.Add(tokenName6, tokenValue6);
             processor.TokenDictionary.Add(tokenName7, tokenValue7);
-            string text = $"Text {token2} {_tokenEscapeChar}{token4} {token3} {token7} {token5} {token6} {token1}";
+            string text = $"Text {token2} {TokenEscapeChar}{token4} {token3} {token7} {token5} {token6} {token1}";
             string expected = $"Text {token2} {token4} {token3} {tokenValue7} {token5}  {token1}";
 
             // Act
@@ -536,12 +530,12 @@
         public void ReplaceTokens_TextContainsEscapedTokens_RemovesTheEscapeCharacters()
         {
             // Arrange
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            TokenProcessor processor = GetTokenProcessor();
             string token1 = GenerateToken(" test ");
             string token2 = GenerateToken("token2");
             string middleText = " middle ";
             string endText = " end";
-            string text = $"{_tokenEscapeChar}{token1}{middleText}{_tokenEscapeChar}{token2}{endText}";
+            string text = $"{TokenEscapeChar}{token1}{middleText}{TokenEscapeChar}{token2}{endText}";
             string expected = $"{token1}{middleText}{token2}{endText}";
 
             // Act
@@ -558,7 +552,7 @@
         public void ReplaceTokens_TextDoesNotContainTokens_ReturnsTextUnchanged()
         {
             // Arrange
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            TokenProcessor processor = GetTokenProcessor();
             string expected = "Text line without any tokens";
 
             // Act
@@ -575,10 +569,11 @@
         public void ReplaceTokens_TokenIsMissingEndDelimiter_LogsMessageAndOutputsTokenUnchanged()
         {
             // Arrange
-            _loggerExpression = SetupLogger(_logger, MsgTokenMissingEndDelimiter);
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            _loggerExpression = MockHelper.SetupLogger(_logger,
+                                                       MsgTokenMissingEndDelimiter);
+            TokenProcessor processor = GetTokenProcessor();
             string tokenName = "token";
-            string expected = $"Text line with {_tokenStart}{tokenName}";
+            string expected = $"Text line with {TokenStart}{tokenName}";
             processor.TokenDictionary.Add(tokenName, "value");
 
             // Act
@@ -596,12 +591,12 @@
         {
             // Arrange
             string tokenName = "invalid name";
-            _nameValidaterExpression1 = SetupNameValidater(_nameValidater, tokenName, false);
-            _loggerExpression = SetupLogger(_logger,
-                                            MsgTokenHasInvalidName,
-                                            tokenName);
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
-            string expected = $"Text line {_tokenStart}{tokenName}{_tokenEnd} end";
+            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, false);
+            _loggerExpression = MockHelper.SetupLogger(_logger,
+                                                       MsgTokenHasInvalidName,
+                                                       tokenName);
+            TokenProcessor processor = GetTokenProcessor();
+            string expected = $"Text line {TokenStart}{tokenName}{TokenEnd} end";
             processor.TokenDictionary.Add(tokenName, "value");
 
             // Act
@@ -618,9 +613,10 @@
         public void ReplaceTokens_TokenNameIsWhitespace_LogsMessageAndOutputsTokenUnchanged()
         {
             // Arrange
-            _loggerExpression = SetupLogger(_logger, MsgMissingTokenName);
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
-            string expected = $"Text line {_tokenStart}{Whitespace}{_tokenEnd} end";
+            _loggerExpression = MockHelper.SetupLogger(_logger,
+                                                       MsgMissingTokenName);
+            TokenProcessor processor = GetTokenProcessor();
+            string expected = $"Text line {TokenStart}{Whitespace}{TokenEnd} end";
 
             // Act
             string actual = processor.ReplaceTokens(expected);
@@ -637,15 +633,15 @@
         {
             // Arrange
             string tokenName = "token";
-            _nameValidaterExpression1 = SetupNameValidater(_nameValidater, tokenName, true);
+            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, true);
             string segmentName = "Segment1";
-            SetupLocater(_locater, segmentName, 10);
-            _loggerExpression = SetupLogger(_logger,
-                                            MsgTokenNameNotFound,
-                                            segmentName,
-                                            tokenName);
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
-            string expected = $"Text line {_tokenStart}{tokenName}{_tokenEnd} end";
+            _mh.SetupLocater(_locater, segmentName, 10);
+            _loggerExpression = MockHelper.SetupLogger(_logger,
+                                                       MsgTokenNameNotFound,
+                                                       segmentName,
+                                                       tokenName);
+            TokenProcessor processor = GetTokenProcessor();
+            string expected = $"Text line {TokenStart}{tokenName}{TokenEnd} end";
             processor.TokenDictionary.Add("anotherToken", "value");
 
             // Act
@@ -663,15 +659,15 @@
         {
             // Arrange
             string tokenName = "token";
-            _nameValidaterExpression1 = SetupNameValidater(_nameValidater, tokenName, true);
+            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, true);
             string segmentName = "Segment1";
-            SetupLocater(_locater, segmentName, 10);
-            _loggerExpression = SetupLogger(_logger,
-                                            MsgTokenValueIsEmpty,
-                                            segmentName,
-                                            tokenName);
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
-            string text = $"Text line {_tokenStart}{tokenName}{_tokenEnd} end";
+            _mh.SetupLocater(_locater, segmentName, 10);
+            _loggerExpression = MockHelper.SetupLogger(_logger,
+                                                       MsgTokenValueIsEmpty,
+                                                       segmentName,
+                                                       tokenName);
+            TokenProcessor processor = GetTokenProcessor();
+            string text = $"Text line {TokenStart}{tokenName}{TokenEnd} end";
             string expected = "Text line  end";
             processor.TokenDictionary.Add(tokenName, "");
 
@@ -691,9 +687,9 @@
             // Arrange
             string tokenName = "token";
             string tokenValue = "value";
-            _nameValidaterExpression1 = SetupNameValidater(_nameValidater, tokenName, true);
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
-            string text = $"Text line {_tokenStart}{tokenName}{_tokenEnd} end";
+            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, true);
+            TokenProcessor processor = GetTokenProcessor();
+            string text = $"Text line {TokenStart}{tokenName}{TokenEnd} end";
             string expected = $"Text line {tokenValue} end";
             processor.TokenDictionary.Add(tokenName, tokenValue);
 
@@ -758,7 +754,7 @@
         public void TokenDictionary_AddItemsToDictionary_DictionaryShouldContainAddedItems()
         {
             // Arrange
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            TokenProcessor processor = GetTokenProcessor();
             string[] expectedKeys = new[] { "token1", "token2", "token3" };
 
             // Act
@@ -831,7 +827,7 @@
         public void TokenProcessor_ConstructWithValidDependencies_InitializesEmptyTokenDictionary()
         {
             // Arrange/Act
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            TokenProcessor processor = GetTokenProcessor();
 
             // Assert
             processor.TokenDictionary
@@ -843,10 +839,13 @@
             VerifyMocks(0, 0, 0, 0, 0);
         }
 
-        private string GenerateToken(string tokenName, bool isEscaped = false)
+        private static string GenerateToken(string tokenName, bool isEscaped = false)
             => isEscaped
-            ? $"{_tokenEscapeChar}{_tokenStart}{tokenName}{_tokenEnd}"
-            : $"{_tokenStart}{tokenName}{_tokenEnd}";
+            ? $"{TokenEscapeChar}{TokenStart}{tokenName}{TokenEnd}"
+            : $"{TokenStart}{tokenName}{TokenEnd}";
+
+        private TokenProcessor GetTokenProcessor()
+            => new(_logger.Object, _locater.Object, _nameValidater.Object);
 
         private void SetTokenDelimiters_Test(string tokenStart,
                                              string tokenEnd,
@@ -861,12 +860,12 @@
 
             if (message is not null)
             {
-                _loggerExpression = SetupLogger(_logger, message, arg1, arg2);
+                _loggerExpression = MockHelper.SetupLogger(_logger, message, arg1, arg2);
                 expected = false;
                 loggerCount = 1;
             }
 
-            TokenProcessor processor = new(_logger.Object, _locater.Object, _nameValidater.Object);
+            TokenProcessor processor = GetTokenProcessor();
 
             // Act
             bool actual = processor.SetTokenDelimiters(tokenStart, tokenEnd, tokenEscapeChar);
@@ -892,13 +891,13 @@
             {
                 processor.TokenStart
                     .Should()
-                    .Be(_tokenStart);
+                    .Be(TokenStart);
                 processor.TokenEnd
                     .Should()
-                    .Be(_tokenEnd);
+                    .Be(TokenEnd);
                 processor.TokenEscapeChar
                     .Should()
-                    .Be(_tokenEscapeChar);
+                    .Be(TokenEscapeChar);
             }
 
             VerifyMocks(loggerCount, 0, 0, 0, 0);
@@ -917,12 +916,12 @@
 
             if (locaterLocationCount > 0)
             {
-                _locater.Verify(LocationExpression, Times.Exactly(locaterLocationCount));
+                _locater.Verify(_mh.LocationExpression, Times.Exactly(locaterLocationCount));
             }
 
             if (locaterCurrentSegmentCount > 0)
             {
-                _locater.Verify(CurrentSegmentExpression, Times.Exactly(locaterCurrentSegmentCount));
+                _locater.Verify(_mh.CurrentSegmentExpression, Times.Exactly(locaterCurrentSegmentCount));
             }
 
             if (nameValidaterCount1 > 0)

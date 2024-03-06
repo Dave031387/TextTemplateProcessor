@@ -5,15 +5,6 @@
 
     public class TextLineParserTests
     {
-        private const string Comment = "///";
-        private const string IndentAbsolute = "@=";
-        private const string IndentAbsoluteOneTime = "O=";
-        private const string IndentLeftOneTime = "O-";
-        private const string IndentLeftRelative = "@-";
-        private const string IndentRightOneTime = "O+";
-        private const string IndentRightRelative = "@+";
-        private const string IndentUnchanged = "   ";
-        private const string SegmentHeaderCode = "###";
         private readonly Mock<ILogger> _logger = new();
         private readonly Mock<ITokenProcessor> _tokenProcessor = new();
         private Expression<Action<ILogger>> _loggerExpression = x => x.Log("test", null, null);
@@ -29,7 +20,7 @@
         {
             // Arrange
             string text = GenerateTextLine(Comment, "This is a comment");
-            TextLineParser parser = new(_logger.Object, _tokenProcessor.Object);
+            TextLineParser parser = GetTextLineParser();
 
             // Act
             bool actual = parser.IsCommentLine(text);
@@ -38,8 +29,7 @@
             actual
                 .Should()
                 .BeTrue();
-            _logger.VerifyNoOtherCalls();
-            _tokenProcessor.VerifyNoOtherCalls();
+            MocksVerifyNoOtherCalls();
         }
 
         [Theory]
@@ -55,7 +45,7 @@
         {
             // Arrange
             string text = GenerateTextLine(controlCode, "This is not a comment");
-            TextLineParser parser = new(_logger.Object, _tokenProcessor.Object);
+            TextLineParser parser = GetTextLineParser();
 
             // Act
             bool actual = parser.IsCommentLine(text);
@@ -64,8 +54,7 @@
             actual
                 .Should()
                 .BeFalse();
-            _logger.VerifyNoOtherCalls();
-            _tokenProcessor.VerifyNoOtherCalls();
+            MocksVerifyNoOtherCalls();
         }
 
         [Theory]
@@ -81,7 +70,7 @@
         {
             // Arrange
             string text = GenerateTextLine(controlCode, "Not a segment header");
-            TextLineParser parser = new(_logger.Object, _tokenProcessor.Object);
+            TextLineParser parser = GetTextLineParser();
 
             // Act
             bool actual = parser.IsSegmentHeader(text);
@@ -90,8 +79,7 @@
             actual
                 .Should()
                 .BeFalse();
-            _logger.VerifyNoOtherCalls();
-            _tokenProcessor.VerifyNoOtherCalls();
+            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -99,7 +87,7 @@
         {
             // Arrange
             string text = GenerateTextLine(SegmentHeaderCode, "Segment1");
-            TextLineParser parser = new(_logger.Object, _tokenProcessor.Object);
+            TextLineParser parser = GetTextLineParser();
 
             // Act
             bool actual = parser.IsSegmentHeader(text);
@@ -108,8 +96,7 @@
             actual
                 .Should()
                 .BeTrue();
-            _logger.VerifyNoOtherCalls();
-            _tokenProcessor.VerifyNoOtherCalls();
+            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -117,7 +104,7 @@
         {
             // Arrange
             string text = GenerateTextLine(IndentUnchanged, "This is a text line");
-            TextLineParser parser = new(_logger.Object, _tokenProcessor.Object);
+            TextLineParser parser = GetTextLineParser();
 
             // Act
             bool actual = parser.IsTextLine(text);
@@ -126,8 +113,7 @@
             actual
                 .Should()
                 .BeTrue();
-            _logger.VerifyNoOtherCalls();
-            _tokenProcessor.VerifyNoOtherCalls();
+            MocksVerifyNoOtherCalls();
         }
 
         [Theory]
@@ -144,7 +130,7 @@
         {
             // Arrange
             string text = GenerateTextLine(controlCode, "Not a valid text line");
-            TextLineParser parser = new(_logger.Object, _tokenProcessor.Object);
+            TextLineParser parser = GetTextLineParser();
 
             // Act
             bool actual = parser.IsTextLine(text);
@@ -153,8 +139,7 @@
             actual
                 .Should()
                 .BeFalse();
-            _logger.VerifyNoOtherCalls();
-            _tokenProcessor.VerifyNoOtherCalls();
+            MocksVerifyNoOtherCalls();
         }
 
         [Theory]
@@ -168,7 +153,7 @@
         {
             // Arrange
             string text = GenerateTextLine(controlCode, indent, "This is a text line");
-            TextLineParser parser = new(_logger.Object, _tokenProcessor.Object);
+            TextLineParser parser = GetTextLineParser();
 
             // Act
             bool actual = parser.IsTextLine(text);
@@ -177,19 +162,19 @@
             actual
                 .Should()
                 .BeTrue();
-            _logger.VerifyNoOtherCalls();
-            _tokenProcessor.VerifyNoOtherCalls();
+            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
         public void IsValidPrefix_FourthCharacterNotBlank_LogsMessageAndReturnsFalse()
         {
             // Arrange
-            string text = "####Segment1";
-            _loggerExpression = SetupLogger(_logger,
-                                            MsgFourthCharacterMustBeBlank,
-                                            text);
-            TextLineParser parser = new(_logger.Object, _tokenProcessor.Object);
+            string text = $"{SegmentHeaderCode}#Segment1";
+            _loggerExpression
+                = MockHelper.SetupLogger(_logger,
+                                         MsgFourthCharacterMustBeBlank,
+                                         text);
+            TextLineParser parser = GetTextLineParser();
 
             // Act
             bool actual = parser.IsValidPrefix(text);
@@ -199,8 +184,7 @@
                 .Should()
                 .BeFalse();
             _logger.Verify(_loggerExpression, Times.Once);
-            _logger.VerifyNoOtherCalls();
-            _tokenProcessor.VerifyNoOtherCalls();
+            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -208,10 +192,11 @@
         {
             // Arrange
             string text = GenerateTextLine("@.1", "Text");
-            _loggerExpression = SetupLogger(_logger,
-                                            MsgInvalidControlCode,
-                                            text);
-            TextLineParser parser = new(_logger.Object, _tokenProcessor.Object);
+            _loggerExpression
+                = MockHelper.SetupLogger(_logger,
+                                         MsgInvalidControlCode,
+                                         text);
+            TextLineParser parser = GetTextLineParser();
 
             // Act
             bool actual = parser.IsValidPrefix(text);
@@ -221,8 +206,7 @@
                 .Should()
                 .BeFalse();
             _logger.Verify(_loggerExpression, Times.Once);
-            _logger.VerifyNoOtherCalls();
-            _tokenProcessor.VerifyNoOtherCalls();
+            MocksVerifyNoOtherCalls();
         }
 
         [Theory]
@@ -232,9 +216,10 @@
         public void IsValidPrefix_LineLengthLessThanThree_LogsMessageAndReturnsFalse(string text)
         {
             // Arrange
-            _loggerExpression = SetupLogger(_logger,
-                                            MsgMinimumLineLengthInTemplateFileIs3);
-            TextLineParser parser = new(_logger.Object, _tokenProcessor.Object);
+            _loggerExpression
+                = MockHelper.SetupLogger(_logger,
+                                         MsgMinimumLineLengthInTemplateFileIs3);
+            TextLineParser parser = GetTextLineParser();
 
             // Act
             bool actual = parser.IsValidPrefix(text);
@@ -244,8 +229,7 @@
                 .Should()
                 .BeFalse();
             _logger.Verify(_loggerExpression, Times.Once);
-            _logger.VerifyNoOtherCalls();
-            _tokenProcessor.VerifyNoOtherCalls();
+            MocksVerifyNoOtherCalls();
         }
 
         [Theory]
@@ -262,7 +246,7 @@
         {
             // Arrange
             string textLine = GenerateTextLine(controlCode, "Text line");
-            TextLineParser parser = new(_logger.Object, _tokenProcessor.Object);
+            TextLineParser parser = GetTextLineParser();
 
             // Act
             bool actual = parser.IsValidPrefix(textLine);
@@ -271,8 +255,7 @@
             actual
                 .Should()
                 .BeTrue();
-            _logger.VerifyNoOtherCalls();
-            _tokenProcessor.VerifyNoOtherCalls();
+            MocksVerifyNoOtherCalls();
         }
 
         [Theory]
@@ -292,13 +275,15 @@
             // Arrange
             string textLine = GenerateTextLine(controlCode, expectedText);
             string actualText = string.Empty;
-            Expression<Action<ITokenProcessor>> tokenProcessorExpression = x => x.ExtractTokens(ref It.Ref<string>.IsAny);
-            _tokenProcessor.Setup(tokenProcessorExpression)
+            Expression<Action<ITokenProcessor>> tokenProcessorExpression
+                = x => x.ExtractTokens(ref It.Ref<string>.IsAny);
+            _tokenProcessor
+                .Setup(tokenProcessorExpression)
                 .Callback((ref string passedText) =>
                 {
                     actualText = passedText;
                 });
-            TextLineParser parser = new(_logger.Object, _tokenProcessor.Object);
+            TextLineParser parser = GetTextLineParser();
             TextItem expectedTextItem = new(indent, isRelative, isOneTime, expectedText);
 
             // Act
@@ -312,8 +297,7 @@
                 .Should()
                 .Be(expectedText);
             _tokenProcessor.Verify(tokenProcessorExpression, Times.Once);
-            _tokenProcessor.VerifyNoOtherCalls();
-            _logger.VerifyNoOtherCalls();
+            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -352,14 +336,13 @@
         public void TextLineParser_ConstructWithValidDependencies_ShouldNotThrow()
         {
             // Arrange
-            Action action = () => { TextLineParser parser = new(_logger.Object, _tokenProcessor.Object); };
+            Action action = () => GetTextLineParser();
 
             // Act/Assert
             action
                 .Should()
                 .NotThrow();
-            _logger.VerifyNoOtherCalls();
-            _tokenProcessor.VerifyNoOtherCalls();
+            MocksVerifyNoOtherCalls();
         }
 
         private static string GenerateTextLine(string controlCode, string text, params string[] tokenNames)
@@ -382,6 +365,15 @@
             }
 
             return result;
+        }
+
+        private TextLineParser GetTextLineParser()
+            => new(_logger.Object, _tokenProcessor.Object);
+
+        private void MocksVerifyNoOtherCalls()
+        {
+            _logger.VerifyNoOtherCalls();
+            _tokenProcessor.VerifyNoOtherCalls();
         }
     }
 }

@@ -6,6 +6,7 @@
     {
         private readonly Mock<IFileAndDirectoryService> _fileService = new();
         private readonly Mock<ILogger> _logger = new();
+        private readonly MockHelper _mh = new();
         private readonly Mock<IPathValidater> _pathValidater = new();
 
         public TextWriterTests()
@@ -67,31 +68,30 @@
         public void TextWriter_ConstructWithValidServices_ShouldNotThrowException()
         {
             // Arrange
-            Action action = () => { TextWriter writer = new(_logger.Object, _fileService.Object, _pathValidater.Object); };
+            Action action = () => { TextWriter writer = GetTextWriter(); };
 
             // Act/Assert
             action
                 .Should()
                 .NotThrow();
-            _logger
-                .VerifyNoOtherCalls();
-            _fileService
-                .VerifyNoOtherCalls();
-            _pathValidater
-                .VerifyNoOtherCalls();
+            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
         public void WriteTextFile_InvalidOutputFilePath_LogsMessageAndReturnsFalse()
         {
             // Arrange
-            string filePath = @"C:\invalid|path\file?name";
-            Expression<Action<ILogger>> loggerExpression = SetupLogger(_logger,
-                                                                       MsgUnableToWriteFile,
-                                                                       AnyString);
-            Expression<Action<IPathValidater>> pathValidaterExpression = x => x.ValidateFullPath(filePath, true, false);
-            _pathValidater.Setup(pathValidaterExpression).Throws<ArgumentException>();
-            TextWriter writer = new(_logger.Object, _fileService.Object, _pathValidater.Object);
+            string filePath = $@"{VolumeRoot}{Sep}invalid|path{Sep}file?name";
+            Expression<Action<ILogger>> loggerExpression
+                = MockHelper.SetupLogger(_logger,
+                                         MsgUnableToWriteFile,
+                                         AnyString);
+            _mh.SetupPathValidater(_pathValidater,
+                                   filePath,
+                                   true,
+                                   false,
+                                   true);
+            TextWriter writer = GetTextWriter();
             string[] textLines = new[]
             {
                 "Line 1",
@@ -105,16 +105,9 @@
             actual
                 .Should()
                 .BeFalse();
-            _logger
-                .Verify(loggerExpression, Times.Once);
-            _pathValidater
-                .Verify(pathValidaterExpression, Times.Once);
-            _fileService
-                .VerifyNoOtherCalls();
-            _logger
-                .VerifyNoOtherCalls();
-            _pathValidater
-                .VerifyNoOtherCalls();
+            _logger.Verify(loggerExpression, Times.Once);
+            _pathValidater.Verify(_mh.ValidateFullPathExpression, Times.Once);
+            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -122,9 +115,10 @@
         {
             // Arrange
             string filePath = NextAbsoluteFilePath;
-            Expression<Action<ILogger>> loggerExpression = SetupLogger(_logger,
-                                                                       MsgGeneratedTextIsEmpty);
-            TextWriter writer = new(_logger.Object, _fileService.Object, _pathValidater.Object);
+            Expression<Action<ILogger>> loggerExpression
+                = MockHelper.SetupLogger(_logger,
+                                         MsgGeneratedTextIsEmpty);
+            TextWriter writer = GetTextWriter();
 
             // Act
             bool actual = writer.WriteTextFile(filePath, Array.Empty<string>());
@@ -133,14 +127,8 @@
             actual
                 .Should()
                 .BeFalse();
-            _logger
-                .Verify(loggerExpression, Times.Once);
-            _fileService
-                .VerifyNoOtherCalls();
-            _logger
-                .VerifyNoOtherCalls();
-            _pathValidater
-                .VerifyNoOtherCalls();
+            _logger.Verify(loggerExpression, Times.Once);
+            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -148,9 +136,10 @@
         {
             // Arrange
             string filePath = NextAbsoluteFilePath;
-            Expression<Action<ILogger>> loggerExpression = SetupLogger(_logger,
-                                                                       MsgGeneratedTextIsNull);
-            TextWriter writer = new(_logger.Object, _fileService.Object, _pathValidater.Object);
+            Expression<Action<ILogger>> loggerExpression
+                = MockHelper.SetupLogger(_logger,
+                                         MsgGeneratedTextIsNull);
+            TextWriter writer = GetTextWriter();
 
             // Act
             bool actual = writer.WriteTextFile(filePath, null!);
@@ -159,14 +148,8 @@
             actual
                 .Should()
                 .BeFalse();
-            _logger
-                .Verify(loggerExpression, Times.Once);
-            _fileService
-                .VerifyNoOtherCalls();
-            _logger
-                .VerifyNoOtherCalls();
-            _pathValidater
-                .VerifyNoOtherCalls();
+            _logger.Verify(loggerExpression, Times.Once);
+            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -181,24 +164,17 @@
                 "Line 1",
                 "Line 2"
             };
-            Expression<Action<ILogger>> loggerExpression = SetupLogger(_logger,
-                                                                       MsgWritingTextFile,
-                                                                       fileName);
-            Expression<Func<IPathValidater, string>> pathValidaterExpression = x => x.ValidateFullPath(filePath, true, false);
-            _pathValidater.Setup(pathValidaterExpression).Returns(filePath);
-            Expression<Func<IFileAndDirectoryService, string>> fileServiceExpression1 =
-                x => x.GetDirectoryName(filePath);
-            Expression<Func<IFileAndDirectoryService, string>> fileServiceExpression2 =
-                x => x.GetFileName(filePath);
-            Expression<Action<IFileAndDirectoryService>> fileServiceExpression3 =
-                x => x.CreateDirectory(directoryPath);
-            Expression<Action<IFileAndDirectoryService>> fileServiceExpression4 =
-                x => x.WriteTextFile(filePath, textLines);
-            _fileService.Setup(fileServiceExpression1).Returns(directoryPath);
-            _fileService.Setup(fileServiceExpression2).Returns(fileName);
-            _fileService.Setup(fileServiceExpression3);
-            _fileService.Setup(fileServiceExpression4);
-            TextWriter writer = new(_logger.Object, _fileService.Object, _pathValidater.Object);
+            Expression<Action<ILogger>> loggerExpression
+                = MockHelper.SetupLogger(_logger,
+                                         MsgWritingTextFile,
+                                         fileName);
+            _mh.SetupPathValidater(_pathValidater, filePath, true, false, filePath);
+            _mh.SetupFileAndDirectoryService(_fileService,
+                                             directoryPath,
+                                             fileName,
+                                             filePath,
+                                             textLines);
+            TextWriter writer = GetTextWriter();
 
             // Act
             bool actual = writer.WriteTextFile(filePath, textLines);
@@ -207,24 +183,23 @@
             actual
                 .Should()
                 .BeTrue();
-            _logger
-                .Verify(loggerExpression, Times.Once);
-            _pathValidater
-                .Verify(pathValidaterExpression, Times.Once);
-            _fileService
-                .Verify(fileServiceExpression1, Times.Once);
-            _fileService
-                .Verify(fileServiceExpression2, Times.Once);
-            _fileService
-                .Verify(fileServiceExpression3, Times.Once);
-            _fileService
-                .Verify(fileServiceExpression4, Times.Once);
-            _fileService
-                .VerifyNoOtherCalls();
-            _logger
-                .VerifyNoOtherCalls();
-            _pathValidater
-                .VerifyNoOtherCalls();
+            _logger.Verify(loggerExpression, Times.Once);
+            _pathValidater.Verify(_mh.ValidateFullPathExpression, Times.Once);
+            _fileService.Verify(_mh.GetDirectoryNameExpression, Times.Once);
+            _fileService.Verify(_mh.GetFileNameExpression, Times.Once);
+            _fileService.Verify(_mh.CreateDirectoryExpression, Times.Once);
+            _fileService.Verify(_mh.WriteTextFileExpression, Times.Once);
+            MocksVerifyNoOtherCalls();
+        }
+
+        private TextWriter GetTextWriter()
+            => new(_logger.Object, _fileService.Object, _pathValidater.Object);
+
+        private void MocksVerifyNoOtherCalls()
+        {
+            _logger.VerifyNoOtherCalls();
+            _fileService.VerifyNoOtherCalls();
+            _pathValidater.VerifyNoOtherCalls();
         }
     }
 }

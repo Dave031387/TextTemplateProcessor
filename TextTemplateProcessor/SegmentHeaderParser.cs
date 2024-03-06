@@ -107,6 +107,7 @@
         public ControlItem ParseSegmentHeader(string headerLine)
         {
             ControlItem controlItem = new();
+            bool usingDefaultSegmentName = false;
 
             if (headerLine.Length < 5)
             {
@@ -118,24 +119,30 @@
 
             if (headerLine[4] == ' ')
             {
+                _locater.CurrentSegment = _defaultSegmentNameGenerator.Next;
                 _logger.Log(MsgSegmentNameMustStartInColumn5,
-                            _locater.CurrentSegment);
-                headerLine = headerLine.Insert(4, _defaultSegmentNameGenerator.Next);
+                            _locater.CurrentSegment,
+                            headerLine);
+                headerLine = headerLine.Insert(4, _locater.CurrentSegment);
+                usingDefaultSegmentName = true;
             }
 
-            string[] args = headerLine.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] args = headerLine.Split(new[] { ' ', ',' }, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
             string segmentName = args[1];
 
-            if (_nameValidater.IsValidName(segmentName))
+            if (usingDefaultSegmentName is false)
             {
-                _locater.CurrentSegment = segmentName;
-            }
-            else
-            {
-                _locater.CurrentSegment = _defaultSegmentNameGenerator.Next;
-                _logger.Log(MsgInvalidSegmentName,
-                            segmentName,
-                            _locater.CurrentSegment);
+                if (_nameValidater.IsValidName(segmentName))
+                {
+                    _locater.CurrentSegment = segmentName;
+                }
+                else
+                {
+                    _locater.CurrentSegment = _defaultSegmentNameGenerator.Next;
+                    _logger.Log(MsgInvalidSegmentName,
+                                segmentName,
+                                _locater.CurrentSegment);
+                } 
             }
 
             if (args.Length > 2)
@@ -159,6 +166,7 @@
             else
             {
                 _logger.Log(MsgInvalidFormOfOption,
+                            _locater.CurrentSegment,
                             arg);
                 return result;
             }
@@ -256,6 +264,12 @@
                 }
 
                 controlItem.FirstTimeIndent = indentValue;
+            }
+            else
+            {
+                _logger.Log(MsgFirstTimeIndentIsInvalid,
+                            _locater.CurrentSegment,
+                            optionValue);
             }
         }
 

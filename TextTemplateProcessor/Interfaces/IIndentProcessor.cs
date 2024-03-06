@@ -105,12 +105,12 @@
         /// This method exits without doing anything if the current indent, tab size, and location
         /// wasn't previously saved.
         /// </remarks>
-        void RestoreCurrentIndentLocation();
+        void RestoreCurrentState();
 
         /// <summary>
         /// Save the current indent, tab size, and location so that they can be restored later.
         /// </summary>
-        void SaveCurrentIndentLocation();
+        void SaveCurrentState();
 
         /// <summary>
         /// Set the tab size to the specified value.

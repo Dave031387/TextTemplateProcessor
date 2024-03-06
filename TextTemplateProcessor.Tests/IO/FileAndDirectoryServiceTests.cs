@@ -62,7 +62,7 @@
             FileAndDirectoryService service = new();
             string absolutePath = NextAbsoluteName;
             string fileName = NextFileName;
-            string expected = $@"{absolutePath}\{fileName}";
+            string expected = $@"{absolutePath}{Sep}{fileName}";
 
             // Act
             string actual = service.CombineDirectoryAndFileName(absolutePath, fileName);
@@ -80,7 +80,7 @@
             FileAndDirectoryService service = new();
             string relativePath = NextRelativeName;
             string fileName = NextFileName;
-            string expected = $@"{relativePath}\{fileName}";
+            string expected = $@"{relativePath}{Sep}{fileName}";
 
             // Act
             string actual = service.CombineDirectoryAndFileName(relativePath, fileName);
@@ -273,7 +273,7 @@
             FileAndDirectoryService service = new();
             string absoluteRoot = NextAbsoluteName;
             string relativePath = NextRelativeName;
-            string expected = $@"{absoluteRoot}\{relativePath}";
+            string expected = $@"{absoluteRoot}{Sep}{relativePath}";
             DeleteTestFiles(absoluteRoot);
 
             // Act
@@ -360,7 +360,7 @@
             FileAndDirectoryService service = new();
 
             // Act
-            string actual = service.GetDirectoryName(@"\file.txt");
+            string actual = service.GetDirectoryName($@"{Sep}file.txt");
 
             // Assert
             actual
@@ -388,8 +388,8 @@
         {
             // Arrange
             FileAndDirectoryService service = new();
-            string expected = $@"{VolumeRoot}\test\directory";
-            string filePath = $@"{expected}\file.txt";
+            string expected = $@"{VolumeRoot}{Sep}test{Sep}directory";
+            string filePath = $@"{expected}{Sep}file.txt";
 
             // Act
             string actual = service.GetDirectoryName(filePath);
@@ -437,8 +437,8 @@
         {
             // Arrange
             FileAndDirectoryService service = new();
-            string expected = @"test\directory";
-            string filePath = $@"{expected}\file.txt";
+            string expected = $@"test{Sep}directory";
+            string filePath = $@"{expected}{Sep}file.txt";
 
             // Act
             string actual = service.GetDirectoryName(filePath);
@@ -456,7 +456,7 @@
             FileAndDirectoryService service = new();
 
             // Act
-            string actual = service.GetDirectoryName($@"{VolumeRoot}\file.txt");
+            string actual = service.GetDirectoryName($@"{VolumeRoot}{Sep}file.txt");
 
             // Assert
             actual
@@ -471,7 +471,7 @@
             FileAndDirectoryService service = new();
 
             // Act
-            string actual = service.GetFileName($@"{VolumeRoot}\directory\");
+            string actual = service.GetFileName($@"{VolumeRoot}{Sep}directory{Sep}");
 
             // Assert
             actual
@@ -485,7 +485,7 @@
             // Arrange
             FileAndDirectoryService service = new();
             string expected = "file.txt";
-            string filePath = $@"{VolumeRoot}\test\directory\{expected}";
+            string filePath = $@"{VolumeRoot}{Sep}test{Sep}directory{Sep}{expected}";
 
             // Act
             string actual = service.GetFileName(filePath);
@@ -581,8 +581,8 @@
             // Arrange
             FileAndDirectoryService service = new();
             string path = "file.txt";
-            string rootPath = @"test\directory";
-            string expected = $@"{CurrentDirectory}\{rootPath}\{path}";
+            string rootPath = $@"test{Sep}directory";
+            string expected = $@"{CurrentDirectory}{Sep}{rootPath}{Sep}{path}";
 
             // Act
             string actual = service.GetFullPath(path, rootPath);
@@ -600,7 +600,7 @@
         {
             // Arrange
             FileAndDirectoryService service = new();
-            string expected = $@"{VolumeRoot}\test\directory";
+            string expected = $@"{VolumeRoot}{Sep}test{Sep}directory";
 
             // Act
             string actual = service.GetFullPath(path, expected);
@@ -618,8 +618,8 @@
         {
             // Arrange
             FileAndDirectoryService service = new();
-            string rootPath = @"test\directory";
-            string expected = $@"{CurrentDirectory}\{rootPath}";
+            string rootPath = $@"test{Sep}directory";
+            string expected = $@"{CurrentDirectory}{Sep}{rootPath}";
 
             // Act
             string actual = service.GetFullPath(path, rootPath);
@@ -637,8 +637,8 @@
         {
             // Arrange
             FileAndDirectoryService service = new();
-            string path = @"test\directory\file.txt";
-            string expected = $@"{CurrentDirectory}\{path}";
+            string path = $@"test{Sep}directory{Sep}file.txt";
+            string expected = $@"{CurrentDirectory}{Sep}{path}";
 
             // Act
             string actual = service.GetFullPath(path, rootPath);
@@ -655,8 +655,8 @@
             // Arrange
             FileAndDirectoryService service = new();
             string path = "file.txt";
-            string rootPath = $@"{VolumeRoot}\test\directory";
-            string expected = $@"{rootPath}\{path}";
+            string rootPath = $@"{VolumeRoot}{Sep}test{Sep}directory";
+            string expected = $@"{rootPath}{Sep}{path}";
 
             // Act
             string actual = service.GetFullPath(path, rootPath);
@@ -670,14 +670,15 @@
         [Theory]
         [InlineData("")]
         [InlineData(Whitespace)]
-        [InlineData(@"test\directory")]
-        [InlineData(@"C:\test\directory")]
-        public void GetFullPath_PathIsRooted_ReturnsFullPath(string rootPath)
+        [InlineData($@"test{Sep}directory")]
+        [InlineData($@"C:{Sep}test{Sep}directory")]
+        public void GetFullPath_PathIsRooted_ReturnsFullPath(string root)
         {
             // Arrange
             FileAndDirectoryService service = new();
-            string path = @"\test\directory\file.txt";
+            string path = $@"{Sep}test{Sep}directory{Sep}file.txt";
             string expected = $"{VolumeRoot}{path}";
+            string rootPath = root.Length > 2 && root[0..2] == "C:" ? $"{VolumeRoot}{root[2..]}" : root;
 
             // Act
             string actual = service.GetFullPath(path, rootPath);

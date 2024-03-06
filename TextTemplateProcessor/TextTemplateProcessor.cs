@@ -257,9 +257,9 @@
 
                 if (controlItem.ShouldGeneratePadSegment)
                 {
-                    _indentProcessor.SaveCurrentIndentLocation();
+                    _indentProcessor.SaveCurrentState();
                     GenerateSegment(controlItem.PadSegment);
-                    _indentProcessor.RestoreCurrentIndentLocation();
+                    _indentProcessor.RestoreCurrentState();
                 }
 
                 if (controlItem.TabSize > 0)

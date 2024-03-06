@@ -8,7 +8,7 @@
         {
             // Arrange
             string fileName = NextFileName;
-            string filePath = $@"{whitespace}\{fileName}";
+            string filePath = $@"{whitespace}{Sep}{fileName}";
             string fullFilePath = Path.Combine(CurrentDirectory, fileName);
 
             // Act/Assert
@@ -24,7 +24,7 @@
         public void ValidateFullPath_FileDirectoryPathContainsInvalidPathCharacters_ThrowsException(string invalidChar)
         {
             // Arrange
-            string filePath = $@"{VolumeRoot}\x{invalidChar}x\{NextFileName}";
+            string filePath = $@"{VolumeRoot}{Sep}x{invalidChar}x{Sep}{NextFileName}";
 
             // Act/Assert
             AssertException(filePath,
@@ -39,7 +39,7 @@
         public void ValidateFullPath_FileNameContainsInvalidFileNameCharacters_ThrowsException(string invalidChar)
         {
             // Arrange
-            string filePath = $@"{NextAbsoluteName}\x{invalidChar}x.test";
+            string filePath = $@"{NextAbsoluteName}{Sep}x{invalidChar}x.test";
 
             // Act/Assert
             AssertException(filePath,
@@ -54,7 +54,7 @@
         public void ValidateFullPath_FileNameIsEmptyOrWhitespace_ThrowsException(string whitespace)
         {
             // Arrange
-            string filePath = $@"{NextAbsoluteName}\{whitespace}";
+            string filePath = $@"{NextAbsoluteName}{Sep}{whitespace}";
 
             // Act/Assert
             AssertException(filePath,
@@ -139,7 +139,7 @@
         public void ValidateFullPath_PathContainsInvalidPathCharacters_ThrowsException(string invalidChar)
         {
             // Arrange
-            string filePath = $@"{VolumeRoot}\x{invalidChar}x";
+            string filePath = $@"{VolumeRoot}{Sep}x{invalidChar}x";
 
             // Act/Assert
             AssertException(filePath,
@@ -210,7 +210,7 @@
             // Arrange
             string absolutePath = NextAbsoluteName;
             string fileName = CreateTestFiles(absolutePath);
-            string filePath = $@"{absolutePath}\{fileName}";
+            string filePath = $@"{absolutePath}{Sep}{fileName}";
 
             // Act/Assert
             AssertValidCall(filePath,
@@ -278,7 +278,7 @@
             string relativePath = NextRelativeName;
             string fullDirectoryPath = Path.Combine(CurrentDirectory, relativePath);
             string fileName = CreateTestFiles(fullDirectoryPath);
-            string filePath = $@"{relativePath}\{fileName}";
+            string filePath = $@"{relativePath}{Sep}{fileName}";
             string fullFilePath = Path.Combine(CurrentDirectory, filePath);
 
             // Act/Assert
@@ -312,7 +312,7 @@
         public void ValidatePath_DirectoryPathContainsInvalidPathCharacters_ThrowsException(string invalidChar)
         {
             // Arrange
-            string filePath = $@"{VolumeRoot}\x{invalidChar}x\{NextFileName}";
+            string filePath = $@"{VolumeRoot}{Sep}x{invalidChar}x{Sep}{NextFileName}";
 
             // Act/Assert
             AssertException(filePath,
@@ -327,7 +327,7 @@
         public void ValidatePath_DirectoryPathIsEmptyOrWhitespace_DoesNotThrow(string whitespace)
         {
             // Arrange
-            string filePath = $@"{whitespace}\{NextFileName}";
+            string filePath = $@"{whitespace}{Sep}{NextFileName}";
 
             // Act/Assert
             AssertValidCall(filePath,
@@ -342,7 +342,7 @@
         public void ValidatePath_FileNameContainsInvalidFileNameCharacters_ThrowsException(string invalidChar)
         {
             // Arrange
-            string filePath = $@"{NextAbsoluteName}\x{invalidChar}x.test";
+            string filePath = $@"{NextAbsoluteName}{Sep}x{invalidChar}x.test";
 
             // Act/Assert
             AssertException(filePath,
@@ -357,7 +357,7 @@
         public void ValidatePath_FileNameIsEmptyOrWhitespace_ThrowsException(string whitespace)
         {
             // Arrange
-            string filePath = $@"{NextAbsoluteName}\{whitespace}";
+            string filePath = $@"{NextAbsoluteName}{Sep}{whitespace}";
 
             // Act/Assert
             AssertException(filePath,
@@ -428,7 +428,7 @@
         public void ValidatePath_PathContainsInvalidPathCharacters_ThrowsException(string invalidChar)
         {
             // Arrange
-            string filePath = $@"{VolumeRoot}\x{invalidChar}x";
+            string filePath = $@"{VolumeRoot}{Sep}x{invalidChar}x";
 
             // Act/Assert
             AssertException(filePath,
@@ -499,7 +499,7 @@
             // Arrange
             string absolutePath = NextAbsoluteName;
             string fileName = CreateTestFiles(absolutePath);
-            string filePath = $@"{absolutePath}\{fileName}";
+            string filePath = $@"{absolutePath}{Sep}{fileName}";
 
             // Act/Assert
             AssertValidCall(filePath,
@@ -567,7 +567,7 @@
             string relativePath = NextRelativeName;
             string fullDirectoryPath = Path.Combine(CurrentDirectory, relativePath);
             string fileName = CreateTestFiles(fullDirectoryPath);
-            string filePath = $@"{relativePath}\{fileName}";
+            string filePath = $@"{relativePath}{Sep}{fileName}";
 
             // Act/Assert
             AssertValidCall(filePath,
