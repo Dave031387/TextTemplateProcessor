@@ -469,31 +469,31 @@
         public void ReplaceTokens_MultipleTokenErrors_LogsAllErrors()
         {
             // Arrange
-            string tokenName1 = "noEndDelimiter";
-            string tokenName2 = Whitespace;
+            string tokenName1 = Whitespace;
+            string tokenName2 = "escapedToken";
             string tokenName3 = "invalidName";
-            string tokenName4 = "escapedToken";
+            string tokenName4 = "validToken";
             string tokenName5 = "unknownToken";
             string tokenName6 = "tokenWithEmptyValue";
-            string tokenName7 = "validToken";
+            string tokenName7 = "noEndDelimiter";
+            string tokenValue2 = "unused";
             string tokenValue3 = "unused";
-            string tokenValue4 = "unused";
+            string tokenValue4 = "value";
             string tokenValue6 = "";
-            string tokenValue7 = "value";
-            string token1 = $"{TokenStart}{tokenName1}";
+            string token1 = GenerateToken(tokenName1);
             string token2 = GenerateToken(tokenName2);
             string token3 = GenerateToken(tokenName3);
             string token4 = GenerateToken(tokenName4);
             string token5 = GenerateToken(tokenName5);
             string token6 = GenerateToken(tokenName6);
-            string token7 = GenerateToken(tokenName7);
+            string token7 = $"{TokenStart}{tokenName7}";
             string segmentName = "Segment1";
             int lineNumber = 11;
             _mh.SetupLocater(_locater, segmentName, lineNumber);
             Expression<Func<INameValidater, bool>> nameValidaterInvalid = MockHelper.SetupNameValidater(_nameValidater, tokenName3, false);
             Expression<Func<INameValidater, bool>> nameValidaterUnknown = MockHelper.SetupNameValidater(_nameValidater, tokenName5, true);
             Expression<Func<INameValidater, bool>> nameValidaterEmpty = MockHelper.SetupNameValidater(_nameValidater, tokenName6, true);
-            Expression<Func<INameValidater, bool>> nameValidaterValid = MockHelper.SetupNameValidater(_nameValidater, tokenName7, true);
+            Expression<Func<INameValidater, bool>> nameValidaterValid = MockHelper.SetupNameValidater(_nameValidater, tokenName4, true);
             Expression<Action<ILogger>> loggerNoDelimiter = MockHelper.SetupLogger(_logger, MsgTokenMissingEndDelimiter);
             Expression<Action<ILogger>> loggerMissingName = MockHelper.SetupLogger(_logger, MsgMissingTokenName);
             Expression<Action<ILogger>> loggerInvalidName = MockHelper.SetupLogger(_logger, MsgTokenHasInvalidName, tokenName3);
@@ -501,11 +501,11 @@
             Expression<Action<ILogger>> loggerEmptyValue = MockHelper.SetupLogger(_logger, MsgTokenValueIsEmpty, segmentName, tokenName6);
             TokenProcessor processor = GetTokenProcessor();
             processor.TokenDictionary.Add(tokenName3, tokenValue3);
-            processor.TokenDictionary.Add(tokenName4, tokenValue4);
+            processor.TokenDictionary.Add(tokenName2, tokenValue2);
             processor.TokenDictionary.Add(tokenName6, tokenValue6);
-            processor.TokenDictionary.Add(tokenName7, tokenValue7);
-            string text = $"Text {token2} {TokenEscapeChar}{token4} {token3} {token7} {token5} {token6} {token1}";
-            string expected = $"Text {token2} {token4} {token3} {tokenValue7} {token5}  {token1}";
+            processor.TokenDictionary.Add(tokenName4, tokenValue4);
+            string text = $"Text {token1} {TokenEscapeChar}{token2} {token3} {token4} {token5} {token6} {token7}";
+            string expected = $"Text {token1} {token2} {token3} {tokenValue4} {token5}  {token7}";
 
             // Act
             string actual = processor.ReplaceTokens(text);
@@ -860,7 +860,10 @@
 
             if (message is not null)
             {
-                _loggerExpression = MockHelper.SetupLogger(_logger, message, arg1, arg2);
+                _loggerExpression = MockHelper.SetupLogger(_logger,
+                                                           message,
+                                                           arg1,
+                                                           arg2);
                 expected = false;
                 loggerCount = 1;
             }

@@ -1,5 +1,7 @@
 ﻿namespace TextTemplateProcessor.Logger
 {
+    using System.Linq.Expressions;
+
     public class ConsoleLoggerTests
     {
         private const int LineNumber = 10;
@@ -267,36 +269,24 @@
         internal void WriteLogEntries_LoggerContainsLogEntries_WritesAllLogEntriesAndClearsTheBuffer()
         {
             // Arrange
-            List<string> writeBuffer = new();
             ConsoleLogger consoleLogger = GetConsoleLogger();
-            string expectedMessage1 = $"<{LogEntryType.Generating}> {SegmentName}[{LineNumber}] : {_expectedMessage}";
-            string expectedMessage2 = $"<{LogEntryType.Writing}> {_expectedMessage}";
-            string expectedMessage3 = $"<{LogEntryType.Parsing}> {SegmentName}[{LineNumber}] : {_expectedMessage}";
-            string expectedMessage4 = $"<{LogEntryType.Reset}> {_expectedMessage}";
-            string expectedMessage5 = $"<{LogEntryType.Loading}> {_expectedMessage}";
-            string expectedMessage6 = $"<{LogEntryType.Setup}> {_expectedMessage}";
             List<string> expectedMessages = new()
             {
-                expectedMessage1,
-                expectedMessage2,
-                expectedMessage3,
-                expectedMessage4,
-                expectedMessage5,
-                expectedMessage6
+                $"<{LogEntryType.Generating}> {SegmentName}[{LineNumber}] : {_expectedMessage}",
+                $"<{LogEntryType.Writing}> {_expectedMessage}",
+                $"<{LogEntryType.Parsing}> {SegmentName}[{LineNumber}] : {_expectedMessage}",
+                $"<{LogEntryType.Reset}> {_expectedMessage}",
+                $"<{LogEntryType.Loading}> {_expectedMessage}",
+                $"<{LogEntryType.Setup}> {_expectedMessage}"
             };
             WriteLogEntries(consoleLogger, true);
-            _messageWriter.Setup(x => x.WriteLine(expectedMessage1))
-                .Callback((string x) => writeBuffer.Add(x));
-            _messageWriter.Setup(x => x.WriteLine(expectedMessage2))
-                .Callback((string x) => writeBuffer.Add(x));
-            _messageWriter.Setup(x => x.WriteLine(expectedMessage3))
-                .Callback((string x) => writeBuffer.Add(x));
-            _messageWriter.Setup(x => x.WriteLine(expectedMessage4))
-                .Callback((string x) => writeBuffer.Add(x));
-            _messageWriter.Setup(x => x.WriteLine(expectedMessage5))
-                .Callback((string x) => writeBuffer.Add(x));
-            _messageWriter.Setup(x => x.WriteLine(expectedMessage6))
-                .Callback((string x) => writeBuffer.Add(x));
+            List<string> writeBuffer = new();
+            void callback(string x) => writeBuffer.Add(x);
+            List<Expression<Action<IMessageWriter>>> messageWriterExpressions = new();
+            for (int i = 0; i < expectedMessages.Count; i++)
+            {
+                messageWriterExpressions.Add(MockHelper.SetupMessageWriter(_messageWriter, expectedMessages[i], callback));
+            }
 
             // Act
             consoleLogger.WriteLogEntries();
@@ -308,12 +298,10 @@
             writeBuffer
                 .Should()
                 .ContainInConsecutiveOrder(expectedMessages);
-            _messageWriter.Verify(x => x.WriteLine(expectedMessage1), Times.Once);
-            _messageWriter.Verify(x => x.WriteLine(expectedMessage2), Times.Once);
-            _messageWriter.Verify(x => x.WriteLine(expectedMessage3), Times.Once);
-            _messageWriter.Verify(x => x.WriteLine(expectedMessage4), Times.Once);
-            _messageWriter.Verify(x => x.WriteLine(expectedMessage5), Times.Once);
-            _messageWriter.Verify(x => x.WriteLine(expectedMessage6), Times.Once);
+            for (int i = 0; i < messageWriterExpressions.Count; i++)
+            {
+                _messageWriter.Verify(messageWriterExpressions[i], Times.Once);
+            }
             VerifyMocks(0);
         }
 

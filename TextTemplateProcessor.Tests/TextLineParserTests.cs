@@ -143,16 +143,16 @@
         }
 
         [Theory]
-        [InlineData(IndentAbsolute, 0)]
-        [InlineData(IndentAbsoluteOneTime, 1)]
-        [InlineData(IndentLeftOneTime, 2)]
-        [InlineData(IndentLeftRelative, 7)]
-        [InlineData(IndentRightOneTime, 8)]
-        [InlineData(IndentRightRelative, 9)]
-        public void IsTextLine_ValidIndentCode_ReturnsTrue(string controlCode, int indent)
+        [InlineData($"{IndentAbsolute}0")]
+        [InlineData($"{IndentAbsoluteOneTime}1")]
+        [InlineData($"{IndentLeftOneTime}2")]
+        [InlineData($"{IndentLeftRelative}7")]
+        [InlineData($"{IndentRightOneTime}8")]
+        [InlineData($"{IndentRightRelative}9")]
+        public void IsTextLine_ValidControlCode_ReturnsTrue(string controlCode)
         {
             // Arrange
-            string text = GenerateTextLine(controlCode, indent, "This is a text line");
+            string text = GenerateTextLine(controlCode, "This is a text line");
             TextLineParser parser = GetTextLineParser();
 
             // Act
@@ -170,10 +170,9 @@
         {
             // Arrange
             string text = $"{SegmentHeaderCode}#Segment1";
-            _loggerExpression
-                = MockHelper.SetupLogger(_logger,
-                                         MsgFourthCharacterMustBeBlank,
-                                         text);
+            _loggerExpression = MockHelper.SetupLogger(_logger,
+                                                       MsgFourthCharacterMustBeBlank,
+                                                       text);
             TextLineParser parser = GetTextLineParser();
 
             // Act
@@ -192,10 +191,9 @@
         {
             // Arrange
             string text = GenerateTextLine("@.1", "Text");
-            _loggerExpression
-                = MockHelper.SetupLogger(_logger,
-                                         MsgInvalidControlCode,
-                                         text);
+            _loggerExpression = MockHelper.SetupLogger(_logger,
+                                                       MsgInvalidControlCode,
+                                                       text);
             TextLineParser parser = GetTextLineParser();
 
             // Act
@@ -216,9 +214,8 @@
         public void IsValidPrefix_LineLengthLessThanThree_LogsMessageAndReturnsFalse(string text)
         {
             // Arrange
-            _loggerExpression
-                = MockHelper.SetupLogger(_logger,
-                                         MsgMinimumLineLengthInTemplateFileIs3);
+            _loggerExpression = MockHelper.SetupLogger(_logger,
+                                                       MsgMinimumLineLengthInTemplateFileIs3);
             TextLineParser parser = GetTextLineParser();
 
             // Act
@@ -345,27 +342,7 @@
             MocksVerifyNoOtherCalls();
         }
 
-        private static string GenerateTextLine(string controlCode, string text, params string[] tokenNames)
-            => tokenNames is null ? $"{controlCode} {text}" : $"{controlCode} {GetTokenizedText(text, tokenNames)}";
-
-        private static string GenerateTextLine(string controlCode, int indent, string text, params string[] tokenNames)
-            => tokenNames is null ? $"{controlCode}{indent} {text}" : $"{controlCode}{indent} {GetTokenizedText(text, tokenNames)}";
-
-        private static string GetTokenizedText(string text, params string[] tokenNames)
-        {
-            string result = text;
-            int argumentNumber = 0;
-
-            foreach (var tokenName in tokenNames)
-            {
-                string placeholder = $"{{{argumentNumber}}}";
-                string token = $"<#={tokenName}#>";
-                result = result.Replace(placeholder, token);
-                argumentNumber++;
-            }
-
-            return result;
-        }
+        private static string GenerateTextLine(string controlCode, string text) => $"{controlCode} {text}";
 
         private TextLineParser GetTextLineParser()
             => new(_logger.Object, _tokenProcessor.Object);

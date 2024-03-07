@@ -6,6 +6,7 @@
     public class MockHelper
     {
         internal Expression<Action<IFileAndDirectoryService>> ClearDirectoryExpression { get; private set; } = x => x.ClearDirectory("test");
+        internal Expression<Action<IConsoleWriter>> ConsoleWriterExpression { get; private set; } = x => x.WriteLine("test");
         internal Expression<Action<IFileAndDirectoryService>> CreateDirectoryExpression { get; private set; } = x => x.ClearDirectory("test");
         internal Expression<Func<IIndentProcessor, int>> CurrentIndentExpression { get; private set; } = x => x.CurrentIndent;
         internal Expression<Func<ILocater, string>> CurrentSegmentExpression { get; private set; } = x => x.CurrentSegment;
@@ -89,6 +90,13 @@
             return loggerExpression;
         }
 
+        internal static Expression<Action<IMessageWriter>> SetupMessageWriter(Mock<IMessageWriter> mock, string message, Action<string> callback)
+        {
+            Expression<Action<IMessageWriter>> messageWriterExpression = x => x.WriteLine(message);
+            mock.Setup(messageWriterExpression).Callback(callback);
+            return messageWriterExpression;
+        }
+
         internal static Expression<Func<INameValidater, bool>> SetupNameValidater(Mock<INameValidater> mock,
                                                                                   string name,
                                                                                   bool result)
@@ -96,6 +104,12 @@
             Expression<Func<INameValidater, bool>> nameValidaterExpression = x => x.IsValidName(name);
             mock.Setup(nameValidaterExpression).Returns(result);
             return nameValidaterExpression;
+        }
+
+        internal void SetupConsoleWriter(Mock<IConsoleWriter> mock, string text)
+        {
+            ConsoleWriterExpression = x => x.WriteLine(text);
+            mock.Setup(ConsoleWriterExpression);
         }
 
         internal void SetupDefaultSegmentNameGenerator(Mock<IDefaultSegmentNameGenerator> mock)

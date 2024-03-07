@@ -2,6 +2,9 @@
 {
     public class MessageWriterTests
     {
+        private readonly Mock<IConsoleWriter> _consoleWriter = new();
+        private readonly MockHelper _mh = new();
+
         [Fact]
         public void MessageWriter_ConstructUsingNullConsoleWriterObject_ThrowsException()
         {
@@ -19,10 +22,10 @@
         }
 
         [Fact]
-        public void MessageWriter_DefaultConstructor_InitializesAllDependencies()
+        public void MessageWriter_ConstructUsingValidDependency_ShouldNotThrow()
         {
             // Arrange
-            Action action = () => { _ = new MessageWriter(); };
+            Action action = () => GetMessageWriter();
 
             // Act/Assert
             action
@@ -35,16 +38,14 @@
         {
             // Arrange
             string expectedMessage = "This is a test";
-            Mock<IConsoleWriter> consoleWriter = new();
-            consoleWriter.Setup(x => x.WriteLine(expectedMessage));
-            MessageWriter messageWriter = new(consoleWriter.Object);
+            _mh.SetupConsoleWriter(_consoleWriter, expectedMessage);
+            MessageWriter messageWriter = GetMessageWriter();
 
             // Act
             messageWriter.WriteLine(expectedMessage);
 
             // Assert
-            consoleWriter
-                .Verify(x => x.WriteLine(expectedMessage), Times.Once);
+            _consoleWriter.Verify(_mh.ConsoleWriterExpression, Times.Once);
         }
 
         [Fact]
@@ -54,16 +55,14 @@
             string formatString = "This {0} test";
             string formatItem = "is a";
             string expectedMessage = "This is a test";
-            Mock<IConsoleWriter> consoleWriter = new();
-            consoleWriter.Setup(x => x.WriteLine(expectedMessage));
-            MessageWriter messageWriter = new(consoleWriter.Object);
+            _mh.SetupConsoleWriter(_consoleWriter, expectedMessage);
+            MessageWriter messageWriter = new(_consoleWriter.Object);
 
             // Act
             messageWriter.WriteLine(formatString, formatItem);
 
             // Assert
-            consoleWriter
-                .Verify(x => x.WriteLine(expectedMessage), Times.Once);
+            _consoleWriter.Verify(_mh.ConsoleWriterExpression, Times.Once);
         }
 
         [Fact]
@@ -74,16 +73,16 @@
             string formatItem1 = "is a";
             string formatItem2 = "test";
             string expectedMessage = "This is a test";
-            Mock<IConsoleWriter> consoleWriter = new();
-            consoleWriter.Setup(x => x.WriteLine(expectedMessage));
-            MessageWriter messageWriter = new(consoleWriter.Object);
+            _mh.SetupConsoleWriter(_consoleWriter, expectedMessage);
+            MessageWriter messageWriter = new(_consoleWriter.Object);
 
             // Act
             messageWriter.WriteLine(formatString, formatItem1, formatItem2);
 
             // Assert
-            consoleWriter
-                .Verify(x => x.WriteLine(expectedMessage), Times.Once);
+            _consoleWriter.Verify(_mh.ConsoleWriterExpression, Times.Once);
         }
+
+        private MessageWriter GetMessageWriter() => new(_consoleWriter.Object);
     }
 }
