@@ -157,32 +157,44 @@
             }
         }
 
-        internal void SetupIndentProcessor(Mock<IIndentProcessor> mock,
-                                           string stringValue,
-                                           bool isValidStringValue,
-                                           int integerValue,
-                                           int returnedValue,
+        internal void SetupIndentProcessorForIndentValues(Mock<IIndentProcessor> mock,
+                                           string indentStringValue,
+                                           bool isValidIndentStringValue,
+                                           int indentIntegerValue,
+                                           int returnedIndentValue,
                                            TextItem? textItem = null)
         {
-            mock.Setup(CurrentIndentExpression).Returns(returnedValue);
-            mock.Setup(TabSizeExpression).Returns(integerValue);
-            IsValidIndentValueExpression = x => x.IsValidIndentValue(stringValue, out integerValue);
-            mock.Setup(IsValidIndentValueExpression).Returns(isValidStringValue);
-            IsValidTabSizeExpression = x => x.IsValidTabSizeValue(stringValue, out integerValue);
-            mock.Setup(IsValidTabSizeExpression).Returns(isValidStringValue);
-            mock.Setup(IndentProcessorResetExpression);
-            mock.Setup(RestoreCurrentStateExpression);
-            mock.Setup(SaveCurrentStateExpression);
-            SetTabSizeExpression = x => x.SetTabSize(integerValue);
-            mock.Setup(SetTabSizeExpression);
+            mock.Setup(CurrentIndentExpression).Returns(returnedIndentValue);
+            IsValidIndentValueExpression = x => x.IsValidIndentValue(indentStringValue, out indentIntegerValue);
+            mock.Setup(IsValidIndentValueExpression).Returns(isValidIndentStringValue);
 
             if (textItem is not null)
             {
-                GetFirstTimeIndentExpression = x => x.GetFirstTimeIndent(integerValue, textItem);
-                mock.Setup(GetFirstTimeIndentExpression).Returns(returnedValue);
+                GetFirstTimeIndentExpression = x => x.GetFirstTimeIndent(indentIntegerValue, textItem);
+                mock.Setup(GetFirstTimeIndentExpression).Returns(returnedIndentValue);
                 GetIndentExpression = x => x.GetIndent(textItem);
-                mock.Setup(GetIndentExpression).Returns(returnedValue);
+                mock.Setup(GetIndentExpression).Returns(returnedIndentValue);
             }
+        }
+
+        internal void SetupIndentProcessorForOtherMethods(Mock<IIndentProcessor> mock)
+        {
+            mock.Setup(IndentProcessorResetExpression);
+            mock.Setup(RestoreCurrentStateExpression);
+            mock.Setup(SaveCurrentStateExpression);
+        }
+
+        internal void SetupIndentProcessorForTabSizeValues(Mock<IIndentProcessor> mock,
+                                           string tabSizeStringValue,
+                                           bool isValidTabSizeStringValue,
+                                           int tabSizeIntegerValue,
+                                           int returnedTabSizeValue)
+        {
+            mock.Setup(TabSizeExpression).Returns(returnedTabSizeValue);
+            IsValidTabSizeExpression = x => x.IsValidTabSizeValue(tabSizeStringValue, out tabSizeIntegerValue);
+            mock.Setup(IsValidTabSizeExpression).Returns(isValidTabSizeStringValue);
+            SetTabSizeExpression = x => x.SetTabSize(tabSizeIntegerValue);
+            mock.Setup(SetTabSizeExpression);
         }
 
         internal void SetupLocater(Mock<ILocater> mock,

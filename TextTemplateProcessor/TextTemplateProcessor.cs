@@ -566,7 +566,8 @@
                 {
                     if (_segmentDictionary.ContainsKey(segmentName))
                     {
-                        _logger.Log(MsgProcessingSegment);
+                        _logger.Log(MsgProcessingSegment,
+                                    segmentName);
                         result = true;
                     }
                     else

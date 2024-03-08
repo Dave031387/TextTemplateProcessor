@@ -260,7 +260,8 @@
             {
                 if (indentValue == 0)
                 {
-                    _logger.Log(MsgFirstTimeIndentSetToZero);
+                    _logger.Log(MsgFirstTimeIndentSetToZero,
+                                _locater.CurrentSegment);
                 }
 
                 controlItem.FirstTimeIndent = indentValue;
@@ -282,8 +283,8 @@
             else
             {
                 _logger.Log(MsgInvalidPadSegmentName,
-                            optionValue,
-                            _locater.CurrentSegment);
+                            _locater.CurrentSegment,
+                            optionValue);
             }
         }
 
@@ -291,7 +292,12 @@
         {
             if (_indentProcessor.IsValidTabSizeValue(optionValue, out int tabValue))
             {
-                controlItem.FirstTimeIndent = tabValue;
+                controlItem.TabSize = tabValue;
+            }
+            else
+            {
+                _logger.Log(MsgInvalidTabSizeOption,
+                            _locater.CurrentSegment);
             }
         }
     }

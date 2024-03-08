@@ -109,6 +109,8 @@
             _logger.SetLogEntryType(LogEntryType.Parsing);
             _segmentDictionary = segmentDictionary;
             _controlDictionary = controlDictionary;
+            _segmentDictionary.Clear();
+            _controlDictionary.Clear();
             _locater.LineNumber = 0;
 
             foreach (string templateLine in templateLines)
@@ -148,7 +150,8 @@
 
             _controlDictionary[_locater.CurrentSegment] = controlItem;
             _textLineCount = 0;
-            _logger.Log(MsgSegmentHasBeenAdded);
+            _logger.Log(MsgSegmentHasBeenAdded,
+                        _locater.CurrentSegment);
         }
 
         private void AddTextItemToSegmentDictionary(TextItem textItem)
