@@ -13,8 +13,8 @@
         private readonly Mock<ILogger> _logger = new();
         private readonly MockHelper _mh = new();
         private readonly Mock<INameValidater> _nameValidater = new();
+        private readonly Expression<Func<INameValidater, bool>> _nameValidaterExpression1 = x => false;
         private Expression<Action<ILogger>> _loggerExpression = x => x.Log("test", null, null);
-        private Expression<Func<INameValidater, bool>> _nameValidaterExpression1 = x => false;
         private Expression<Func<INameValidater, bool>> _nameValidaterExpression2 = x => false;
 
         public SegmentHeaderParserTests()

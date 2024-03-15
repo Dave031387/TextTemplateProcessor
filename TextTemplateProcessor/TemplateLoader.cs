@@ -111,11 +111,12 @@
             _controlDictionary = controlDictionary;
             _segmentDictionary.Clear();
             _controlDictionary.Clear();
-            _locater.LineNumber = 0;
+            _locater.CurrentSegment = string.Empty;
+            int lineCount = 0;
 
             foreach (string templateLine in templateLines)
             {
-                _locater.LineNumber++;
+                _locater.LineNumber = ++lineCount;
 
                 if (_textLineParser.IsValidPrefix(templateLine))
                 {
@@ -140,13 +141,7 @@
                             _locater.CurrentSegment);
             }
 
-            if (IsPadSegmentInvalid(segmentName, controlItem.PadSegment))
-            {
-                _logger.Log(MsgPadSegmentsMustBeDefinedEarlier,
-                            segmentName,
-                            controlItem.PadSegment);
-                controlItem.PadSegment = string.Empty;
-            }
+            controlItem.PadSegment = ValidatePadSegmentOption(segmentName, controlItem.PadSegment);
 
             _controlDictionary[_locater.CurrentSegment] = controlItem;
             _textLineCount = 0;
@@ -162,7 +157,7 @@
             }
             else
             {
-                _segmentDictionary.Add(_locater.CurrentSegment, new List<TextItem>() { textItem });
+                _segmentDictionary[_locater.CurrentSegment] = new List<TextItem>() { textItem };
             }
 
             _textLineCount++;
@@ -170,32 +165,29 @@
 
         private void CheckForEmptySegment()
         {
-            if (_locater.HasValidSegmentName && _textLineCount == 0)
+            if (string.IsNullOrEmpty(_locater.CurrentSegment))
+            {
+                return;
+            }
+            else if (_textLineCount == 0)
             {
                 _logger.Log(MsgNoTextLinesFollowingSegmentHeader,
                             _locater.CurrentSegment);
+                _controlDictionary.Remove(_locater.CurrentSegment);
             }
         }
 
         private void CheckForMissingSegmentHeader()
         {
-            if (_locater.HasEmptySegmentName)
+            if (string.IsNullOrEmpty(_locater.CurrentSegment))
             {
-                CreateDefaultSegment();
+                _locater.CurrentSegment = _defaultSegmentNameGenerator.Next;
+                _controlDictionary[_locater.CurrentSegment] = new();
+                _textLineCount = 0;
                 _logger.Log(MsgMissingInitialSegmentHeader,
                             _locater.CurrentSegment);
             }
         }
-
-        private void CreateDefaultSegment()
-        {
-            _locater.CurrentSegment = _defaultSegmentNameGenerator.Next;
-            _controlDictionary[_locater.CurrentSegment] = new();
-            _textLineCount = 0;
-        }
-
-        private bool IsPadSegmentInvalid(string segmentName, string? padSegment)
-            => string.IsNullOrEmpty(padSegment) is false && (_controlDictionary.ContainsKey(padSegment) is false || padSegment == segmentName);
 
         private void ParseTemplateLine(string templateLine)
         {
@@ -207,6 +199,12 @@
             {
                 CheckForEmptySegment();
 
+                // The following two lines were added to facilitate unit testing using mocks. In
+                // order for the mocks to work I need to capture the current segment name before
+                // parsing the segment header.
+                string segmentName = templateLine.Split(' ', ',')[1];
+                _locater.CurrentSegment = segmentName;
+
                 ControlItem controlItem = _segmentHeaderParser.ParseSegmentHeader(templateLine);
                 AddSegmentToControlDictionary(_locater.CurrentSegment, controlItem);
             }
@@ -216,6 +214,33 @@
 
                 TextItem textItem = _textLineParser.ParseTextLine(templateLine);
                 AddTextItemToSegmentDictionary(textItem);
+            }
+        }
+
+        private string ValidatePadSegmentOption(string segmentName, string? padSegment)
+        {
+            if (string.IsNullOrEmpty(padSegment))
+            {
+                return string.Empty;
+            }
+
+            if (padSegment == segmentName)
+            {
+                _logger.Log(MsgPadSegmentNameSameAsSegmentHeaderName,
+                            segmentName);
+                return string.Empty;
+            }
+
+            if (_controlDictionary.ContainsKey(padSegment))
+            {
+                return padSegment;
+            }
+            else
+            {
+                _logger.Log(MsgPadSegmentMustBeDefinedEarlier,
+                            segmentName,
+                            padSegment);
+                return string.Empty;
             }
         }
     }

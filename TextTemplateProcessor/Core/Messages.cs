@@ -51,14 +51,15 @@
         internal const string MsgMissingInitialSegmentHeader = "The template file is missing the initial segment header. The default segment \"{0}\" will be used.";
         internal const string MsgMissingTokenName = "Found token start and end delimiters with no token name between them. The token will be ignored.";
         internal const string MsgNextLoadRequestBeforeFirstIsWritten = "Template file \"{0}\" is being loaded before any output was written for template file \"{1}\"";
-        internal const string MsgNoTextLinesFollowingSegmentHeader = "The header line for segment \"{0}\" must be followed by at least one text line.";
+        internal const string MsgNoTextLinesFollowingSegmentHeader = "The header line for segment \"{0}\" must be followed by one or more valid text lines. The segment will be ignored.";
         internal const string MsgNullDirectoryPath = "The directory path must not be null.";
         internal const string MsgNullFilePath = "The file path must not be null.";
         internal const string MsgOptionNameMustPrecedeEqualsSign = "An option name must appear immediately before the equals sign with no intervening spaces in the \"{0}\" segment header.";
         internal const string MsgOptionValueMustFollowEqualsSign = "The value for option \"{1}\" must appear immediately after the equals sign with no intervening spaces in the \"{0}\" segment header.";
         internal const string MsgOutputDirectoryCleared = "The output directory has been cleared.";
         internal const string MsgOutputDirectoryNotSet = "The output file can't be written because the output directory hasn't been set.";
-        internal const string MsgPadSegmentsMustBeDefinedEarlier = "The PAD segment \"{1}\" referenced by segment \"{0}\" must be defined earlier in the template file.";
+        internal const string MsgPadSegmentMustBeDefinedEarlier = "The PAD segment name \"{1}\" referenced by segment \"{0}\" must be defined earlier in the template file. It will be ignored.";
+        internal const string MsgPadSegmentNameSameAsSegmentHeaderName = "The PAD segment name and segment header name for segment \"{0}\" are identical. The PAD segment name will be ignored.";
         internal const string MsgPathIsNotRooted = "Expected a rooted path, but found \"{0}\"";
         internal const string MsgProcessingSegment = "Processing segment \"{0}\"...";
         internal const string MsgRootPathIsNull = "The root directory path must not be null.";

@@ -2,6 +2,7 @@
 {
     using global::TextTemplateProcessor.Core;
     using global::TextTemplateProcessor.Interfaces;
+    using System.Text.RegularExpressions;
     using static global::TextTemplateProcessor.Core.Messages;
 
     /// <summary>
@@ -10,20 +11,27 @@
     /// </summary>
     internal class TextLineParser : ITextLineParser
     {
-        private const char AbsoluteIndent = '=';
-        private const string Comment = "///";
-        private const string IndentAbsolute = "@=";
-        private const string IndentAbsoluteOneTime = "O=";
-        private const string IndentLeftOneTime = "O-";
-        private const string IndentLeftRelative = "@-";
-        private const string IndentRightOneTime = "O+";
-        private const string IndentRightRelative = "@+";
-        private const string IndentUnchanged = "   ";
-        private const char OneTimeIndent = 'O';
+        private const string AbsoluteIndentCode = "=";
+        private const string CommentCode = "///";
+        private const string IndentCode = $"({IndentCodePart1}{IndentCodePart2}{IndentValue})";
+        private const string IndentCodePart1 = $"({OneTimeIndentCode}|{NormalIndentCode})";
+        private const string IndentCodePart2 = $"({AbsoluteIndentCode}|{RelativeRightIndentCode}|{RelativeLeftIndentCode})";
+        private const string IndentValue = "[0-9]";
+        private const string NoIndentCode = "   ";
+        private const string NormalIndentCode = "@";
+        private const string OneTimeIndentCode = "O";
+        private const string RelativeLeftIndentCode = "-";
+        private const string RelativeRightIndentCode = @"\+";
+        private const string RestOfLine = ".*$";
         private const string SegmentHeaderCode = "###";
-
+        private readonly Regex _absoluteIndent = new($"^{IndentCodePart1}{AbsoluteIndentCode}{IndentValue}{RestOfLine}");
         private readonly ILogger _logger;
+        private readonly Regex _oneTimeIndent = new($"^{OneTimeIndentCode}{IndentCodePart2}{IndentValue}{RestOfLine}");
         private readonly ITokenProcessor _tokenProcessor;
+        private readonly Regex _validCommentLine = new($"^{CommentCode}{RestOfLine}");
+        private readonly Regex _validSegmentHeaderLine = new($"^{SegmentHeaderCode}{RestOfLine}");
+        private readonly Regex _validTemplateLine = new($"^({NoIndentCode}|{SegmentHeaderCode}|{CommentCode}|{IndentCode}){RestOfLine}");
+        private readonly Regex _validTextLine = new($"^({NoIndentCode}|{IndentCode}){RestOfLine}");
 
         /// <summary>
         /// Default constructor that creates an instance of the <see cref="TextLineParser" /> class.
@@ -75,7 +83,7 @@
         /// <see langword="true" /> if the line is a comment line. Otherwise, returns
         /// <see langword="false" />.
         /// </returns>
-        public bool IsCommentLine(string templateLine) => templateLine[..3] == Comment;
+        public bool IsCommentLine(string templateLine) => _validCommentLine.IsMatch(templateLine);
 
         /// <summary>
         /// Determines whether or not the given line from the text template file is a segment
@@ -88,7 +96,7 @@
         /// <see langword="true" /> if the line is a segment header line. Otherwise, returns
         /// <see langword="false" />.
         /// </returns>
-        public bool IsSegmentHeader(string templateLine) => templateLine[..3] == SegmentHeaderCode;
+        public bool IsSegmentHeader(string templateLine) => _validSegmentHeaderLine.IsMatch(templateLine);
 
         /// <summary>
         /// Determines whether or not the given line from the text template file is a text line.
@@ -100,15 +108,7 @@
         /// <see langword="true" /> if the line is a text line. Otherwise, returns
         /// <see langword="false" />.
         /// </returns>
-        public bool IsTextLine(string templateLine)
-            => templateLine[..3] is IndentUnchanged
-            || ((templateLine[..2] is IndentAbsolute
-                                   or IndentAbsoluteOneTime
-                                   or IndentLeftOneTime
-                                   or IndentLeftRelative
-                                   or IndentRightOneTime
-                                   or IndentRightRelative)
-            && templateLine[2] is >= '0' and <= '9');
+        public bool IsTextLine(string templateLine) => _validTextLine.IsMatch(templateLine);
 
         /// <summary>
         /// Determines whether or not the prefix portion of a line from a text template file is
@@ -136,7 +136,7 @@
                 return false;
             }
 
-            if (IsTextLine(templateLine) || IsSegmentHeader(templateLine) || IsCommentLine(templateLine))
+            if (_validTemplateLine.IsMatch(templateLine))
             {
                 return true;
             }
@@ -174,12 +174,12 @@
                 _ = int.TryParse(indentString, out indent);
             }
 
-            if (textLine[0] is OneTimeIndent)
+            if (_oneTimeIndent.IsMatch(textLine))
             {
                 isOneTime = true;
             }
 
-            if (textLine[1] is AbsoluteIndent)
+            if (_absoluteIndent.IsMatch(textLine))
             {
                 isRelative = false;
             }

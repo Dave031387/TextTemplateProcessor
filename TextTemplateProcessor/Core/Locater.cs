@@ -1,4 +1,4 @@
-﻿namespace TextTemplateProcessor
+﻿namespace TextTemplateProcessor.Core
 {
     using global::TextTemplateProcessor.Interfaces;
 
@@ -22,18 +22,6 @@
         /// Gets the name of the current segment being processed in the text template file.
         /// </summary>
         public string CurrentSegment { get; set; }
-
-        /// <summary>
-        /// Gets a boolean value that's <see langword="true" /> when the
-        /// <see cref="CurrentSegment" /> property is <see langword="null" />, empty, or whitespace.
-        /// </summary>
-        public bool HasEmptySegmentName => string.IsNullOrWhiteSpace(CurrentSegment);
-
-        /// <summary>
-        /// Gets a boolean value that's <see langword="true" /> when the
-        /// <see cref="CurrentSegment" /> property contains a valid segment name.
-        /// </summary>
-        public bool HasValidSegmentName => string.IsNullOrWhiteSpace(CurrentSegment) is false;
 
         /// <summary>
         /// Gets the current line number of the segment that is being processed in the text template
@@ -60,7 +48,7 @@
         }
 
         /// <summary>
-        /// Generates a string representation of the <see cref="Locater" /> class.
+        /// Generates a string representation of the <see cref="Locater" /> class object.
         /// </summary>
         /// <returns>
         /// A <see langword="string" /> containing the current segment name and line number.
