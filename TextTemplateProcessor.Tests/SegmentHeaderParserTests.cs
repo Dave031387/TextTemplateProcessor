@@ -13,20 +13,9 @@
         private readonly Mock<ILogger> _logger = new();
         private readonly MockHelper _mh = new();
         private readonly Mock<INameValidater> _nameValidater = new();
-        private readonly Expression<Func<INameValidater, bool>> _nameValidaterExpression1 = x => false;
         private Expression<Action<ILogger>> _loggerExpression = x => x.Log("test", null, null);
+        private Expression<Func<INameValidater, bool>> _nameValidaterExpression1 = x => false;
         private Expression<Func<INameValidater, bool>> _nameValidaterExpression2 = x => false;
-
-        public SegmentHeaderParserTests()
-        {
-            _defaultSegmentNameGenerator.Reset();
-            _indentProcessor.Reset();
-            _locater.Reset();
-            _logger.Reset();
-            _nameValidater.Reset();
-            _mh.SetupLocater(_locater, SegmentName, LineNumber);
-            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, SegmentName, true);
-        }
 
         [Theory]
         [InlineData("-10")]
@@ -35,6 +24,7 @@
         public void ParseSegmentHeader_FirstTimeIndentIsInvalid_LogsMessage(string optionValue)
         {
             // Arrange
+            InitializeMocks();
             int indentValue = 0;
             _mh.SetupIndentProcessorForIndentValues(_indentProcessor,
                                                     optionValue,
@@ -74,6 +64,7 @@
         public void ParseSegmentHeader_FirstTimeIndentIsValidAndNotZero_SavesTheFirstTimeIndentValue(string optionValue, int indentValue)
         {
             // Arrange
+            InitializeMocks();
             _mh.SetupIndentProcessorForIndentValues(_indentProcessor,
                                                     optionValue,
                                                     true,
@@ -103,6 +94,7 @@
         public void ParseSegmentHeader_FirstTimeIndentIsZero_LogsMessageAndSavesFirstTimeIndentValue()
         {
             // Arrange
+            InitializeMocks();
             string optionValue = "0";
             int indentValue = 0;
             _mh.SetupIndentProcessorForIndentValues(_indentProcessor,
@@ -139,6 +131,7 @@
         public void ParseSegmentHeader_HeaderHasDuplicateSegmentOptions_LogsMessage(string optionName, string optionValue)
         {
             // Arrange
+            InitializeMocks();
             string indentStringValue = "2";
             int indentIntegerValue = 2;
             _mh.SetupIndentProcessorForIndentValues(_indentProcessor,
@@ -207,6 +200,7 @@
                                                                                                     int tabSizeValue)
         {
             // Arrange
+            InitializeMocks();
             string indentStringValue = option1 is FirstTimeIndentOption ? value1 : option2 is FirstTimeIndentOption ? value2 : value3;
             _mh.SetupIndentProcessorForIndentValues(_indentProcessor,
                                                     indentStringValue,
@@ -248,6 +242,7 @@
         public void ParseSegmentHeader_HeaderLineLessThanFiveCharacters_LogsMessageAndReturnsDefaultControlItem()
         {
             // Arrange
+            InitializeMocks();
             string segmentHeader = $"{SegmentHeaderCode} ";
             string segmentName = $"{DefaultSegmentNamePrefix}1";
             _mh.SetupLocater(_locater, segmentName, LineNumber);
@@ -276,6 +271,7 @@
         public void ParseSegmentHeader_OptionNameIsInvalid_LogsMessage()
         {
             // Arrange
+            InitializeMocks();
             string optionString = "Option1=value";
             _loggerExpression = MockHelper.SetupLogger(_logger,
                                                        MsgUnknownSegmentOptionFound,
@@ -303,6 +299,7 @@
         public void ParseSegmentHeader_OptionNameMissingBeforeEqualsSign_LogsMessage()
         {
             // Arrange
+            InitializeMocks();
             string optionString = "=value";
             _loggerExpression = MockHelper.SetupLogger(_logger,
                                                        MsgOptionNameMustPrecedeEqualsSign,
@@ -329,6 +326,7 @@
         public void ParseSegmentHeader_OptionNameNotFollowedByEqualsSign_LogsMessage()
         {
             // Arrange
+            InitializeMocks();
             string optionName = "Option1";
             _loggerExpression = MockHelper.SetupLogger(_logger,
                                                        MsgInvalidFormOfOption,
@@ -361,6 +359,7 @@
                                                                                  string padSegmentOption)
         {
             // Arrange
+            InitializeMocks();
             string indentStringValue = "1";
             int indentIntegerValue = 1;
             _mh.SetupIndentProcessorForIndentValues(_indentProcessor,
@@ -408,6 +407,7 @@
         public void ParseSegmentHeader_OptionValueMissingAfterEqualsSign_LogsMessage()
         {
             // Arrange
+            InitializeMocks();
             _loggerExpression = MockHelper.SetupLogger(_logger,
                                                        MsgOptionValueMustFollowEqualsSign,
                                                        SegmentName,
@@ -434,6 +434,7 @@
         public void ParseSegmentHeader_PadSegmentHasInvalidName_LogsMessage()
         {
             // Arrange
+            InitializeMocks();
             string optionValue = "invalidName";
             _nameValidaterExpression2 = MockHelper.SetupNameValidater(_nameValidater, optionValue, false);
             _loggerExpression = MockHelper.SetupLogger(_logger,
@@ -463,6 +464,7 @@
         public void ParseSegmentHeader_PadSegmentHasValidName_SavesPadSegmentName()
         {
             // Arrange
+            InitializeMocks();
             string optionValue = "validName";
             _nameValidaterExpression2 = MockHelper.SetupNameValidater(_nameValidater, optionValue, true);
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName} {PadSegmentNameOption}={optionValue}";
@@ -489,6 +491,7 @@
         public void ParseSegmentHeader_SegmentNameIsInvalid_LogsMessageAndUsesDefaultName()
         {
             // Arrange
+            InitializeMocks();
             string invalidSegmentName = "Invalid";
             string defaultSegmentName = $"{DefaultSegmentNamePrefix}1";
             string segmentHeader = $"{SegmentHeaderCode} {invalidSegmentName}";
@@ -521,6 +524,7 @@
         public void ParseSegmentHeader_SegmentNameNotFoundInFifthColumn_LogsMessageAndUsesDefaultName()
         {
             // Arrange
+            InitializeMocks();
             string segmentHeader = $"{SegmentHeaderCode}  ";
             string segmentName = $"{DefaultSegmentNamePrefix}1";
             _mh.SetupLocater(_locater, segmentName, LineNumber);
@@ -555,6 +559,7 @@
         public void ParseSegmentHeader_TabSizeIsInvalid_LogsMessage(string optionValue)
         {
             // Arrange
+            InitializeMocks();
             int tabSizeValue = 0;
             _mh.SetupIndentProcessorForTabSizeValues(_indentProcessor,
                                                      optionValue,
@@ -590,6 +595,7 @@
         public void ParseSegmentHeader_TabSizeIsValid_SavesTheTabSizeValue(string optionValue, int tabSizeValue)
         {
             // Arrange
+            InitializeMocks();
             _mh.SetupIndentProcessorForTabSizeValues(_indentProcessor,
                                                      optionValue,
                                                      true,
@@ -619,6 +625,7 @@
         public void ParseSegmentHeader_ValidSegmentNameWithNoOptions_UsesValidSegmentName()
         {
             // Arrange
+            InitializeMocks();
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName}";
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new();
@@ -754,6 +761,7 @@
         public void SegmentHeaderParser_ConstructWithValidDependencies_ShouldNotThrow()
         {
             // Arrange
+            InitializeMocks();
             Action action = () =>
             {
                 SegmentHeaderParser parser = GetSegmentHeaderParser();
@@ -772,6 +780,17 @@
                    _locater.Object,
                    _indentProcessor.Object,
                    _nameValidater.Object);
+
+        private void InitializeMocks()
+        {
+            _defaultSegmentNameGenerator.Reset();
+            _indentProcessor.Reset();
+            _locater.Reset();
+            _logger.Reset();
+            _nameValidater.Reset();
+            _mh.SetupLocater(_locater, SegmentName, LineNumber);
+            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, SegmentName, true);
+        }
 
         private void MocksVerifyNoOtherCalls()
         {

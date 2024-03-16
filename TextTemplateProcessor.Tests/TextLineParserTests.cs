@@ -9,16 +9,11 @@
         private readonly Mock<ITokenProcessor> _tokenProcessor = new();
         private Expression<Action<ILogger>> _loggerExpression = x => x.Log("test", null, null);
 
-        public TextLineParserTests()
-        {
-            _logger.Reset();
-            _tokenProcessor.Reset();
-        }
-
         [Fact]
         public void IsCommentLine_TextIsCommentLine_ReturnsTrue()
         {
             // Arrange
+            InitializeMocks();
             string text = GenerateTextLine(Comment, "This is a comment");
             TextLineParser parser = GetTextLineParser();
 
@@ -44,6 +39,7 @@
         public void IsCommentLine_TextIsNotCommentLine_ReturnsFalse(string controlCode)
         {
             // Arrange
+            InitializeMocks();
             string text = GenerateTextLine(controlCode, "This is not a comment");
             TextLineParser parser = GetTextLineParser();
 
@@ -69,6 +65,7 @@
         public void IsSegmentHeader_TextIsNotSegmentHeader_ReturnsFalse(string controlCode)
         {
             // Arrange
+            InitializeMocks();
             string text = GenerateTextLine(controlCode, "Not a segment header");
             TextLineParser parser = GetTextLineParser();
 
@@ -86,6 +83,7 @@
         public void IsSegmentHeader_TextIsSegmentHeader_ReturnsTrue()
         {
             // Arrange
+            InitializeMocks();
             string text = GenerateTextLine(SegmentHeaderCode, "Segment1");
             TextLineParser parser = GetTextLineParser();
 
@@ -103,6 +101,7 @@
         public void IsTextLine_ControlCodeIsBlank_ReturnsTrue()
         {
             // Arrange
+            InitializeMocks();
             string text = GenerateTextLine(IndentUnchanged, "This is a text line");
             TextLineParser parser = GetTextLineParser();
 
@@ -129,6 +128,7 @@
         public void IsTextLine_NotValidTextLine_ReturnsFalse(string controlCode)
         {
             // Arrange
+            InitializeMocks();
             string text = GenerateTextLine(controlCode, "Not a valid text line");
             TextLineParser parser = GetTextLineParser();
 
@@ -152,6 +152,7 @@
         public void IsTextLine_ValidControlCode_ReturnsTrue(string controlCode)
         {
             // Arrange
+            InitializeMocks();
             string text = GenerateTextLine(controlCode, "This is a text line");
             TextLineParser parser = GetTextLineParser();
 
@@ -169,6 +170,7 @@
         public void IsValidPrefix_FourthCharacterNotBlank_LogsMessageAndReturnsFalse()
         {
             // Arrange
+            InitializeMocks();
             string text = $"{SegmentHeaderCode}#Segment1";
             _loggerExpression = MockHelper.SetupLogger(_logger,
                                                        MsgFourthCharacterMustBeBlank,
@@ -190,6 +192,7 @@
         public void IsValidPrefix_InvalidControlCode_LogsMessageAndReturnsFalse()
         {
             // Arrange
+            InitializeMocks();
             string text = GenerateTextLine("@.1", "Text");
             _loggerExpression = MockHelper.SetupLogger(_logger,
                                                        MsgInvalidControlCode,
@@ -214,6 +217,7 @@
         public void IsValidPrefix_LineLengthLessThanThree_LogsMessageAndReturnsFalse(string text)
         {
             // Arrange
+            InitializeMocks();
             _loggerExpression = MockHelper.SetupLogger(_logger,
                                                        MsgMinimumLineLengthInTemplateFileIs3);
             TextLineParser parser = GetTextLineParser();
@@ -242,6 +246,7 @@
         public void IsValidPrefix_ValidControlCode_ReturnsTrue(string controlCode)
         {
             // Arrange
+            InitializeMocks();
             string textLine = GenerateTextLine(controlCode, "Text line");
             TextLineParser parser = GetTextLineParser();
 
@@ -270,6 +275,7 @@
                                                                         bool isOneTime)
         {
             // Arrange
+            InitializeMocks();
             string textLine = GenerateTextLine(controlCode, expectedText);
             string actualText = string.Empty;
             Expression<Action<ITokenProcessor>> tokenProcessorExpression
@@ -346,6 +352,12 @@
 
         private TextLineParser GetTextLineParser()
             => new(_logger.Object, _tokenProcessor.Object);
+
+        private void InitializeMocks()
+        {
+            _logger.Reset();
+            _tokenProcessor.Reset();
+        }
 
         private void MocksVerifyNoOtherCalls()
         {

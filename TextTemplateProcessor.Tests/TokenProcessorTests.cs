@@ -12,17 +12,11 @@
         private Expression<Func<INameValidater, bool>> _nameValidaterExpression1 = x => x.IsValidName("test");
         private Expression<Func<INameValidater, bool>> _nameValidaterExpression2 = x => x.IsValidName("test");
 
-        public TokenProcessorTests()
-        {
-            _locater.Reset();
-            _logger.Reset();
-            _nameValidater.Reset();
-        }
-
         [Fact]
         public void ClearTokens_TokenDictionaryContainsTokens_ClearsTheTokenDictionary()
         {
             // Arrange
+            InitializeMocks();
             TokenProcessor processor = GetTokenProcessor();
             processor.TokenDictionary.Add("token1", "value1");
             processor.TokenDictionary.Add("token2", "value2");
@@ -42,6 +36,7 @@
         public void ExtractTokens_LineContainsDuplicateTokens_ExtractsTokenOnlyOnce()
         {
             // Arrange
+            InitializeMocks();
             string tokenName = "token1";
             string token = GenerateToken(tokenName);
             string text = $"text {token} text {token} text";
@@ -73,6 +68,7 @@
         public void ExtractTokens_LineContainsEscapedToken_IgnoresEscapedToken(string text1, string text2)
         {
             // Arrange
+            InitializeMocks();
             string tokenName = "token1";
             string token = GenerateToken(tokenName, true);
             string text = $"{text1}{token}{text2}";
@@ -104,6 +100,7 @@
         public void ExtractTokens_LineContainsMoreThanOneValidToken_ExtractsTokens(string text1, string text2, string text3)
         {
             // Arrange
+            InitializeMocks();
             string tokenName1 = "token1";
             string token1 = GenerateToken(tokenName1);
             string tokenName2 = "token2";
@@ -141,6 +138,7 @@
         public void ExtractTokens_LineContainsOneValidToken_ExtractsToken(string text1, string text2)
         {
             // Arrange
+            InitializeMocks();
             string tokenName = "token1";
             string token = GenerateToken(tokenName);
             string text = $"{text1}{token}{text2}";
@@ -168,6 +166,7 @@
         public void ExtractTokens_LineContainsTokenWithMissingEndDelimiter_EscapesTokenAndLogsMessage()
         {
             // Arrange
+            InitializeMocks();
             string text = $"text{TokenStart}token";
             string expected = $"text{TokenEscapeChar}{TokenStart}token";
             _loggerExpression = MockHelper.SetupLogger(_logger,
@@ -191,6 +190,7 @@
         public void ExtractTokens_LineDoesNotContainAnyTokens_DoesNothing()
         {
             // Arrange
+            InitializeMocks();
             string text = "this is a text line";
             string expected = "this is a text line";
             TokenProcessor processor = GetTokenProcessor();
@@ -215,6 +215,7 @@
         public void ExtractTokens_TokenContainsEmbeddedSpaces_TrimsSpacesAndExtractsTokenName(string text1, string text2)
         {
             // Arrange
+            InitializeMocks();
             string tokenName = "token1";
             string paddedName = $"{text1}{tokenName}{text2}";
             string token = GenerateToken(paddedName);
@@ -243,6 +244,7 @@
         public void ExtractTokens_TokenNameIsInvalid_EscapesTokenAndLogsMessage()
         {
             // Arrange
+            InitializeMocks();
             string tokenName = "1badName";
             string token = GenerateToken(tokenName);
             string text = $"text{token}text";
@@ -270,6 +272,7 @@
         public void ExtractTokens_TokenNameIsWhitespace_EscapesTokenAndLogsMessage()
         {
             // Arrange
+            InitializeMocks();
             string text = $"text{TokenStart}{Whitespace}{TokenEnd}text";
             string expected = $"text{TokenEscapeChar}{TokenStart}{Whitespace}{TokenEnd}text";
             _loggerExpression = MockHelper.SetupLogger(_logger,
@@ -293,6 +296,7 @@
         public void LoadTokenValues_EmptyTokenValuesDictionary_LogsMessage()
         {
             // Arrange
+            InitializeMocks();
             string segmentName = "Segment1";
             int lineNumber = 1;
             _mh.SetupLocater(_locater, segmentName, lineNumber);
@@ -313,6 +317,7 @@
         public void LoadTokenValues_NullTokenValuesDictionary_LogsMessage()
         {
             // Arrange
+            InitializeMocks();
             string segmentName = "Segment1";
             int lineNumber = 1;
             _mh.SetupLocater(_locater, segmentName, lineNumber);
@@ -332,6 +337,7 @@
         public void LoadTokenValues_TokenHasInvalidName_LogsMessage()
         {
             // Arrange
+            InitializeMocks();
             string tokenName = "1badName";
             string segmentName = "Segment2";
             int lineNumber = 11;
@@ -358,6 +364,7 @@
         public void LoadTokenValues_TokenValueIsEmptyString_LogsMessageAndSetsValueToEmptyString()
         {
             // Arrange
+            InitializeMocks();
             string tokenName = "Token";
             string segmentName = "Segment1";
             int lineNumber = 1;
@@ -388,6 +395,7 @@
         public void LoadTokenValues_TokenValueIsNotEmptyString_SetsTokenValue()
         {
             // Arrange
+            InitializeMocks();
             string tokenName = "Token2";
             string expected = "new value";
             _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, true);
@@ -413,6 +421,7 @@
         public void LoadTokenValues_TokenValueIsNull_LogsMessageAndSetsValueToEmptyString()
         {
             // Arrange
+            InitializeMocks();
             string tokenName = "Token";
             string segmentName = "Segment1";
             int lineNumber = 1;
@@ -443,6 +452,7 @@
         public void LoadTokenValues_UnknownTokenName_LogsMessage()
         {
             // Arrange
+            InitializeMocks();
             string tokenName = "Token";
             string segmentName = "Segment2";
             int lineNumber = 3;
@@ -469,6 +479,7 @@
         public void ReplaceTokens_MultipleTokenErrors_LogsAllErrors()
         {
             // Arrange
+            InitializeMocks();
             string tokenName1 = Whitespace;
             string tokenName2 = "escapedToken";
             string tokenName3 = "invalidName";
@@ -530,6 +541,7 @@
         public void ReplaceTokens_TextContainsEscapedTokens_RemovesTheEscapeCharacters()
         {
             // Arrange
+            InitializeMocks();
             TokenProcessor processor = GetTokenProcessor();
             string token1 = GenerateToken(" test ");
             string token2 = GenerateToken("token2");
@@ -552,6 +564,7 @@
         public void ReplaceTokens_TextDoesNotContainTokens_ReturnsTextUnchanged()
         {
             // Arrange
+            InitializeMocks();
             TokenProcessor processor = GetTokenProcessor();
             string expected = "Text line without any tokens";
 
@@ -569,6 +582,7 @@
         public void ReplaceTokens_TokenIsMissingEndDelimiter_LogsMessageAndOutputsTokenUnchanged()
         {
             // Arrange
+            InitializeMocks();
             _loggerExpression = MockHelper.SetupLogger(_logger,
                                                        MsgTokenMissingEndDelimiter);
             TokenProcessor processor = GetTokenProcessor();
@@ -590,6 +604,7 @@
         public void ReplaceTokens_TokenNameIsInvalid_LogsMessageAndOutputsTokenUnchanged()
         {
             // Arrange
+            InitializeMocks();
             string tokenName = "invalid name";
             _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, false);
             _loggerExpression = MockHelper.SetupLogger(_logger,
@@ -613,6 +628,7 @@
         public void ReplaceTokens_TokenNameIsWhitespace_LogsMessageAndOutputsTokenUnchanged()
         {
             // Arrange
+            InitializeMocks();
             _loggerExpression = MockHelper.SetupLogger(_logger,
                                                        MsgMissingTokenName);
             TokenProcessor processor = GetTokenProcessor();
@@ -632,6 +648,7 @@
         public void ReplaceTokens_TokenNameNotInTokenDictionary_LogsMessageAndOutputsTokenUnchanged()
         {
             // Arrange
+            InitializeMocks();
             string tokenName = "token";
             _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, true);
             string segmentName = "Segment1";
@@ -658,6 +675,7 @@
         public void ReplaceTokens_TokenValueIsEmptyString_LogsMessageAndRemovesToken()
         {
             // Arrange
+            InitializeMocks();
             string tokenName = "token";
             _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, true);
             string segmentName = "Segment1";
@@ -685,6 +703,7 @@
         public void ReplaceTokens_TokenValueIsNotEmpty_ReplacesTokenWithTokenValue()
         {
             // Arrange
+            InitializeMocks();
             string tokenName = "token";
             string tokenValue = "value";
             _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, true);
@@ -754,6 +773,7 @@
         public void TokenDictionary_AddItemsToDictionary_DictionaryShouldContainAddedItems()
         {
             // Arrange
+            InitializeMocks();
             TokenProcessor processor = GetTokenProcessor();
             string[] expectedKeys = new[] { "token1", "token2", "token3" };
 
@@ -827,6 +847,7 @@
         public void TokenProcessor_ConstructWithValidDependencies_InitializesEmptyTokenDictionary()
         {
             // Arrange/Act
+            InitializeMocks();
             TokenProcessor processor = GetTokenProcessor();
 
             // Assert
@@ -847,6 +868,13 @@
         private TokenProcessor GetTokenProcessor()
             => new(_logger.Object, _locater.Object, _nameValidater.Object);
 
+        private void InitializeMocks()
+        {
+            _locater.Reset();
+            _logger.Reset();
+            _nameValidater.Reset();
+        }
+
         private void SetTokenDelimiters_Test(string tokenStart,
                                              string tokenEnd,
                                              char tokenEscapeChar,
@@ -855,6 +883,7 @@
                                              string? arg2 = null)
         {
             // Arrange
+            InitializeMocks();
             bool expected = true;
             int loggerCount = 0;
 

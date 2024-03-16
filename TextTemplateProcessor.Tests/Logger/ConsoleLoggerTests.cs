@@ -16,17 +16,11 @@
         private readonly Mock<IMessageWriter> _messageWriter = new();
         private readonly MockHelper _mh = new();
 
-        public ConsoleLoggerTests()
-        {
-            _locater.Reset();
-            _mh.SetupLocater(_locater, SegmentName, LineNumber);
-            _messageWriter.Reset();
-        }
-
         [Fact]
         internal void Clear_LoggerContainsMultipleLogEntries_ClearsAllLogEntries()
         {
             // Arrange
+            InitializeMocks();
             ConsoleLogger consoleLogger = GetConsoleLogger();
             WriteLogEntries(consoleLogger, true);
 
@@ -76,6 +70,7 @@
         internal void ConsoleLogger_ConstructUsingValidDependencies_InitializesAllDependencies()
         {
             // Arrange
+            InitializeMocks();
             Action action = () => { GetConsoleLogger(); };
 
             // Act/Assert
@@ -89,6 +84,7 @@
         internal void Log_MultipleMessages_AllMessagesAreLogged()
         {
             // Arrange
+            InitializeMocks();
             ConsoleLogger consoleLogger = GetConsoleLogger();
             List<LogEntry> expectedLogEntries = new()
             {
@@ -121,6 +117,7 @@
         internal void Log_NoLocationAndNoFormatItems_LogsCorrectMessage(LogEntryType logEntryType, string message)
         {
             // Arrange
+            InitializeMocks();
             ConsoleLogger consoleLogger = GetConsoleLogger();
             LogEntry expected = new(logEntryType, string.Empty, 0, message);
 
@@ -145,6 +142,7 @@
         internal void Log_NoLocationAndOneFormatItem_LogsCorrectMessage(LogEntryType logEntryType)
         {
             // Arrange
+            InitializeMocks();
             ConsoleLogger consoleLogger = GetConsoleLogger();
             string formatString = "This {0} test";
             string formatItem = "is a";
@@ -172,6 +170,7 @@
         internal void Log_NoLocationAndTwoFormatItems_LogsCorrectMessage(LogEntryType logEntryType)
         {
             // Arrange
+            InitializeMocks();
             ConsoleLogger consoleLogger = GetConsoleLogger();
             string formatString = "This {0} {1}";
             string formatItem1 = "is a";
@@ -198,6 +197,7 @@
         internal void Log_WithLocationAndNoFormatItems_LogsCorrectMessage(LogEntryType logEntryType, string message)
         {
             // Arrange
+            InitializeMocks();
             ConsoleLogger consoleLogger = GetConsoleLogger();
             LogEntry expected = new(logEntryType, SegmentName, LineNumber, message);
 
@@ -220,6 +220,7 @@
         internal void Log_WithLocationAndOneFormatItem_LogsCorrectMessage(LogEntryType logEntryType)
         {
             // Arrange
+            InitializeMocks();
             ConsoleLogger consoleLogger = GetConsoleLogger();
             string formatString = "This {0} test";
             string formatItem = "is a";
@@ -245,6 +246,7 @@
         internal void Log_WithLocationAndTwoFormatItems_LogsCorrectMessage(LogEntryType logEntryType)
         {
             // Arrange
+            InitializeMocks();
             ConsoleLogger consoleLogger = GetConsoleLogger();
             string formatString = "This {0} {1}";
             string formatItem1 = "is a";
@@ -269,6 +271,7 @@
         internal void WriteLogEntries_LoggerContainsLogEntries_WritesAllLogEntriesAndClearsTheBuffer()
         {
             // Arrange
+            InitializeMocks();
             ConsoleLogger consoleLogger = GetConsoleLogger();
             List<string> expectedMessages = new()
             {
@@ -313,6 +316,13 @@
 
         private ConsoleLogger GetConsoleLogger()
             => new(_messageWriter.Object, _locater.Object);
+
+        private void InitializeMocks()
+        {
+            _locater.Reset();
+            _mh.SetupLocater(_locater, SegmentName, LineNumber);
+            _messageWriter.Reset();
+        }
 
         private void VerifyMocks(int locaterCallCount)
         {

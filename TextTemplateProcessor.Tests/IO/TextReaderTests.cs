@@ -10,17 +10,11 @@
         private readonly MockHelper _mh = new();
         private readonly Mock<IPathValidater> _pathValidater = new();
 
-        public TextReaderTests()
-        {
-            _fileService.Reset();
-            _logger.Reset();
-            _pathValidater.Reset();
-        }
-
         [Fact]
         public void ReadTextFile_ExceptionWhileReadingFile_LogsErrorMessage()
         {
             // Arrange
+            InitializeMocks();
             string directoryPath = NextAbsoluteName;
             string fileName = NextFileName;
             string filePath = Path.Combine(directoryPath, fileName);
@@ -65,6 +59,7 @@
         public void ReadTextFile_FilePathIsSet_ReadsTextFileAndLogsMessage()
         {
             // Arrange
+            InitializeMocks();
             string directoryPath = NextAbsoluteName;
             string fileName = NextFileName;
             string filePath = Path.Combine(directoryPath, fileName);
@@ -113,6 +108,7 @@
         public void ReadTextFile_FilePathNotSet_LogsErrorAndReturnsEmptyList()
         {
             // Arrange
+            InitializeMocks();
             Expression<Action<ILogger>> loggerExpression
                 = MockHelper.SetupLogger(_logger,
                                          MsgTemplateFilePathNotSet);
@@ -146,10 +142,9 @@
                                              fileName,
                                              filePath);
             TextReader reader = GetTextReader(filePath);
-            _fileService.Reset();
-            _pathValidater.Reset();
 
             // Arrange (part 2) - try to set an invalid file path
+            InitializeMocks();
             string invalidFilePath = $@"{VolumeRoot}{Sep}invalid;path{Sep}file?";
             _mh.SetupPathValidater(_pathValidater,
                                    invalidFilePath,
@@ -183,6 +178,7 @@
         public void SetFilePath_ValidFilePath_SetsTheFilePathProperties()
         {
             // Arrange
+            InitializeMocks();
             string directoryPath = NextAbsoluteName;
             string fileName = NextFileName;
             string filePath = Path.Combine(directoryPath, fileName);
@@ -289,6 +285,7 @@
         public void TextReader_ConstructWithInvalidFilePath_LogsAnError()
         {
             // Arrange
+            InitializeMocks();
             string invalidFilePath = $@"{VolumeRoot}{Sep}invalid;path{Sep}file?";
             _mh.SetupPathValidater(_pathValidater,
                                    invalidFilePath,
@@ -385,6 +382,7 @@
         public void TextReader_ConstructWithValidFilePath_SavesPathInfo()
         {
             // Arrange
+            InitializeMocks();
             string expectedDirectoryPath = NextAbsoluteName;
             string expectedFileName = NextFileName;
             string expectedFullFilePath = Path.Combine(expectedDirectoryPath, expectedFileName);
@@ -421,6 +419,7 @@
         public void TextReader_ConstructWithValidServiceReferences_InitializesProperties()
         {
             // Arrange/Act
+            InitializeMocks();
             TextReader reader = GetTextReader();
 
             // Assert
@@ -444,6 +443,13 @@
                                                                  _logger.Object,
                                                                  _fileService.Object,
                                                                  _pathValidater.Object);
+
+        private void InitializeMocks()
+        {
+            _fileService.Reset();
+            _logger.Reset();
+            _pathValidater.Reset();
+        }
 
         private void MocksVerifyNoOtherCalls()
         {

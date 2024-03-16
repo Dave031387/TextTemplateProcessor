@@ -44,10 +44,16 @@
         /// <param name="templateFilePath">
         /// The file path of the text template file to be processed.
         /// </param>
-        public TextTemplateProcessor(string templateFilePath) : this()
+        public TextTemplateProcessor(string templateFilePath) : this(templateFilePath,
+                                                                     ServiceLocater.Current.Get<ILogger>(),
+                                                                     ServiceLocater.Current.Get<IDefaultSegmentNameGenerator>(),
+                                                                     ServiceLocater.Current.Get<IIndentProcessor>(),
+                                                                     ServiceLocater.Current.Get<ILocater>(),
+                                                                     ServiceLocater.Current.Get<ITemplateLoader>(),
+                                                                     ServiceLocater.Current.Get<ITextReader>(),
+                                                                     ServiceLocater.Current.Get<ITextWriter>(),
+                                                                     ServiceLocater.Current.Get<ITokenProcessor>())
         {
-            _logger.SetLogEntryType(LogEntryType.Setup);
-            _textReader.SetFilePath(templateFilePath);
         }
 
         /// <summary>
@@ -143,6 +149,66 @@
             _textReader = textReader;
             _textWriter = textWriter;
             _tokenProcessor = tokenProcessor;
+        }
+
+        /// <summary>
+        /// Constructor that creates an instance of the <see cref="TextTemplateProcessor" /> class,
+        /// initializes dependencies, and sets the template file path.
+        /// </summary>
+        /// <param name="templateFilePath">
+        /// The file path of the text template file to be processed.
+        /// </param>
+        /// <param name="logger">
+        /// A reference to a logger object used for logging messages.
+        /// </param>
+        /// <param name="defaultSegmentNameGenerator">
+        /// A reference to a default segment name generator object.
+        /// </param>
+        /// <param name="indentProcessor">
+        /// A reference to an indent processor object used for managing indentation of the text that
+        /// is generated from a text template file.
+        /// </param>
+        /// <param name="locater">
+        /// A reference to a locater object used for keeping track of the current location being
+        /// processed in a text template file.
+        /// </param>
+        /// <param name="templateLoader">
+        /// A reference to a template loader object used for parsing and loading a text template
+        /// file so that it can be processed.
+        /// </param>
+        /// <param name="textReader">
+        /// A reference to a text reader object used for reading text files.
+        /// </param>
+        /// <param name="textWriter">
+        /// A reference to a text writer object used for writing text files.
+        /// </param>
+        /// <param name="tokenProcessor">
+        /// A reference to a token processor object used for parsing, extracting, and managing
+        /// tokens in a text template file.
+        /// </param>
+        /// <exception cref="ArgumentNullException">
+        /// Exception is thrown if any of the dependencies passed into the constructor are
+        /// <see langword="null" />.
+        /// </exception>
+        internal TextTemplateProcessor(string templateFilePath,
+                                       ILogger logger,
+                                       IDefaultSegmentNameGenerator defaultSegmentNameGenerator,
+                                       IIndentProcessor indentProcessor,
+                                       ILocater locater,
+                                       ITemplateLoader templateLoader,
+                                       ITextReader textReader,
+                                       ITextWriter textWriter,
+                                       ITokenProcessor tokenProcessor) : this(logger,
+                                                                              defaultSegmentNameGenerator,
+                                                                              indentProcessor,
+                                                                              locater,
+                                                                              templateLoader,
+                                                                              textReader,
+                                                                              textWriter,
+                                                                              tokenProcessor)
+        {
+            _logger.SetLogEntryType(LogEntryType.Setup);
+            _textReader.SetFilePath(templateFilePath);
         }
 
         /// <summary>

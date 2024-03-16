@@ -9,18 +9,13 @@
         private readonly MockHelper _mh = new();
         private readonly Mock<IPathValidater> _pathValidater = new();
 
-        public TextWriterTests()
-        {
-            _fileService.Reset();
-            _logger.Reset();
-            _pathValidater.Reset();
-        }
-
         [Fact]
         public void TextWriter_ConstructWithNullFileService_ThrowsException()
         {
             // Arrange
-            Action action = () => { TextWriter writer = new(_logger.Object, null!, _pathValidater.Object); };
+            Action action = () => { TextWriter writer = new(_logger.Object,
+                                                            null!,
+                                                            _pathValidater.Object); };
             string expected = GetNullDependencyMessage(ClassNames.TextWriterClass,
                                                        ServiceNames.FileAndDirectoryService,
                                                        ServiceParameterNames.FileAndDirectoryServiceParameter);
@@ -36,7 +31,9 @@
         public void TextWriter_ConstructWithNullLogger_ThrowsException()
         {
             // Arrange
-            Action action = () => { TextWriter writer = new(null!, _fileService.Object, _pathValidater.Object); };
+            Action action = () => { TextWriter writer = new(null!,
+                                                            _fileService.Object,
+                                                            _pathValidater.Object); };
             string expected = GetNullDependencyMessage(ClassNames.TextWriterClass,
                                                        ServiceNames.LoggerService,
                                                        ServiceParameterNames.LoggerParameter);
@@ -52,7 +49,9 @@
         public void TextWriter_ConstructWithNullPathValidater_ThrowsException()
         {
             // Arrange
-            Action action = () => { TextWriter writer = new(_logger.Object, _fileService.Object, null!); };
+            Action action = () => { TextWriter writer = new(_logger.Object,
+                                                            _fileService.Object,
+                                                            null!); };
             string expected = GetNullDependencyMessage(ClassNames.TextWriterClass,
                                                        ServiceNames.PathValidaterService,
                                                        ServiceParameterNames.PathValidaterParameter);
@@ -68,6 +67,7 @@
         public void TextWriter_ConstructWithValidServices_ShouldNotThrowException()
         {
             // Arrange
+            InitializeMocks();
             Action action = () => { TextWriter writer = GetTextWriter(); };
 
             // Act/Assert
@@ -81,6 +81,7 @@
         public void WriteTextFile_InvalidOutputFilePath_LogsMessageAndReturnsFalse()
         {
             // Arrange
+            InitializeMocks();
             string filePath = $@"{VolumeRoot}{Sep}invalid|path{Sep}file?name";
             Expression<Action<ILogger>> loggerExpression
                 = MockHelper.SetupLogger(_logger,
@@ -114,6 +115,7 @@
         public void WriteTextFile_TextLinesIsEmptyList_LogsMessageAndReturnsFalse()
         {
             // Arrange
+            InitializeMocks();
             string filePath = NextAbsoluteFilePath;
             Expression<Action<ILogger>> loggerExpression
                 = MockHelper.SetupLogger(_logger,
@@ -135,6 +137,7 @@
         public void WriteTextFile_TextLinesIsNull_LogsMessageAndReturnsFalse()
         {
             // Arrange
+            InitializeMocks();
             string filePath = NextAbsoluteFilePath;
             Expression<Action<ILogger>> loggerExpression
                 = MockHelper.SetupLogger(_logger,
@@ -156,6 +159,7 @@
         public void WriteTextFile_ValidFilePathAndTextLines_CreatesOutputFile()
         {
             // Arrange
+            InitializeMocks();
             string directoryPath = NextAbsoluteName;
             string fileName = NextFileName;
             string filePath = Path.Combine(directoryPath, fileName);
@@ -194,6 +198,13 @@
 
         private TextWriter GetTextWriter()
             => new(_logger.Object, _fileService.Object, _pathValidater.Object);
+
+        private void InitializeMocks()
+        {
+            _fileService.Reset();
+            _logger.Reset();
+            _pathValidater.Reset();
+        }
 
         private void MocksVerifyNoOtherCalls()
         {

@@ -11,13 +11,6 @@
         private readonly MockHelper _mh = new();
         private Expression<Action<ILogger>> _loggerExpression = x => x.Log("test", null, null);
 
-        public IndentProcessorTests()
-        {
-            _locater.Reset();
-            _logger.Reset();
-            _mh.SetupLocater(_locater, SegmentName, LineNumber);
-        }
-
         // Case 01 / firstTimeOffset = 0 / isRelative = true / indent < 0 / calculated value < 0 /
         // isOneTime = true
         [Fact]
@@ -776,6 +769,7 @@
         public void IndentProcessor_ConstructUsingValidDependencies_InitializesProperties()
         {
             // Arrange/Act
+            InitializeMocks();
             IndentProcessor processor = GetIndentProcessor();
 
             // Assert
@@ -796,6 +790,7 @@
         public void IsValidIndentValue_StringIsNotANumber_LogsMessageAndReturnsFalse(string? numberString)
         {
             // Arrange
+            InitializeMocks();
             _loggerExpression = MockHelper.SetupLogger(_logger,
                                                        MsgIndentValueMustBeValidNumber,
                                                        numberString!);
@@ -826,6 +821,7 @@
         public void IsValidIndentValue_ValueIsInRange_ParsesValueAndReturnsTrue(string numberString, int expected)
         {
             // Arrange
+            InitializeMocks();
             IndentProcessor processor = GetIndentProcessor();
 
             // Act
@@ -851,6 +847,7 @@
         public void IsValidIndentValue_ValueIsOutOfRange_LogsMessageAndReturnsFalse(string numberString)
         {
             // Arrange
+            InitializeMocks();
             _loggerExpression = MockHelper.SetupLogger(_logger,
                                                        MsgIndentValueOutOfRange,
                                                        numberString);
@@ -878,6 +875,7 @@
         public void IsValidTabSizeValue_StringIsNotANumber_LogsMessageAndReturnsFalse(string? numberString)
         {
             // Arrange
+            InitializeMocks();
             _loggerExpression = MockHelper.SetupLogger(_logger,
                                                        MsgTabSizeValueMustBeValidNumber,
                                                        numberString!);
@@ -907,6 +905,7 @@
         public void IsValidTabSizeValue_ValueIsInRange_ParsesValueAndReturnsTrue(string numberString, int expected)
         {
             // Arrange
+            InitializeMocks();
             IndentProcessor processor = GetIndentProcessor();
 
             // Act
@@ -932,6 +931,7 @@
         public void IsValidTabSizeValue_ValueIsOutOfRange_LogsMessageAndReturnsFalse(string numberString)
         {
             // Arrange
+            InitializeMocks();
             _loggerExpression = MockHelper.SetupLogger(_logger,
                                                        MsgTabSizeValueOutOfRange,
                                                        numberString);
@@ -955,6 +955,7 @@
         public void Reset_WhenCalled_ResetsCurrentIndentAndTabSize()
         {
             // Arrange
+            InitializeMocks();
             IndentProcessor processor = GetIndentProcessor();
             SetCurrentIndent(processor, 2);
             processor.SetTabSize(2);
@@ -976,6 +977,7 @@
         public void RestoreCurrentState_SavedStateDoesNotExist_DoesNothing()
         {
             // Arrange
+            InitializeMocks();
             IndentProcessor processor = GetIndentProcessor();
             int expectedTabSize = DefaultTabSize + 1;
             processor.SetTabSize(expectedTabSize);
@@ -999,6 +1001,7 @@
         public void RestoreCurrentState_SavedStateExists_RestoresSavedLocation()
         {
             // Arrange (part 1) - change tab size and current indent and save the current state
+            InitializeMocks();
             IndentProcessor processor = GetIndentProcessor();
             int expectedTabSize = DefaultTabSize + 1;
             processor.SetTabSize(expectedTabSize);
@@ -1035,6 +1038,7 @@
         public void SetTabSize_NewValueLessThanMinimum_LogsMessageAndSetsTabSizeToMinimum(int tabSize)
         {
             // Arrange
+            InitializeMocks();
             IndentProcessor processor = GetIndentProcessor();
             int expectedTabSize = 1;
             _loggerExpression = MockHelper.SetupLogger(_logger,
@@ -1059,6 +1063,7 @@
         public void SetTabSize_NewValueMoreThanMaximum_LogsMessageAndSetsTabSizeToMaximum(int tabSize)
         {
             // Arrange
+            InitializeMocks();
             IndentProcessor processor = GetIndentProcessor();
             int expectedTabSize = 9;
             _loggerExpression = MockHelper.SetupLogger(_logger,
@@ -1085,6 +1090,7 @@
         public void SetTabSize_NewValueWithinValidRange_SetsTabSizeToValue(int expectedTabSize)
         {
             // Arrange
+            InitializeMocks();
             IndentProcessor processor = GetIndentProcessor();
 
             // Act
@@ -1109,6 +1115,13 @@
         private IndentProcessor GetIndentProcessor()
             => new(_logger.Object, _locater.Object);
 
+        private void InitializeMocks()
+        {
+            _locater.Reset();
+            _logger.Reset();
+            _mh.SetupLocater(_locater, SegmentName, LineNumber);
+        }
+
         private void MocksVerifyNoOtherCalls()
         {
             _logger.VerifyNoOtherCalls();
@@ -1125,6 +1138,8 @@
                                              string? message = null)
         {
             // Arrange
+            InitializeMocks();
+
             if (message is not null)
             {
                 _loggerExpression = MockHelper.SetupLogger(_logger,
@@ -1165,6 +1180,8 @@
                                     string? message = null)
         {
             // Arrange
+            InitializeMocks();
+
             if (message is not null)
             {
                 _loggerExpression = MockHelper.SetupLogger(_logger,

@@ -11,6 +11,8 @@
         internal Expression<Func<IIndentProcessor, int>> CurrentIndentExpression { get; private set; } = x => x.CurrentIndent;
         internal Expression<Func<ILocater, string>> CurrentSegmentExpression { get; private set; } = x => x.CurrentSegment;
         internal Expression<Func<IDefaultSegmentNameGenerator, string>> DefaultSegmentNameExpression { get; private set; } = x => x.Next;
+        internal Expression<Func<ITextReader, string>> FileNameExpression { get; private set; } = x => x.FileName;
+        internal Expression<Func<ITextReader, string>> FullFilePathExpression { get; private set; } = x => x.FullFilePath;
         internal Expression<Func<IFileAndDirectoryService, string>> GetDirectoryNameExpression { get; private set; } = x => "test";
         internal Expression<Func<IFileAndDirectoryService, string>> GetFileNameExpression { get; private set; } = x => "test";
         internal Expression<Func<IIndentProcessor, int>> GetFirstTimeIndentExpression { get; private set; } = x => 0;
@@ -24,7 +26,9 @@
         internal Expression<Action<IIndentProcessor>> RestoreCurrentStateExpression { get; private set; } = x => x.RestoreCurrentState();
         internal Expression<Action<IIndentProcessor>> SaveCurrentStateExpression { get; private set; } = x => x.SaveCurrentState();
         internal Action<ILocater> SetCurrentSegmentAction { get; private set; } = x => { };
+        internal Expression<Action<ITextReader>> SetFilePathAction { get; private set; } = x => x.SetFilePath("test");
         internal Action<ILocater> SetLineNumberAction { get; private set; } = x => { };
+        internal Expression<Action<ILogger>> SetLogEntryTypeExpression { get; private set; } = x => x.SetLogEntryType(LogEntryType.Setup);
         internal Expression<Action<IIndentProcessor>> SetTabSizeExpression { get; private set; } = x => x.SetTabSize(0);
         internal Expression<Func<IIndentProcessor, int>> TabSizeExpression { get; private set; } = x => x.TabSize;
         internal Expression<Func<IPathValidater, string>> ValidateFullPathExpression { get; private set; } = x => "test";
@@ -211,6 +215,13 @@
             mock.SetupSet(SetLineNumberAction);
         }
 
+        internal void SetupLogger(Mock<ILogger> mock,
+                                  LogEntryType logEntryType)
+        {
+            SetLogEntryTypeExpression = x => x.SetLogEntryType(logEntryType);
+            mock.Setup(SetLogEntryTypeExpression);
+        }
+
         internal void SetupPathValidater(Mock<IPathValidater> mock,
                                          string path,
                                          bool isFilePath,
@@ -242,6 +253,17 @@
                 mock.Setup(ValidatePathExpression).Throws<ArgumentException>();
                 mock.Setup(ValidateFullPathExpression).Throws<ArgumentException>();
             }
+        }
+
+        internal void SetupTextReader(Mock<ITextReader> mock,
+                                      string directoryPath,
+                                      string fileName)
+        {
+            string fullFilePath = Path.Combine(directoryPath, fileName);
+            SetFilePathAction = x => x.SetFilePath(fullFilePath);
+            mock.Setup(FileNameExpression).Returns(fileName);
+            mock.Setup(FullFilePathExpression).Returns(fullFilePath);
+            mock.Setup(SetFilePathAction);
         }
     }
 }
