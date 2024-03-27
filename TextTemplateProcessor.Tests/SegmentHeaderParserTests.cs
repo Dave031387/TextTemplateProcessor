@@ -1,21 +1,15 @@
 ﻿namespace TextTemplateProcessor
 {
     using global::TextTemplateProcessor.Interfaces;
-    using System.Linq.Expressions;
 
     public class SegmentHeaderParserTests
     {
-        private const int LineNumber = 1;
         private const string SegmentName = "Segment1";
         private readonly Mock<IDefaultSegmentNameGenerator> _defaultSegmentNameGenerator = new();
         private readonly Mock<IIndentProcessor> _indentProcessor = new();
         private readonly Mock<ILocater> _locater = new();
         private readonly Mock<ILogger> _logger = new();
-        private readonly MockHelper _mh = new();
         private readonly Mock<INameValidater> _nameValidater = new();
-        private Expression<Action<ILogger>> _loggerExpression = x => x.Log("test", null, null);
-        private Expression<Func<INameValidater, bool>> _nameValidaterExpression1 = x => false;
-        private Expression<Func<INameValidater, bool>> _nameValidaterExpression2 = x => false;
 
         [Theory]
         [InlineData("-10")]
@@ -26,15 +20,24 @@
             // Arrange
             InitializeMocks();
             int indentValue = 0;
-            _mh.SetupIndentProcessorForIndentValues(_indentProcessor,
-                                                    optionValue,
-                                                    false,
-                                                    indentValue,
-                                                    0);
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgFirstTimeIndentIsInvalid,
-                                                       SegmentName,
-                                                       optionValue);
+            _indentProcessor
+                .Setup(x => x.IsValidIndentValue(optionValue, out indentValue))
+                .Returns(false)
+                .Verifiable(Times.Once);
+            _locater
+                .SetupSet(x => x.CurrentSegment = SegmentName)
+                .Verifiable(Times.Once);
+            _locater
+                .Setup(x => x.CurrentSegment)
+                .Returns(SegmentName)
+                .Verifiable(Times.AtLeastOnce);
+            _logger
+                .Setup(x => x.Log(MsgFirstTimeIndentIsInvalid, SegmentName, optionValue))
+                .Verifiable(Times.Once);
+            _nameValidater
+                .Setup(x => x.IsValidName(SegmentName))
+                .Returns(true)
+                .Verifiable(Times.Once);
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName} {FirstTimeIndentOption}={optionValue}";
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new();
@@ -46,12 +49,7 @@
             actual
                 .Should()
                 .Be(expected);
-            _nameValidater.Verify(_nameValidaterExpression1, Times.Once);
-            _indentProcessor.Verify(_mh.IsValidIndentValueExpression, Times.Once);
-            _locater.VerifySet(_mh.SetCurrentSegmentAction, Times.Once);
-            _locater.Verify(_mh.CurrentSegmentExpression, Times.Once);
-            _logger.Verify(_loggerExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Theory]
@@ -65,11 +63,17 @@
         {
             // Arrange
             InitializeMocks();
-            _mh.SetupIndentProcessorForIndentValues(_indentProcessor,
-                                                    optionValue,
-                                                    true,
-                                                    indentValue,
-                                                    indentValue);
+            _indentProcessor
+                .Setup(x => x.IsValidIndentValue(optionValue, out indentValue))
+                .Returns(true)
+                .Verifiable(Times.Once);
+            _locater
+                .SetupSet(x => x.CurrentSegment = SegmentName)
+                .Verifiable(Times.Once);
+            _nameValidater
+                .Setup(x => x.IsValidName(SegmentName))
+                .Returns(true)
+                .Verifiable(Times.Once);
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName} {FirstTimeIndentOption}={optionValue}";
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new()
@@ -84,10 +88,7 @@
             actual
                 .Should()
                 .Be(expected);
-            _nameValidater.Verify(_nameValidaterExpression1, Times.Once);
-            _indentProcessor.Verify(_mh.IsValidIndentValueExpression, Times.Once);
-            _locater.VerifySet(_mh.SetCurrentSegmentAction, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Fact]
@@ -97,14 +98,24 @@
             InitializeMocks();
             string optionValue = "0";
             int indentValue = 0;
-            _mh.SetupIndentProcessorForIndentValues(_indentProcessor,
-                                                    optionValue,
-                                                    true,
-                                                    indentValue,
-                                                    0);
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgFirstTimeIndentSetToZero,
-                                                       SegmentName);
+            _indentProcessor
+                .Setup(x => x.IsValidIndentValue(optionValue, out indentValue))
+                .Returns(true)
+                .Verifiable(Times.Once);
+            _locater
+                .SetupSet(x => x.CurrentSegment = SegmentName)
+                .Verifiable(Times.Once);
+            _locater
+                .Setup(x => x.CurrentSegment)
+                .Returns(SegmentName)
+                .Verifiable(Times.AtLeastOnce);
+            _logger
+                .Setup(x => x.Log(MsgFirstTimeIndentSetToZero, SegmentName, null))
+                .Verifiable(Times.Once);
+            _nameValidater
+                .Setup(x => x.IsValidName(SegmentName))
+                .Returns(true)
+                .Verifiable(Times.Once);
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName} {FirstTimeIndentOption}={optionValue}";
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new();
@@ -116,12 +127,7 @@
             actual
                 .Should()
                 .Be(expected);
-            _nameValidater.Verify(_nameValidaterExpression1, Times.Once);
-            _indentProcessor.Verify(_mh.IsValidIndentValueExpression, Times.Once);
-            _locater.VerifySet(_mh.SetCurrentSegmentAction, Times.Once);
-            _locater.Verify(_mh.CurrentSegmentExpression, Times.Once);
-            _logger.Verify(_loggerExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Theory]
@@ -134,24 +140,35 @@
             InitializeMocks();
             string indentStringValue = "2";
             int indentIntegerValue = 2;
-            _mh.SetupIndentProcessorForIndentValues(_indentProcessor,
-                                                    indentStringValue,
-                                                    true,
-                                                    indentIntegerValue,
-                                                    indentIntegerValue);
             string tabSizeStringValue = "3";
             int tabSizeIntegerValue = 3;
-            _mh.SetupIndentProcessorForTabSizeValues(_indentProcessor,
-                                                     tabSizeStringValue,
-                                                     true,
-                                                     tabSizeIntegerValue,
-                                                     tabSizeIntegerValue);
+            _indentProcessor
+                .Setup(x => x.IsValidIndentValue(indentStringValue, out indentIntegerValue))
+                .Returns(true)
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(x => x.IsValidTabSizeValue(tabSizeStringValue, out tabSizeIntegerValue))
+                .Returns(true)
+                .Verifiable(Times.Once);
             string padSegmentValue = "PadSegment";
-            _nameValidaterExpression2 = MockHelper.SetupNameValidater(_nameValidater, padSegmentValue, true);
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgFoundDuplicateOptionNameOnHeaderLine,
-                                                       SegmentName,
-                                                       optionName);
+            _nameValidater
+                .Setup(x => x.IsValidName(SegmentName))
+                .Returns(true)
+                .Verifiable(Times.Once);
+            _nameValidater
+                .Setup(x => x.IsValidName(padSegmentValue))
+                .Returns(true)
+                .Verifiable(Times.Once);
+            _locater
+                .SetupSet(x => x.CurrentSegment = SegmentName)
+                .Verifiable(Times.Once);
+            _locater
+                .Setup(x => x.CurrentSegment)
+                .Returns(SegmentName)
+                .Verifiable(Times.AtLeastOnce);
+            _logger
+                .Setup(x => x.Log(MsgFoundDuplicateOptionNameOnHeaderLine, SegmentName, optionName))
+                .Verifiable(Times.Once);
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName} "
                 + $"{PadSegmentNameOption}={padSegmentValue}, "
                 + $"{FirstTimeIndentOption}={indentIntegerValue}, "
@@ -172,14 +189,7 @@
             actual
                 .Should()
                 .Be(expected);
-            _nameValidater.Verify(_nameValidaterExpression1, Times.Once);
-            _nameValidater.Verify(_nameValidaterExpression2, Times.Once);
-            _indentProcessor.Verify(_mh.IsValidIndentValueExpression, Times.Once);
-            _indentProcessor.Verify(_mh.IsValidTabSizeExpression, Times.Once);
-            _locater.VerifySet(_mh.SetCurrentSegmentAction, Times.Once);
-            _locater.Verify(_mh.CurrentSegmentExpression, Times.Once);
-            _logger.Verify(_loggerExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Theory]
@@ -202,18 +212,26 @@
             // Arrange
             InitializeMocks();
             string indentStringValue = option1 is FirstTimeIndentOption ? value1 : option2 is FirstTimeIndentOption ? value2 : value3;
-            _mh.SetupIndentProcessorForIndentValues(_indentProcessor,
-                                                    indentStringValue,
-                                                    true,
-                                                    firstTimeIndent,
-                                                    firstTimeIndent);
             string tabSizeStringValue = option1 is TabSizeOption ? value1 : option2 is TabSizeOption ? value2 : value3;
-            _mh.SetupIndentProcessorForTabSizeValues(_indentProcessor,
-                                                     tabSizeStringValue,
-                                                     true,
-                                                     tabSizeValue,
-                                                     tabSizeValue);
-            _nameValidaterExpression2 = MockHelper.SetupNameValidater(_nameValidater, padSegment, true);
+            _indentProcessor
+                .Setup(x => x.IsValidIndentValue(indentStringValue, out firstTimeIndent))
+                .Returns(true)
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(x => x.IsValidTabSizeValue(tabSizeStringValue, out tabSizeValue))
+                .Returns(true)
+                .Verifiable(Times.Once);
+            _nameValidater
+                .Setup(x => x.IsValidName(SegmentName))
+                .Returns(true)
+                .Verifiable(Times.Once);
+            _nameValidater
+                .Setup(x => x.IsValidName(padSegment))
+                .Returns(true)
+                .Verifiable(Times.Once);
+            _locater
+                .SetupSet(x => x.CurrentSegment = SegmentName)
+                .Verifiable(Times.Once);
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName} {option1}={value1}, {option2}={value2}, {option3}={value3}";
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new()
@@ -230,12 +248,7 @@
             actual
                 .Should()
                 .Be(expected);
-            _nameValidater.Verify(_nameValidaterExpression1, Times.Once);
-            _nameValidater.Verify(_nameValidaterExpression2, Times.Once);
-            _indentProcessor.Verify(_mh.IsValidIndentValueExpression, Times.Once);
-            _indentProcessor.Verify(_mh.IsValidTabSizeExpression, Times.Once);
-            _locater.VerifySet(_mh.SetCurrentSegmentAction, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Fact]
@@ -245,11 +258,20 @@
             InitializeMocks();
             string segmentHeader = $"{SegmentHeaderCode} ";
             string segmentName = $"{DefaultSegmentNamePrefix}1";
-            _mh.SetupLocater(_locater, segmentName, LineNumber);
-            _mh.SetupDefaultSegmentNameGenerator(_defaultSegmentNameGenerator);
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgSegmentNameMustStartInColumn5,
-                                                       segmentName);
+            _defaultSegmentNameGenerator
+                .Setup(x => x.Next)
+                .Returns(segmentName)
+                .Verifiable(Times.Once);
+            _locater
+                .SetupSet(x => x.CurrentSegment = segmentName)
+                .Verifiable(Times.Once);
+            _locater
+                .Setup(x => x.CurrentSegment)
+                .Returns(segmentName)
+                .Verifiable(Times.AtLeastOnce);
+            _logger
+                .Setup(x => x.Log(MsgSegmentNameMustStartInColumn5, segmentName, null))
+                .Verifiable(Times.Once);
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new();
 
@@ -260,11 +282,7 @@
             actual
                 .Should()
                 .Be(expected);
-            _defaultSegmentNameGenerator.Verify(_mh.DefaultSegmentNameExpression, Times.Once);
-            _locater.VerifySet(_mh.SetCurrentSegmentAction, Times.Once);
-            _locater.Verify(_mh.CurrentSegmentExpression, Times.Once);
-            _logger.Verify(_loggerExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Fact]
@@ -273,10 +291,20 @@
             // Arrange
             InitializeMocks();
             string optionString = "Option1=value";
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgUnknownSegmentOptionFound,
-                                                       SegmentName,
-                                                       optionString);
+            _locater
+                .SetupSet(x => x.CurrentSegment = SegmentName)
+                .Verifiable(Times.Once);
+            _locater
+                .Setup(x => x.CurrentSegment)
+                .Returns(SegmentName)
+                .Verifiable(Times.AtLeastOnce);
+            _logger
+                .Setup(x => x.Log(MsgUnknownSegmentOptionFound, SegmentName, optionString))
+                .Verifiable(Times.Once);
+            _nameValidater
+                .Setup(x => x.IsValidName(SegmentName))
+                .Returns(true)
+                .Verifiable(Times.Once);
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName} {optionString}";
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new();
@@ -288,11 +316,7 @@
             actual
                 .Should()
                 .Be(expected);
-            _nameValidater.Verify(_nameValidaterExpression1, Times.Once);
-            _locater.VerifySet(_mh.SetCurrentSegmentAction, Times.Once);
-            _locater.Verify(_mh.CurrentSegmentExpression, Times.Once);
-            _logger.Verify(_loggerExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Fact]
@@ -301,9 +325,20 @@
             // Arrange
             InitializeMocks();
             string optionString = "=value";
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgOptionNameMustPrecedeEqualsSign,
-                                                       SegmentName);
+            _locater
+                .SetupSet(x => x.CurrentSegment = SegmentName)
+                .Verifiable(Times.Once);
+            _locater
+                .Setup(x => x.CurrentSegment)
+                .Returns(SegmentName)
+                .Verifiable(Times.AtLeastOnce);
+            _logger
+                .Setup(x => x.Log(MsgOptionNameMustPrecedeEqualsSign, SegmentName, null))
+                .Verifiable(Times.Once);
+            _nameValidater
+                .Setup(x => x.IsValidName(SegmentName))
+                .Returns(true)
+                .Verifiable(Times.Once);
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName} {optionString}";
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new();
@@ -315,11 +350,7 @@
             actual
                 .Should()
                 .Be(expected);
-            _nameValidater.Verify(_nameValidaterExpression1, Times.Once);
-            _locater.VerifySet(_mh.SetCurrentSegmentAction, Times.Once);
-            _locater.Verify(_mh.CurrentSegmentExpression, Times.Once);
-            _logger.Verify(_loggerExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Fact]
@@ -328,10 +359,20 @@
             // Arrange
             InitializeMocks();
             string optionName = "Option1";
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgInvalidFormOfOption,
-                                                       SegmentName,
-                                                       optionName);
+            _locater
+                .SetupSet(x => x.CurrentSegment = SegmentName)
+                .Verifiable(Times.Once);
+            _locater
+                .Setup(x => x.CurrentSegment)
+                .Returns(SegmentName)
+                .Verifiable(Times.AtLeastOnce);
+            _logger
+                .Setup(x => x.Log(MsgInvalidFormOfOption, SegmentName, optionName))
+                .Verifiable(Times.Once);
+            _nameValidater
+                .Setup(x => x.IsValidName(SegmentName))
+                .Returns(true)
+                .Verifiable(Times.Once);
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName} {optionName}";
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new();
@@ -343,11 +384,7 @@
             actual
                 .Should()
                 .Be(expected);
-            _nameValidater.Verify(_nameValidaterExpression1, Times.Once);
-            _locater.VerifySet(_mh.SetCurrentSegmentAction, Times.Once);
-            _locater.Verify(_mh.CurrentSegmentExpression, Times.Once);
-            _logger.Verify(_loggerExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Theory]
@@ -362,20 +399,28 @@
             InitializeMocks();
             string indentStringValue = "1";
             int indentIntegerValue = 1;
-            _mh.SetupIndentProcessorForIndentValues(_indentProcessor,
-                                                    indentStringValue,
-                                                    true,
-                                                    indentIntegerValue,
-                                                    indentIntegerValue);
             string tabSizeStringValue = "3";
             int tabSizeIntegerValue = 3;
-            _mh.SetupIndentProcessorForTabSizeValues(_indentProcessor,
-                                                     tabSizeStringValue,
-                                                     true,
-                                                     tabSizeIntegerValue,
-                                                     tabSizeIntegerValue);
+            _indentProcessor
+                .Setup(x => x.IsValidIndentValue(indentStringValue, out indentIntegerValue))
+                .Returns(true)
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(x => x.IsValidTabSizeValue(tabSizeStringValue, out tabSizeIntegerValue))
+                .Returns(true)
+                .Verifiable(Times.Once);
             string padSegmentValue = "PadSegment";
-            _nameValidaterExpression2 = MockHelper.SetupNameValidater(_nameValidater, padSegmentValue, true);
+            _locater
+                .SetupSet(x => x.CurrentSegment = SegmentName)
+                .Verifiable(Times.Once);
+            _nameValidater
+                .Setup(x => x.IsValidName(SegmentName))
+                .Returns(true)
+                .Verifiable(Times.Once);
+            _nameValidater
+                .Setup(x => x.IsValidName(padSegmentValue))
+                .Returns(true)
+                .Verifiable(Times.Once);
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName} "
                 + $"{firstTimeIndentOption}={indentStringValue}, "
                 + $"{tabSizeOption}={tabSizeIntegerValue}, "
@@ -395,12 +440,7 @@
             actual
                 .Should()
                 .Be(expected);
-            _nameValidater.Verify(_nameValidaterExpression1, Times.Once);
-            _nameValidater.Verify(_nameValidaterExpression2, Times.Once);
-            _indentProcessor.Verify(_mh.IsValidIndentValueExpression, Times.Once);
-            _indentProcessor.Verify(_mh.IsValidTabSizeExpression, Times.Once);
-            _locater.VerifySet(_mh.SetCurrentSegmentAction, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Fact]
@@ -408,10 +448,20 @@
         {
             // Arrange
             InitializeMocks();
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgOptionValueMustFollowEqualsSign,
-                                                       SegmentName,
-                                                       PadSegmentNameOption);
+            _locater
+                .SetupSet(x => x.CurrentSegment = SegmentName)
+                .Verifiable(Times.Once);
+            _locater
+                .Setup(x => x.CurrentSegment)
+                .Returns(SegmentName)
+                .Verifiable(Times.AtLeastOnce);
+            _logger
+                .Setup(x => x.Log(MsgOptionValueMustFollowEqualsSign, SegmentName, PadSegmentNameOption))
+                .Verifiable(Times.Once);
+            _nameValidater
+                .Setup(x => x.IsValidName(SegmentName))
+                .Returns(true)
+                .Verifiable(Times.Once);
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName} {PadSegmentNameOption}=";
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new();
@@ -423,11 +473,7 @@
             actual
                 .Should()
                 .Be(expected);
-            _nameValidater.Verify(_nameValidaterExpression1, Times.Once);
-            _locater.VerifySet(_mh.SetCurrentSegmentAction, Times.Once);
-            _locater.Verify(_mh.CurrentSegmentExpression, Times.Once);
-            _logger.Verify(_loggerExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Fact]
@@ -436,11 +482,24 @@
             // Arrange
             InitializeMocks();
             string optionValue = "invalidName";
-            _nameValidaterExpression2 = MockHelper.SetupNameValidater(_nameValidater, optionValue, false);
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgInvalidPadSegmentName,
-                                                       SegmentName,
-                                                       optionValue);
+            _locater
+                .SetupSet(x => x.CurrentSegment = SegmentName)
+                .Verifiable(Times.Once);
+            _locater
+                .Setup(x => x.CurrentSegment)
+                .Returns(SegmentName)
+                .Verifiable(Times.AtLeastOnce);
+            _logger
+                .Setup(x => x.Log(MsgInvalidPadSegmentName, SegmentName, optionValue))
+                .Verifiable(Times.Once);
+            _nameValidater
+                .Setup(x => x.IsValidName(SegmentName))
+                .Returns(true)
+                .Verifiable(Times.Once);
+            _nameValidater
+                .Setup(x => x.IsValidName(optionValue))
+                .Returns(false)
+                .Verifiable(Times.Once);
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName} {PadSegmentNameOption}={optionValue}";
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new();
@@ -452,12 +511,7 @@
             actual
                 .Should()
                 .Be(expected);
-            _nameValidater.Verify(_nameValidaterExpression1, Times.Once);
-            _nameValidater.Verify(_nameValidaterExpression2, Times.Once);
-            _locater.VerifySet(_mh.SetCurrentSegmentAction, Times.Once);
-            _locater.Verify(_mh.CurrentSegmentExpression, Times.Once);
-            _logger.Verify(_loggerExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Fact]
@@ -466,7 +520,17 @@
             // Arrange
             InitializeMocks();
             string optionValue = "validName";
-            _nameValidaterExpression2 = MockHelper.SetupNameValidater(_nameValidater, optionValue, true);
+            _locater
+                .SetupSet(x => x.CurrentSegment = SegmentName)
+                .Verifiable(Times.Once);
+            _nameValidater
+                .Setup(x => x.IsValidName(SegmentName))
+                .Returns(true)
+                .Verifiable(Times.Once);
+            _nameValidater
+                .Setup(x => x.IsValidName(optionValue))
+                .Returns(true)
+                .Verifiable(Times.Once);
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName} {PadSegmentNameOption}={optionValue}";
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new()
@@ -481,10 +545,7 @@
             actual
                 .Should()
                 .Be(expected);
-            _nameValidater.Verify(_nameValidaterExpression1, Times.Once);
-            _nameValidater.Verify(_nameValidaterExpression2, Times.Once);
-            _locater.VerifySet(_mh.SetCurrentSegmentAction, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Fact]
@@ -495,13 +556,24 @@
             string invalidSegmentName = "Invalid";
             string defaultSegmentName = $"{DefaultSegmentNamePrefix}1";
             string segmentHeader = $"{SegmentHeaderCode} {invalidSegmentName}";
-            _mh.SetupLocater(_locater, defaultSegmentName, LineNumber);
-            _mh.SetupDefaultSegmentNameGenerator(_defaultSegmentNameGenerator);
-            _nameValidaterExpression2 = MockHelper.SetupNameValidater(_nameValidater, invalidSegmentName, false);
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgInvalidSegmentName,
-                                                       invalidSegmentName,
-                                                       defaultSegmentName);
+            _defaultSegmentNameGenerator
+                .Setup(x => x.Next)
+                .Returns(defaultSegmentName)
+                .Verifiable(Times.Once);
+            _locater
+                .SetupSet(x => x.CurrentSegment = defaultSegmentName)
+                .Verifiable(Times.Once);
+            _locater
+                .Setup(x => x.CurrentSegment)
+                .Returns(defaultSegmentName)
+                .Verifiable(Times.AtLeastOnce);
+            _nameValidater
+                .Setup(x => x.IsValidName(invalidSegmentName))
+                .Returns(false)
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(x => x.Log(MsgInvalidSegmentName, invalidSegmentName, defaultSegmentName))
+                .Verifiable(Times.Once);
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new();
 
@@ -512,12 +584,7 @@
             actual
                 .Should()
                 .Be(expected);
-            _nameValidater.Verify(_nameValidaterExpression2, Times.Once);
-            _defaultSegmentNameGenerator.Verify(_mh.DefaultSegmentNameExpression, Times.Once);
-            _locater.VerifySet(_mh.SetCurrentSegmentAction, Times.Once);
-            _locater.Verify(_mh.CurrentSegmentExpression, Times.Once);
-            _logger.Verify(_loggerExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Fact]
@@ -527,12 +594,20 @@
             InitializeMocks();
             string segmentHeader = $"{SegmentHeaderCode}  ";
             string segmentName = $"{DefaultSegmentNamePrefix}1";
-            _mh.SetupLocater(_locater, segmentName, LineNumber);
-            _mh.SetupDefaultSegmentNameGenerator(_defaultSegmentNameGenerator);
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgSegmentNameMustStartInColumn5,
-                                                       segmentName,
-                                                       segmentHeader);
+            _defaultSegmentNameGenerator
+                .Setup(x => x.Next)
+                .Returns(segmentName)
+                .Verifiable(Times.Once);
+            _locater
+                .SetupSet(x => x.CurrentSegment = segmentName)
+                .Verifiable(Times.Once);
+            _locater
+                .Setup(x => x.CurrentSegment)
+                .Returns(segmentName)
+                .Verifiable(Times.AtLeastOnce);
+            _logger
+                .Setup(x => x.Log(MsgSegmentNameMustStartInColumn5, segmentName, segmentHeader))
+                .Verifiable(Times.Once);
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new();
 
@@ -543,11 +618,7 @@
             actual
                 .Should()
                 .Be(expected);
-            _defaultSegmentNameGenerator.Verify(_mh.DefaultSegmentNameExpression, Times.Once);
-            _locater.VerifySet(_mh.SetCurrentSegmentAction, Times.Once);
-            _locater.Verify(_mh.CurrentSegmentExpression, Times.Exactly(2));
-            _logger.Verify(_loggerExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Theory]
@@ -561,14 +632,24 @@
             // Arrange
             InitializeMocks();
             int tabSizeValue = 0;
-            _mh.SetupIndentProcessorForTabSizeValues(_indentProcessor,
-                                                     optionValue,
-                                                     false,
-                                                     tabSizeValue,
-                                                     0);
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgInvalidTabSizeOption,
-                                                       SegmentName);
+            _indentProcessor
+                .Setup(x => x.IsValidTabSizeValue(optionValue, out tabSizeValue))
+                .Returns(false)
+                .Verifiable(Times.Once);
+            _locater
+                .SetupSet(x => x.CurrentSegment = SegmentName)
+                .Verifiable(Times.Once);
+            _locater
+                .Setup(x => x.CurrentSegment)
+                .Returns(SegmentName)
+                .Verifiable(Times.AtLeastOnce);
+            _logger
+                .Setup(x => x.Log(MsgInvalidTabSizeOption, SegmentName, null))
+                .Verifiable(Times.Once);
+            _nameValidater
+                .Setup(x => x.IsValidName(SegmentName))
+                .Returns(true)
+                .Verifiable(Times.Once);
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName} {TabSizeOption}={optionValue}";
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new();
@@ -580,12 +661,7 @@
             actual
                 .Should()
                 .Be(expected);
-            _nameValidater.Verify(_nameValidaterExpression1, Times.Once);
-            _indentProcessor.Verify(_mh.IsValidTabSizeExpression, Times.Once);
-            _locater.VerifySet(_mh.SetCurrentSegmentAction, Times.Once);
-            _locater.Verify(_mh.CurrentSegmentExpression, Times.Once);
-            _logger.Verify(_loggerExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Theory]
@@ -596,11 +672,17 @@
         {
             // Arrange
             InitializeMocks();
-            _mh.SetupIndentProcessorForTabSizeValues(_indentProcessor,
-                                                     optionValue,
-                                                     true,
-                                                     tabSizeValue,
-                                                     tabSizeValue);
+            _indentProcessor
+                .Setup(x => x.IsValidTabSizeValue(optionValue, out tabSizeValue))
+                .Returns(true)
+                .Verifiable(Times.Once);
+            _locater
+                .SetupSet(x => x.CurrentSegment = SegmentName)
+                .Verifiable(Times.Once);
+            _nameValidater
+                .Setup(x => x.IsValidName(SegmentName))
+                .Returns(true)
+                .Verifiable(Times.Once);
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName} {TabSizeOption}={optionValue}";
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new()
@@ -615,10 +697,7 @@
             actual
                 .Should()
                 .Be(expected);
-            _nameValidater.Verify(_nameValidaterExpression1, Times.Once);
-            _indentProcessor.Verify(_mh.IsValidTabSizeExpression, Times.Once);
-            _locater.VerifySet(_mh.SetCurrentSegmentAction, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Fact]
@@ -626,6 +705,13 @@
         {
             // Arrange
             InitializeMocks();
+            _locater
+                .SetupSet(x => x.CurrentSegment = SegmentName)
+                .Verifiable(Times.Once);
+            _nameValidater
+                .Setup(x => x.IsValidName(SegmentName))
+                .Returns(true)
+                .Verifiable(Times.Once);
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName}";
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new();
@@ -637,9 +723,7 @@
             actual
                 .Should()
                 .Be(expected);
-            _nameValidater.Verify(_nameValidaterExpression1, Times.Once);
-            _locater.VerifySet(_mh.SetCurrentSegmentAction, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Fact]
@@ -788,17 +872,45 @@
             _locater.Reset();
             _logger.Reset();
             _nameValidater.Reset();
-            _mh.SetupLocater(_locater, SegmentName, LineNumber);
-            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, SegmentName, true);
         }
 
         private void MocksVerifyNoOtherCalls()
         {
-            _logger.VerifyNoOtherCalls();
             _defaultSegmentNameGenerator.VerifyNoOtherCalls();
-            _locater.VerifyNoOtherCalls();
             _indentProcessor.VerifyNoOtherCalls();
+            _locater.VerifyNoOtherCalls();
+            _logger.VerifyNoOtherCalls();
             _nameValidater.VerifyNoOtherCalls();
+        }
+
+        private void VerifyMocks()
+        {
+            if (_defaultSegmentNameGenerator.Setups.Any())
+            {
+                _defaultSegmentNameGenerator.Verify();
+            }
+
+            if (_indentProcessor.Setups.Any())
+            {
+                _indentProcessor.Verify();
+            }
+
+            if (_locater.Setups.Any())
+            {
+                _locater.Verify();
+            }
+
+            if (_logger.Setups.Any())
+            {
+                _logger.Verify();
+            }
+
+            if (_nameValidater.Setups.Any())
+            {
+                _nameValidater.Verify();
+            }
+
+            MocksVerifyNoOtherCalls();
         }
     }
 }

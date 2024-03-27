@@ -1,7 +1,5 @@
 ﻿namespace TextTemplateProcessor.Logger
 {
-    using System.Linq.Expressions;
-
     public class ConsoleLoggerTests
     {
         private const int LineNumber = 10;
@@ -14,15 +12,21 @@
         private readonly string _formatStringTwoArgs = "This {0} {1}";
         private readonly Mock<ILocater> _locater = new();
         private readonly Mock<IMessageWriter> _messageWriter = new();
-        private readonly MockHelper _mh = new();
 
         [Fact]
         internal void Clear_LoggerContainsMultipleLogEntries_ClearsAllLogEntries()
         {
             // Arrange
             InitializeMocks();
+            _locater
+                .Setup(x => x.CurrentSegment)
+                .Returns(SegmentName);
+            _locater
+                .Setup(x => x.LineNumber)
+                .Returns(LineNumber);
             ConsoleLogger consoleLogger = GetConsoleLogger();
-            WriteLogEntries(consoleLogger, true);
+            WriteLogEntries(consoleLogger);
+            _locater.Reset();
 
             // Act
             consoleLogger.Clear();
@@ -31,7 +35,7 @@
             consoleLogger.LogEntries
                 .Should()
                 .BeEmpty();
-            VerifyMocks(0);
+            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -71,13 +75,13 @@
         {
             // Arrange
             InitializeMocks();
-            Action action = () => { GetConsoleLogger(); };
+            Action action = () => { _ = GetConsoleLogger(); };
 
             // Act/Assert
             action
                 .Should()
                 .NotThrow();
-            VerifyMocks(0);
+            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -85,6 +89,14 @@
         {
             // Arrange
             InitializeMocks();
+            _locater
+                .Setup(x => x.CurrentSegment)
+                .Returns(SegmentName)
+                .Verifiable(Times.Exactly(2));
+            _locater
+                .Setup(x => x.LineNumber)
+                .Returns(LineNumber)
+                .Verifiable(Times.Exactly(2));
             ConsoleLogger consoleLogger = GetConsoleLogger();
             List<LogEntry> expectedLogEntries = new()
             {
@@ -102,11 +114,11 @@
             // Assert
             consoleLogger.LogEntries
                 .Should()
-                .HaveCount(expectedLogEntries.Count);
+                .HaveSameCount(expectedLogEntries);
             consoleLogger.LogEntries
                 .Should()
                 .ContainInConsecutiveOrder(expectedLogEntries);
-            VerifyMocks(2);
+            VerifyMocks();
         }
 
         [Theory]
@@ -131,7 +143,7 @@
             consoleLogger.LogEntries
                 .Should()
                 .Contain(expected);
-            VerifyMocks(0);
+            MocksVerifyNoOtherCalls();
         }
 
         [Theory]
@@ -159,7 +171,7 @@
             consoleLogger.LogEntries
                 .Should()
                 .Contain(expected);
-            VerifyMocks(0);
+            MocksVerifyNoOtherCalls();
         }
 
         [Theory]
@@ -188,7 +200,7 @@
             consoleLogger.LogEntries
                 .Should()
                 .Contain(expected);
-            VerifyMocks(0);
+            MocksVerifyNoOtherCalls();
         }
 
         [Theory]
@@ -198,6 +210,14 @@
         {
             // Arrange
             InitializeMocks();
+            _locater
+                .Setup(x => x.CurrentSegment)
+                .Returns(SegmentName)
+                .Verifiable(Times.Once);
+            _locater
+                .Setup(x => x.LineNumber)
+                .Returns(LineNumber)
+                .Verifiable(Times.Once);
             ConsoleLogger consoleLogger = GetConsoleLogger();
             LogEntry expected = new(logEntryType, SegmentName, LineNumber, message);
 
@@ -211,7 +231,7 @@
             consoleLogger.LogEntries
                 .Should()
                 .Contain(expected);
-            VerifyMocks(1);
+            VerifyMocks();
         }
 
         [Theory]
@@ -221,6 +241,14 @@
         {
             // Arrange
             InitializeMocks();
+            _locater
+                .Setup(x => x.CurrentSegment)
+                .Returns(SegmentName)
+                .Verifiable(Times.Once);
+            _locater
+                .Setup(x => x.LineNumber)
+                .Returns(LineNumber)
+                .Verifiable(Times.Once);
             ConsoleLogger consoleLogger = GetConsoleLogger();
             string formatString = "This {0} test";
             string formatItem = "is a";
@@ -237,7 +265,7 @@
             consoleLogger.LogEntries
                 .Should()
                 .Contain(expected);
-            VerifyMocks(1);
+            VerifyMocks();
         }
 
         [Theory]
@@ -247,6 +275,14 @@
         {
             // Arrange
             InitializeMocks();
+            _locater
+                .Setup(x => x.CurrentSegment)
+                .Returns(SegmentName)
+                .Verifiable(Times.Once);
+            _locater
+                .Setup(x => x.LineNumber)
+                .Returns(LineNumber)
+                .Verifiable(Times.Once);
             ConsoleLogger consoleLogger = GetConsoleLogger();
             string formatString = "This {0} {1}";
             string formatItem1 = "is a";
@@ -264,7 +300,7 @@
             consoleLogger.LogEntries
                 .Should()
                 .Contain(expected);
-            VerifyMocks(1);
+            VerifyMocks();
         }
 
         [Fact]
@@ -272,7 +308,6 @@
         {
             // Arrange
             InitializeMocks();
-            ConsoleLogger consoleLogger = GetConsoleLogger();
             List<string> expectedMessages = new()
             {
                 $"<{LogEntryType.Generating}> {SegmentName}[{LineNumber}] : {_expectedMessage}",
@@ -282,14 +317,27 @@
                 $"<{LogEntryType.Loading}> {_expectedMessage}",
                 $"<{LogEntryType.Setup}> {_expectedMessage}"
             };
-            WriteLogEntries(consoleLogger, true);
             List<string> writeBuffer = new();
             void callback(string x) => writeBuffer.Add(x);
-            List<Expression<Action<IMessageWriter>>> messageWriterExpressions = new();
-            for (int i = 0; i < expectedMessages.Count; i++)
+
+            foreach (string message in expectedMessages)
             {
-                messageWriterExpressions.Add(MockHelper.SetupMessageWriter(_messageWriter, expectedMessages[i], callback));
+                _messageWriter
+                    .Setup(x => x.WriteLine(message))
+                    .Callback(callback)
+                    .Verifiable
+                    (Times.Once);
             }
+
+            _locater
+                .Setup(x => x.CurrentSegment)
+                .Returns(SegmentName);
+            _locater
+                .Setup(x => x.LineNumber)
+                .Returns(LineNumber);
+            ConsoleLogger consoleLogger = GetConsoleLogger();
+            WriteLogEntries(consoleLogger);
+            _locater.Reset();
 
             // Act
             consoleLogger.WriteLogEntries();
@@ -301,11 +349,7 @@
             writeBuffer
                 .Should()
                 .ContainInConsecutiveOrder(expectedMessages);
-            for (int i = 0; i < messageWriterExpressions.Count; i++)
-            {
-                _messageWriter.Verify(messageWriterExpressions[i], Times.Once);
-            }
-            VerifyMocks(0);
+            VerifyMocks();
         }
 
         private static void Log(ILogger logger, LogEntryType type, string message, string? arg1 = null, string? arg2 = null)
@@ -320,23 +364,31 @@
         private void InitializeMocks()
         {
             _locater.Reset();
-            _mh.SetupLocater(_locater, SegmentName, LineNumber);
             _messageWriter.Reset();
         }
 
-        private void VerifyMocks(int locaterCallCount)
+        private void MocksVerifyNoOtherCalls()
         {
-            if (locaterCallCount > 0)
-            {
-                _locater.Verify(_mh.CurrentSegmentExpression, Times.Exactly(locaterCallCount));
-                _locater.Verify(_mh.LineNumberExpression, Times.Exactly(locaterCallCount));
-            }
-
             _locater.VerifyNoOtherCalls();
             _messageWriter.VerifyNoOtherCalls();
         }
 
-        private void WriteLogEntries(ILogger logger, bool resetLocater = false)
+        private void VerifyMocks()
+        {
+            if (_locater.Setups.Any())
+            {
+                _locater.Verify();
+            }
+
+            if (_messageWriter.Setups.Any())
+            {
+                _messageWriter.Verify();
+            }
+
+            MocksVerifyNoOtherCalls();
+        }
+
+        private void WriteLogEntries(ILogger logger)
         {
             Log(logger, LogEntryType.Generating, _formatStringNoArgs);
             Log(logger, LogEntryType.Writing, _formatStringNoArgs);
@@ -344,11 +396,6 @@
             Log(logger, LogEntryType.Reset, _formatStringOneArg, _formatItem1);
             Log(logger, LogEntryType.Loading, _formatStringTwoArgs, _formatItem1, _formatItem2);
             Log(logger, LogEntryType.Setup, _formatStringTwoArgs, _formatItem1, _formatItem2);
-
-            if (resetLocater)
-            {
-                _locater.Reset();
-            }
         }
     }
 }

@@ -1,13 +1,11 @@
 ﻿namespace TextTemplateProcessor.IO
 {
     using global::TextTemplateProcessor.TestShared;
-    using System.Linq.Expressions;
 
     public class TextReaderTests
     {
         private readonly Mock<IFileAndDirectoryService> _fileService = new();
         private readonly Mock<ILogger> _logger = new();
-        private readonly MockHelper _mh = new();
         private readonly Mock<IPathValidater> _pathValidater = new();
 
         [Fact]
@@ -18,25 +16,28 @@
             string directoryPath = NextAbsoluteName;
             string fileName = NextFileName;
             string filePath = Path.Combine(directoryPath, fileName);
-            Expression<Action<ILogger>> loggerExpression1
-                = MockHelper.SetupLogger(_logger,
-                                         MsgAttemptingToReadFile,
-                                         filePath);
-            Expression<Action<ILogger>> loggerExpression2
-                = MockHelper.SetupLogger(_logger,
-                                         MsgErrorWhileReadingTemplateFile,
-                                         AnyString);
-            _mh.SetupPathValidater(_pathValidater,
-                                   filePath,
-                                   true,
-                                   true,
-                                   filePath);
-            _mh.SetupFileAndDirectoryService(_fileService,
-                                             directoryPath,
-                                             fileName,
-                                             filePath,
-                                             new[] { "test" },
-                                             true);
+            _logger
+                .Setup(x => x.Log(MsgAttemptingToReadFile, filePath, null))
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(x => x.Log(MsgErrorWhileReadingTemplateFile, It.IsAny<string>(), null))
+                .Verifiable(Times.Once);
+            _pathValidater
+                .Setup(x => x.ValidateFullPath(filePath, true, true))
+                .Returns(filePath)
+                .Verifiable(Times.Once);
+            _fileService
+                .Setup(x => x.GetDirectoryName(filePath))
+                .Returns(directoryPath)
+                .Verifiable(Times.Once);
+            _fileService
+                .Setup(x => x.GetFileName(filePath))
+                .Returns(fileName)
+                .Verifiable(Times.Once);
+            _fileService
+                .Setup(x => x.ReadTextFile(filePath))
+                .Throws<ArgumentException>()
+                .Verifiable(Times.Once);
             TextReader reader = GetTextReader(filePath);
 
             // Act
@@ -46,13 +47,7 @@
             actual
                 .Should()
                 .BeEmpty();
-            _logger.Verify(loggerExpression1, Times.Once);
-            _logger.Verify(loggerExpression2, Times.Once);
-            _fileService.Verify(_mh.GetDirectoryNameExpression, Times.Once);
-            _fileService.Verify(_mh.GetFileNameExpression, Times.Once);
-            _fileService.Verify(_mh.ReadTextFileExpression, Times.Once);
-            _pathValidater.Verify(_mh.ValidateFullPathExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Fact]
@@ -69,23 +64,28 @@
                 "Line 2",
                 "Line 3"
             };
-            Expression<Action<ILogger>> loggerExpression1
-                = MockHelper.SetupLogger(_logger,
-                                         MsgAttemptingToReadFile,
-                                         filePath);
-            Expression<Action<ILogger>> loggerExpression2
-                = MockHelper.SetupLogger(_logger,
-                                         MsgFileSuccessfullyRead);
-            _mh.SetupPathValidater(_pathValidater,
-                                   filePath,
-                                   true,
-                                   true,
-                                   filePath);
-            _mh.SetupFileAndDirectoryService(_fileService,
-                                             directoryPath,
-                                             fileName,
-                                             filePath,
-                                             expected);
+            _logger
+                .Setup(x => x.Log(MsgAttemptingToReadFile, filePath, null))
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(x => x.Log(MsgFileSuccessfullyRead, null, null))
+                .Verifiable(Times.Once);
+            _pathValidater
+                .Setup(x => x.ValidateFullPath(filePath, true, true))
+                .Returns(filePath)
+                .Verifiable(Times.Once);
+            _fileService
+                .Setup(x => x.GetDirectoryName(filePath))
+                .Returns(directoryPath)
+                .Verifiable(Times.Once);
+            _fileService
+                .Setup(x => x.GetFileName(filePath))
+                .Returns(fileName)
+                .Verifiable(Times.Once);
+            _fileService
+                .Setup(x => x.ReadTextFile(filePath))
+                .Returns(expected)
+                .Verifiable(Times.Once);
             TextReader reader = GetTextReader(filePath);
 
             // Act
@@ -95,13 +95,7 @@
             actual
                 .Should()
                 .Equal(expected);
-            _logger.Verify(loggerExpression1, Times.Once);
-            _logger.Verify(loggerExpression2, Times.Once);
-            _fileService.Verify(_mh.GetDirectoryNameExpression, Times.Once);
-            _fileService.Verify(_mh.GetFileNameExpression, Times.Once);
-            _fileService.Verify(_mh.ReadTextFileExpression, Times.Once);
-            _pathValidater.Verify(_mh.ValidateFullPathExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Fact]
@@ -109,9 +103,9 @@
         {
             // Arrange
             InitializeMocks();
-            Expression<Action<ILogger>> loggerExpression
-                = MockHelper.SetupLogger(_logger,
-                                         MsgTemplateFilePathNotSet);
+            _logger
+                .Setup(x => x.Log(MsgTemplateFilePathNotSet, null, null))
+                .Verifiable(Times.Once);
             TextReader reader = GetTextReader();
 
             // Act
@@ -121,40 +115,38 @@
             actual
                 .Should()
                 .BeEmpty();
-            _logger.Verify(loggerExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Fact]
         public void SetFilePath_InvalidFilePath_LogsAnErrorAndInitializesFilePathProperties()
         {
             // Arrange (part 1) - set up a valid file path
+            InitializeMocks();
             string directoryPath = NextAbsoluteName;
             string fileName = NextFileName;
             string filePath = Path.Combine(directoryPath, fileName);
-            _mh.SetupPathValidater(_pathValidater,
-                                   filePath,
-                                   true,
-                                   true,
-                                   filePath);
-            _mh.SetupFileAndDirectoryService(_fileService,
-                                             directoryPath,
-                                             fileName,
-                                             filePath);
+            _pathValidater
+                .Setup(x => x.ValidateFullPath(filePath, true, true))
+                .Returns(filePath);
+            _fileService
+                .Setup(x => x.GetDirectoryName(filePath))
+                .Returns(directoryPath);
+            _fileService
+                .Setup(x => x.GetFileName(filePath))
+                .Returns(fileName);
             TextReader reader = GetTextReader(filePath);
 
             // Arrange (part 2) - try to set an invalid file path
             InitializeMocks();
             string invalidFilePath = $@"{VolumeRoot}{Sep}invalid;path{Sep}file?";
-            _mh.SetupPathValidater(_pathValidater,
-                                   invalidFilePath,
-                                   true,
-                                   true,
-                                   true);
-            Expression<Action<ILogger>> loggerExpression
-                = MockHelper.SetupLogger(_logger,
-                                         MsgUnableToSetTemplateFilePath,
-                                         AnyString);
+            _pathValidater
+                .Setup(x => x.ValidateFullPath(invalidFilePath, true, true))
+                .Throws<ArgumentException>()
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(x => x.Log(MsgUnableToSetTemplateFilePath, It.IsAny<string>(), null))
+                .Verifiable(Times.Once);
 
             // Act
             reader.SetFilePath(invalidFilePath);
@@ -169,9 +161,7 @@
             reader.FullFilePath
                 .Should()
                 .BeEmpty();
-            _logger.Verify(loggerExpression, Times.Once);
-            _pathValidater.Verify(_mh.ValidateFullPathExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Fact]
@@ -182,15 +172,18 @@
             string directoryPath = NextAbsoluteName;
             string fileName = NextFileName;
             string filePath = Path.Combine(directoryPath, fileName);
-            _mh.SetupPathValidater(_pathValidater,
-                                   filePath,
-                                   true,
-                                   true,
-                                   filePath);
-            _mh.SetupFileAndDirectoryService(_fileService,
-                                             directoryPath,
-                                             fileName,
-                                             filePath);
+            _pathValidater
+                .Setup(x => x.ValidateFullPath(filePath, true, true))
+                .Returns(filePath)
+                .Verifiable(Times.Once);
+            _fileService
+                .Setup(x => x.GetDirectoryName(filePath))
+                .Returns(directoryPath)
+                .Verifiable(Times.Once);
+            _fileService
+                .Setup(x => x.GetFileName(filePath))
+                .Returns(fileName)
+                .Verifiable(Times.Once);
             TextReader reader = GetTextReader();
 
             // Act
@@ -206,10 +199,7 @@
             reader.FullFilePath
                 .Should()
                 .Be(filePath);
-            _fileService.Verify(_mh.GetDirectoryNameExpression, Times.Once);
-            _fileService.Verify(_mh.GetFileNameExpression, Times.Once);
-            _pathValidater.Verify(_mh.ValidateFullPathExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Fact]
@@ -287,15 +277,13 @@
             // Arrange
             InitializeMocks();
             string invalidFilePath = $@"{VolumeRoot}{Sep}invalid;path{Sep}file?";
-            _mh.SetupPathValidater(_pathValidater,
-                                   invalidFilePath,
-                                   true,
-                                   true,
-                                   true);
-            Expression<Action<ILogger>> loggerExpression
-                = MockHelper.SetupLogger(_logger,
-                                         MsgUnableToSetTemplateFilePath,
-                                         AnyString);
+            _pathValidater
+                .Setup(x => x.ValidateFullPath(invalidFilePath, true, true))
+                .Throws<ArgumentException>()
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(x => x.Log(MsgUnableToSetTemplateFilePath, It.IsAny<string>(), null))
+                .Verifiable(Times.Once);
 
             // Act
             TextReader reader = GetTextReader(invalidFilePath);
@@ -310,9 +298,7 @@
             reader.FullFilePath
                 .Should()
                 .BeEmpty();
-            _pathValidater.Verify(_mh.ValidateFullPathExpression, Times.Once);
-            _logger.Verify(loggerExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Fact]
@@ -386,15 +372,18 @@
             string expectedDirectoryPath = NextAbsoluteName;
             string expectedFileName = NextFileName;
             string expectedFullFilePath = Path.Combine(expectedDirectoryPath, expectedFileName);
-            _mh.SetupPathValidater(_pathValidater,
-                                   expectedFullFilePath,
-                                   true,
-                                   true,
-                                   expectedFullFilePath);
-            _mh.SetupFileAndDirectoryService(_fileService,
-                                             expectedDirectoryPath,
-                                             expectedFileName,
-                                             expectedFullFilePath);
+            _pathValidater
+                .Setup(x => x.ValidateFullPath(expectedFullFilePath, true, true))
+                .Returns(expectedFullFilePath)
+                .Verifiable(Times.Once);
+            _fileService
+                .Setup(x => x.GetDirectoryName(expectedFullFilePath))
+                .Returns(expectedDirectoryPath)
+                .Verifiable(Times.Once);
+            _fileService
+                .Setup(x => x.GetFileName(expectedFullFilePath))
+                .Returns(expectedFileName)
+                .Verifiable(Times.Once);
 
             // Act
             TextReader reader = GetTextReader(expectedFullFilePath);
@@ -409,10 +398,7 @@
             reader.FullFilePath
                 .Should()
                 .Be(expectedFullFilePath);
-            _pathValidater.Verify(_mh.ValidateFullPathExpression, Times.Once);
-            _fileService.Verify(_mh.GetDirectoryNameExpression, Times.Once);
-            _fileService.Verify(_mh.GetFileNameExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Fact]
@@ -453,9 +439,29 @@
 
         private void MocksVerifyNoOtherCalls()
         {
-            _logger.VerifyNoOtherCalls();
             _fileService.VerifyNoOtherCalls();
+            _logger.VerifyNoOtherCalls();
             _pathValidater.VerifyNoOtherCalls();
+        }
+
+        private void VerifyMocks()
+        {
+            if (_fileService.Setups.Any())
+            {
+                _fileService.Verify();
+            }
+
+            if (_logger.Setups.Any())
+            {
+                _logger.Verify();
+            }
+
+            if (_pathValidater.Setups.Any())
+            {
+                _pathValidater.Verify();
+            }
+
+            MocksVerifyNoOtherCalls();
         }
     }
 }

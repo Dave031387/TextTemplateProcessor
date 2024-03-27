@@ -17,10 +17,8 @@
         private const int MinTabSize = 1;
         private readonly ILocater _locater;
         private readonly ILogger _logger;
-        private bool _isCurrentIndentSaved = false;
+        private bool _isCurrentStateSaved = false;
         private int _saveCurrentIndent = 0;
-        private string _saveCurrentSegment = string.Empty;
-        private int _saveLineNumber = 0;
         private int _saveTabSize = 0;
 
         /// <summary>
@@ -246,7 +244,7 @@
         }
 
         /// <summary>
-        /// Resets the current indent value to zero.
+        /// Resets the current indent value to zero and sets the tab size to the default value.
         /// </summary>
         public void Reset()
         {
@@ -255,34 +253,30 @@
         }
 
         /// <summary>
-        /// Restores the current indent, tab size, and location from the saved values.
+        /// Restores the current indent and tab size from the saved values.
         /// </summary>
         /// <remarks>
-        /// This method exits without doing anything if the current indent, tab size, and location
-        /// wasn't previously saved.
+        /// This method exits without doing anything if the current indent and tab size wasn't
+        /// previously saved.
         /// </remarks>
         public void RestoreCurrentState()
         {
-            if (_isCurrentIndentSaved)
+            if (_isCurrentStateSaved)
             {
                 CurrentIndent = _saveCurrentIndent;
                 TabSize = _saveTabSize;
-                _locater.CurrentSegment = _saveCurrentSegment;
-                _locater.LineNumber = _saveLineNumber;
-                _isCurrentIndentSaved = false;
+                _isCurrentStateSaved = false;
             }
         }
 
         /// <summary>
-        /// Save the current indent, tab size, and location so that they can be restored later.
+        /// Save the current indent and tab size so that they can be restored later.
         /// </summary>
         public void SaveCurrentState()
         {
             _saveCurrentIndent = CurrentIndent;
             _saveTabSize = TabSize;
-            _saveCurrentSegment = _locater.CurrentSegment;
-            _saveLineNumber = _locater.LineNumber;
-            _isCurrentIndentSaved = true;
+            _isCurrentStateSaved = true;
         }
 
         /// <summary>

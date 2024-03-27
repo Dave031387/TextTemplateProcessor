@@ -1,16 +1,10 @@
 ﻿namespace TextTemplateProcessor
 {
-    using System.Linq.Expressions;
-
     public class TokenProcessorTests
     {
         private readonly Mock<ILocater> _locater = new();
         private readonly Mock<ILogger> _logger = new();
-        private readonly MockHelper _mh = new();
         private readonly Mock<INameValidater> _nameValidater = new();
-        private Expression<Action<ILogger>> _loggerExpression = x => x.Log("test", null, null);
-        private Expression<Func<INameValidater, bool>> _nameValidaterExpression1 = x => x.IsValidName("test");
-        private Expression<Func<INameValidater, bool>> _nameValidaterExpression2 = x => x.IsValidName("test");
 
         [Fact]
         public void ClearTokens_TokenDictionaryContainsTokens_ClearsTheTokenDictionary()
@@ -29,7 +23,7 @@
             processor.TokenDictionary
                 .Should()
                 .BeEmpty();
-            VerifyMocks(0, 0, 0, 0, 0);
+            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -41,7 +35,10 @@
             string token = GenerateToken(tokenName);
             string text = $"text {token} text {token} text";
             string expected = $"text {token} text {token} text";
-            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, true);
+            _nameValidater
+                .Setup(x => x.IsValidName(tokenName))
+                .Returns(true)
+                .Verifiable(Times.Exactly(2));
             TokenProcessor processor = GetTokenProcessor();
 
             // Act
@@ -57,7 +54,7 @@
             text
                 .Should()
                 .Be(expected);
-            VerifyMocks(0, 0, 0, 2, 0);
+            VerifyMocks();
         }
 
         [Theory]
@@ -85,7 +82,7 @@
             text
                 .Should()
                 .Be(expected);
-            VerifyMocks(0, 0, 0, 0, 0);
+            MocksVerifyNoOtherCalls();
         }
 
         [Theory]
@@ -105,10 +102,17 @@
             string token1 = GenerateToken(tokenName1);
             string tokenName2 = "token2";
             string token2 = GenerateToken(tokenName2);
+            int expectedTokenCount = 2;
             string text = $"{text1}{token1}{text2}{token2}{text3}";
-            string expected = $"{text1}{token1}{text2}{token2}{text3}";
-            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName1, true);
-            _nameValidaterExpression2 = MockHelper.SetupNameValidater(_nameValidater, tokenName2, true);
+            string expectedText = $"{text1}{token1}{text2}{token2}{text3}";
+            _nameValidater
+                .Setup(x => x.IsValidName(tokenName1))
+                .Returns(true)
+                .Verifiable(Times.Once);
+            _nameValidater
+                .Setup(x => x.IsValidName(tokenName2))
+                .Returns(true)
+                .Verifiable(Times.Once);
             TokenProcessor processor = GetTokenProcessor();
 
             // Act
@@ -117,7 +121,7 @@
             // Assert
             processor.TokenDictionary
                 .Should()
-                .HaveCount(2);
+                .HaveCount(expectedTokenCount);
             processor.TokenDictionary
                 .Should()
                 .ContainKey(tokenName1);
@@ -126,8 +130,8 @@
                 .ContainKey(tokenName2);
             text
                 .Should()
-                .Be(expected);
-            VerifyMocks(0, 0, 0, 1, 1);
+                .Be(expectedText);
+            VerifyMocks();
         }
 
         [Theory]
@@ -143,7 +147,10 @@
             string token = GenerateToken(tokenName);
             string text = $"{text1}{token}{text2}";
             string expected = $"{text1}{token}{text2}";
-            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, true);
+            _nameValidater
+                .Setup(x => x.IsValidName(tokenName))
+                .Returns(true)
+                .Verifiable(Times.Once);
             TokenProcessor processor = GetTokenProcessor();
 
             // Act
@@ -159,7 +166,7 @@
             text
                 .Should()
                 .Be(expected);
-            VerifyMocks(0, 0, 0, 1, 0);
+            VerifyMocks();
         }
 
         [Fact]
@@ -169,8 +176,9 @@
             InitializeMocks();
             string text = $"text{TokenStart}token";
             string expected = $"text{TokenEscapeChar}{TokenStart}token";
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgTokenMissingEndDelimiter);
+            _logger
+                .Setup(x => x.Log(MsgTokenMissingEndDelimiter, null, null))
+                .Verifiable(Times.Once);
             TokenProcessor processor = GetTokenProcessor();
 
             // Act
@@ -183,7 +191,7 @@
             text
                 .Should()
                 .Be(expected);
-            VerifyMocks(1, 0, 0, 0, 0);
+            VerifyMocks();
         }
 
         [Fact]
@@ -205,7 +213,7 @@
             text
                 .Should()
                 .Be(expected);
-            VerifyMocks(0, 0, 0, 0, 0);
+            MocksVerifyNoOtherCalls();
         }
 
         [Theory]
@@ -221,7 +229,10 @@
             string token = GenerateToken(paddedName);
             string text = $"text{token}text";
             string expected = $"text{token}text";
-            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, true);
+            _nameValidater
+                .Setup(x => x.IsValidName(tokenName))
+                .Returns(true)
+                .Verifiable(Times.Once);
             TokenProcessor processor = GetTokenProcessor();
 
             // Act
@@ -237,7 +248,7 @@
             text
                 .Should()
                 .Be(expected);
-            VerifyMocks(0, 0, 0, 1, 0);
+            VerifyMocks();
         }
 
         [Fact]
@@ -249,10 +260,13 @@
             string token = GenerateToken(tokenName);
             string text = $"text{token}text";
             string expected = $"text{TokenEscapeChar}{token}text";
-            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, false);
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgTokenHasInvalidName,
-                                                       tokenName);
+            _nameValidater
+                .Setup(x => x.IsValidName(tokenName))
+                .Returns(false)
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(x => x.Log(MsgTokenHasInvalidName, tokenName, null))
+                .Verifiable(Times.Once);
             TokenProcessor processor = GetTokenProcessor();
 
             // Act
@@ -265,7 +279,7 @@
             text
                 .Should()
                 .Be(expected);
-            VerifyMocks(1, 0, 0, 1, 0);
+            VerifyMocks();
         }
 
         [Fact]
@@ -275,8 +289,9 @@
             InitializeMocks();
             string text = $"text{TokenStart}{Whitespace}{TokenEnd}text";
             string expected = $"text{TokenEscapeChar}{TokenStart}{Whitespace}{TokenEnd}text";
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgMissingTokenName);
+            _logger
+                .Setup(x => x.Log(MsgMissingTokenName, null, null))
+                .Verifiable(Times.Once);
             TokenProcessor processor = GetTokenProcessor();
 
             // Act
@@ -289,7 +304,7 @@
             text
                 .Should()
                 .Be(expected);
-            VerifyMocks(1, 0, 0, 0, 0);
+            VerifyMocks();
         }
 
         [Fact]
@@ -298,11 +313,13 @@
             // Arrange
             InitializeMocks();
             string segmentName = "Segment1";
-            int lineNumber = 1;
-            _mh.SetupLocater(_locater, segmentName, lineNumber);
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgTokenDictionaryIsEmpty,
-                                                       segmentName);
+            _locater
+                .Setup(x => x.CurrentSegment)
+                .Returns(segmentName)
+                .Verifiable(Times.AtLeastOnce);
+            _logger
+                .Setup(x => x.Log(MsgTokenDictionaryIsEmpty, segmentName, null))
+                .Verifiable(Times.Once);
             TokenProcessor processor = GetTokenProcessor();
             Dictionary<string, string> tokenValues = new();
 
@@ -310,7 +327,7 @@
             processor.LoadTokenValues(tokenValues);
 
             // Assert
-            VerifyMocks(1, 0, 1, 0, 0);
+            VerifyMocks();
         }
 
         [Fact]
@@ -319,18 +336,20 @@
             // Arrange
             InitializeMocks();
             string segmentName = "Segment1";
-            int lineNumber = 1;
-            _mh.SetupLocater(_locater, segmentName, lineNumber);
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgTokenDictionaryIsNull,
-                                                       segmentName);
+            _locater
+                .Setup(x => x.CurrentSegment)
+                .Returns(segmentName)
+                .Verifiable(Times.AtLeastOnce);
+            _logger
+                .Setup(x => x.Log(MsgTokenDictionaryIsNull, segmentName, null))
+                .Verifiable(Times.Once);
             TokenProcessor processor = GetTokenProcessor();
 
             // Act
             processor.LoadTokenValues(null!);
 
             // Assert
-            VerifyMocks(1, 0, 1, 0, 0);
+            VerifyMocks();
         }
 
         [Fact]
@@ -340,13 +359,17 @@
             InitializeMocks();
             string tokenName = "1badName";
             string segmentName = "Segment2";
-            int lineNumber = 11;
-            _mh.SetupLocater(_locater, segmentName, lineNumber);
-            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, false);
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgTokenDictionaryContainsInvalidTokenName,
-                                                       segmentName,
-                                                       tokenName);
+            _locater
+                .Setup(x => x.CurrentSegment)
+                .Returns(segmentName)
+                .Verifiable(Times.AtLeastOnce);
+            _nameValidater
+                .Setup(x => x.IsValidName(tokenName))
+                .Returns(false)
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(x => x.Log(MsgTokenDictionaryContainsInvalidTokenName, segmentName, tokenName))
+                .Verifiable(Times.Once);
             TokenProcessor processor = GetTokenProcessor();
             Dictionary<string, string> tokenValues = new()
             {
@@ -357,7 +380,7 @@
             processor.LoadTokenValues(tokenValues);
 
             // Assert
-            VerifyMocks(1, 0, 1, 1, 0);
+            VerifyMocks();
         }
 
         [Fact]
@@ -367,13 +390,17 @@
             InitializeMocks();
             string tokenName = "Token";
             string segmentName = "Segment1";
-            int lineNumber = 1;
-            _mh.SetupLocater(_locater, segmentName, lineNumber);
-            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, true);
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgTokenWithEmptyValue,
-                                                       segmentName,
-                                                       tokenName);
+            _locater
+                .Setup(x => x.CurrentSegment)
+                .Returns(segmentName)
+                .Verifiable(Times.AtLeastOnce);
+            _nameValidater
+                .Setup(x => x.IsValidName(tokenName))
+                .Returns(true)
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(x => x.Log(MsgTokenWithEmptyValue, segmentName, tokenName))
+                .Verifiable(Times.Once);
             TokenProcessor processor = GetTokenProcessor();
             processor.TokenDictionary.Add(tokenName, "test");
             Dictionary<string, string> tokenValues = new()
@@ -388,7 +415,7 @@
             processor.TokenDictionary[tokenName]
                 .Should()
                 .BeEmpty();
-            VerifyMocks(1, 0, 1, 1, 0);
+            VerifyMocks();
         }
 
         [Fact]
@@ -398,7 +425,10 @@
             InitializeMocks();
             string tokenName = "Token2";
             string expected = "new value";
-            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, true);
+            _nameValidater
+                .Setup(x => x.IsValidName(tokenName))
+                .Returns(true)
+                .Verifiable(Times.Once);
             TokenProcessor processor = GetTokenProcessor();
             processor.TokenDictionary.Add("Token1", "test1");
             processor.TokenDictionary.Add(tokenName, "test2");
@@ -414,7 +444,7 @@
             processor.TokenDictionary[tokenName]
                 .Should()
                 .Be(expected);
-            VerifyMocks(0, 0, 0, 1, 0);
+            VerifyMocks();
         }
 
         [Fact]
@@ -424,13 +454,17 @@
             InitializeMocks();
             string tokenName = "Token";
             string segmentName = "Segment1";
-            int lineNumber = 1;
-            _mh.SetupLocater(_locater, segmentName, lineNumber);
-            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, true);
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgTokenWithNullValue,
-                                                       segmentName,
-                                                       tokenName);
+            _locater
+                .Setup(x => x.CurrentSegment)
+                .Returns(segmentName)
+                .Verifiable(Times.AtLeastOnce);
+            _nameValidater
+                .Setup(x => x.IsValidName(tokenName))
+                .Returns(true)
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(x => x.Log(MsgTokenWithNullValue, segmentName, tokenName))
+                .Verifiable(Times.Once);
             TokenProcessor processor = GetTokenProcessor();
             processor.TokenDictionary.Add(tokenName, "test");
             Dictionary<string, string> tokenValues = new()
@@ -445,7 +479,7 @@
             processor.TokenDictionary[tokenName]
                 .Should()
                 .BeEmpty();
-            VerifyMocks(1, 0, 1, 1, 0);
+            VerifyMocks();
         }
 
         [Fact]
@@ -455,13 +489,17 @@
             InitializeMocks();
             string tokenName = "Token";
             string segmentName = "Segment2";
-            int lineNumber = 3;
-            _mh.SetupLocater(_locater, segmentName, lineNumber);
-            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, true);
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgUnknownTokenName,
-                                                       segmentName,
-                                                       tokenName);
+            _locater
+                .Setup(x => x.CurrentSegment)
+                .Returns(segmentName)
+                .Verifiable(Times.AtLeastOnce);
+            _nameValidater
+                .Setup(x => x.IsValidName(tokenName))
+                .Returns(true)
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(x => x.Log(MsgUnknownTokenName, segmentName, tokenName))
+                .Verifiable(Times.Once);
             TokenProcessor processor = GetTokenProcessor();
             Dictionary<string, string> tokenValues = new()
             {
@@ -472,7 +510,7 @@
             processor.LoadTokenValues(tokenValues);
 
             // Assert
-            VerifyMocks(1, 0, 1, 1, 0);
+            VerifyMocks();
         }
 
         [Fact]
@@ -499,17 +537,41 @@
             string token6 = GenerateToken(tokenName6);
             string token7 = $"{TokenStart}{tokenName7}";
             string segmentName = "Segment1";
-            int lineNumber = 11;
-            _mh.SetupLocater(_locater, segmentName, lineNumber);
-            Expression<Func<INameValidater, bool>> nameValidaterInvalid = MockHelper.SetupNameValidater(_nameValidater, tokenName3, false);
-            Expression<Func<INameValidater, bool>> nameValidaterUnknown = MockHelper.SetupNameValidater(_nameValidater, tokenName5, true);
-            Expression<Func<INameValidater, bool>> nameValidaterEmpty = MockHelper.SetupNameValidater(_nameValidater, tokenName6, true);
-            Expression<Func<INameValidater, bool>> nameValidaterValid = MockHelper.SetupNameValidater(_nameValidater, tokenName4, true);
-            Expression<Action<ILogger>> loggerNoDelimiter = MockHelper.SetupLogger(_logger, MsgTokenMissingEndDelimiter);
-            Expression<Action<ILogger>> loggerMissingName = MockHelper.SetupLogger(_logger, MsgMissingTokenName);
-            Expression<Action<ILogger>> loggerInvalidName = MockHelper.SetupLogger(_logger, MsgTokenHasInvalidName, tokenName3);
-            Expression<Action<ILogger>> loggerUnknownName = MockHelper.SetupLogger(_logger, MsgTokenNameNotFound, segmentName, tokenName5);
-            Expression<Action<ILogger>> loggerEmptyValue = MockHelper.SetupLogger(_logger, MsgTokenValueIsEmpty, segmentName, tokenName6);
+            _locater
+                .Setup(x => x.CurrentSegment)
+                .Returns(segmentName)
+                .Verifiable(Times.AtLeast(2));
+            _nameValidater
+                .Setup(x => x.IsValidName(tokenName3))
+                .Returns(false)
+                .Verifiable(Times.Once);
+            _nameValidater
+                .Setup(x => x.IsValidName(tokenName5))
+                .Returns(true)
+                .Verifiable(Times.Once);
+            _nameValidater
+                .Setup(x => x.IsValidName(tokenName6))
+                .Returns(true)
+                .Verifiable(Times.Once);
+            _nameValidater
+                .Setup(x => x.IsValidName(tokenName4))
+                .Returns(true)
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(x => x.Log(MsgTokenMissingEndDelimiter, null, null))
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(x => x.Log(MsgMissingTokenName, null, null))
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(x => x.Log(MsgTokenHasInvalidName, tokenName3, null))
+                .Verifiable(Times.Once);;
+            _logger
+                .Setup(x => x.Log(MsgTokenNameNotFound, segmentName, tokenName5))
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(x => x.Log(MsgTokenValueIsEmpty, segmentName, tokenName6))
+                .Verifiable(Times.Once);
             TokenProcessor processor = GetTokenProcessor();
             processor.TokenDictionary.Add(tokenName3, tokenValue3);
             processor.TokenDictionary.Add(tokenName2, tokenValue2);
@@ -525,16 +587,7 @@
             actual
                 .Should()
                 .Be(expected);
-            _nameValidater.Verify(nameValidaterInvalid, Times.Once);
-            _nameValidater.Verify(nameValidaterUnknown, Times.Once);
-            _nameValidater.Verify(nameValidaterEmpty, Times.Once);
-            _nameValidater.Verify(nameValidaterValid, Times.Once);
-            _logger.Verify(loggerNoDelimiter, Times.Once);
-            _logger.Verify(loggerMissingName, Times.Once);
-            _logger.Verify(loggerInvalidName, Times.Once);
-            _logger.Verify(loggerUnknownName, Times.Once);
-            _logger.Verify(loggerEmptyValue, Times.Once);
-            VerifyMocks(0, 0, 2, 0, 0);
+            VerifyMocks();
         }
 
         [Fact]
@@ -557,7 +610,7 @@
             actual
                 .Should()
                 .Be(expected);
-            VerifyMocks(0, 0, 0, 0, 0);
+            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -575,7 +628,7 @@
             actual
                 .Should()
                 .Be(expected);
-            VerifyMocks(0, 0, 0, 0, 0);
+            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -583,8 +636,9 @@
         {
             // Arrange
             InitializeMocks();
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgTokenMissingEndDelimiter);
+            _logger
+                .Setup(x => x.Log(MsgTokenMissingEndDelimiter, null, null))
+                .Verifiable(Times.Once);
             TokenProcessor processor = GetTokenProcessor();
             string tokenName = "token";
             string expected = $"Text line with {TokenStart}{tokenName}";
@@ -597,7 +651,7 @@
             actual
                 .Should()
                 .Be(expected);
-            VerifyMocks(1, 0, 0, 0, 0);
+            VerifyMocks();
         }
 
         [Fact]
@@ -606,10 +660,13 @@
             // Arrange
             InitializeMocks();
             string tokenName = "invalid name";
-            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, false);
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgTokenHasInvalidName,
-                                                       tokenName);
+            _nameValidater
+                .Setup(x => x.IsValidName(tokenName))
+                .Returns(false)
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(x => x.Log(MsgTokenHasInvalidName, tokenName, null))
+                .Verifiable(Times.Once);
             TokenProcessor processor = GetTokenProcessor();
             string expected = $"Text line {TokenStart}{tokenName}{TokenEnd} end";
             processor.TokenDictionary.Add(tokenName, "value");
@@ -621,7 +678,7 @@
             actual
                 .Should()
                 .Be(expected);
-            VerifyMocks(1, 0, 0, 1, 0);
+            VerifyMocks();
         }
 
         [Fact]
@@ -629,8 +686,9 @@
         {
             // Arrange
             InitializeMocks();
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgMissingTokenName);
+            _logger
+                .Setup(x => x.Log(MsgMissingTokenName, null, null))
+                .Verifiable(Times.Once);
             TokenProcessor processor = GetTokenProcessor();
             string expected = $"Text line {TokenStart}{Whitespace}{TokenEnd} end";
 
@@ -641,7 +699,7 @@
             actual
                 .Should()
                 .Be(expected);
-            VerifyMocks(1, 0, 0, 0, 0);
+            VerifyMocks();
         }
 
         [Fact]
@@ -650,13 +708,18 @@
             // Arrange
             InitializeMocks();
             string tokenName = "token";
-            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, true);
             string segmentName = "Segment1";
-            _mh.SetupLocater(_locater, segmentName, 10);
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgTokenNameNotFound,
-                                                       segmentName,
-                                                       tokenName);
+            _locater
+                .Setup(x => x.CurrentSegment)
+                .Returns(segmentName)
+                .Verifiable(Times.AtLeastOnce);
+            _nameValidater
+                .Setup(x => x.IsValidName(tokenName))
+                .Returns(true)
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(x => x.Log(MsgTokenNameNotFound, segmentName, tokenName))
+                .Verifiable(Times.Once);
             TokenProcessor processor = GetTokenProcessor();
             string expected = $"Text line {TokenStart}{tokenName}{TokenEnd} end";
             processor.TokenDictionary.Add("anotherToken", "value");
@@ -668,7 +731,7 @@
             actual
                 .Should()
                 .Be(expected);
-            VerifyMocks(1, 0, 1, 1, 0);
+            VerifyMocks();
         }
 
         [Fact]
@@ -677,13 +740,18 @@
             // Arrange
             InitializeMocks();
             string tokenName = "token";
-            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, true);
             string segmentName = "Segment1";
-            _mh.SetupLocater(_locater, segmentName, 10);
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgTokenValueIsEmpty,
-                                                       segmentName,
-                                                       tokenName);
+            _locater
+                .Setup(x => x.CurrentSegment)
+                .Returns(segmentName)
+                .Verifiable(Times.AtLeastOnce);
+            _nameValidater
+                .Setup(x => x.IsValidName(tokenName))
+                .Returns(true)
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(x => x.Log(MsgTokenValueIsEmpty, segmentName, tokenName))
+                .Verifiable(Times.Once);
             TokenProcessor processor = GetTokenProcessor();
             string text = $"Text line {TokenStart}{tokenName}{TokenEnd} end";
             string expected = "Text line  end";
@@ -696,7 +764,7 @@
             actual
                 .Should()
                 .Be(expected);
-            VerifyMocks(1, 0, 1, 1, 0);
+            VerifyMocks();
         }
 
         [Fact]
@@ -706,7 +774,10 @@
             InitializeMocks();
             string tokenName = "token";
             string tokenValue = "value";
-            _nameValidaterExpression1 = MockHelper.SetupNameValidater(_nameValidater, tokenName, true);
+            _nameValidater
+                .Setup(x => x.IsValidName(tokenName))
+                .Returns(true)
+                .Verifiable(Times.Once);
             TokenProcessor processor = GetTokenProcessor();
             string text = $"Text line {TokenStart}{tokenName}{TokenEnd} end";
             string expected = $"Text line {tokenValue} end";
@@ -719,7 +790,7 @@
             actual
                 .Should()
                 .Be(expected);
-            VerifyMocks(0, 0, 0, 1, 0);
+            VerifyMocks();
         }
 
         [Fact]
@@ -776,6 +847,7 @@
             InitializeMocks();
             TokenProcessor processor = GetTokenProcessor();
             string[] expectedKeys = new[] { "token1", "token2", "token3" };
+            int expectedTokenCount = expectedKeys.Length;
 
             // Act
             processor.TokenDictionary.Add("token1", "value1");
@@ -785,11 +857,11 @@
             // Assert
             processor.TokenDictionary
                 .Should()
-                .HaveCount(3);
+                .HaveCount(expectedTokenCount);
             processor.TokenDictionary
                 .Should()
                 .ContainKeys(expectedKeys);
-            VerifyMocks(0, 0, 0, 0, 0);
+            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -806,7 +878,7 @@
                 .Should()
                 .Throw<ArgumentNullException>()
                 .WithMessage(expected);
-            VerifyMocks(0, 0, 0, 0, 0);
+            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -823,7 +895,7 @@
                 .Should()
                 .Throw<ArgumentNullException>()
                 .WithMessage(expected);
-            VerifyMocks(0, 0, 0, 0, 0);
+            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -840,7 +912,7 @@
                 .Should()
                 .Throw<ArgumentNullException>()
                 .WithMessage(expected);
-            VerifyMocks(0, 0, 0, 0, 0);
+            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -857,7 +929,7 @@
             processor.TokenDictionary
                 .Should()
                 .BeEmpty();
-            VerifyMocks(0, 0, 0, 0, 0);
+            MocksVerifyNoOtherCalls();
         }
 
         private static string GenerateToken(string tokenName, bool isEscaped = false)
@@ -875,6 +947,13 @@
             _nameValidater.Reset();
         }
 
+        private void MocksVerifyNoOtherCalls()
+        {
+            _locater.VerifyNoOtherCalls();
+            _logger.VerifyNoOtherCalls();
+            _nameValidater.VerifyNoOtherCalls();
+        }
+
         private void SetTokenDelimiters_Test(string tokenStart,
                                              string tokenEnd,
                                              char tokenEscapeChar,
@@ -885,16 +964,13 @@
             // Arrange
             InitializeMocks();
             bool expected = true;
-            int loggerCount = 0;
 
             if (message is not null)
             {
-                _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                           message,
-                                                           arg1,
-                                                           arg2);
+                _logger
+                    .Setup(x => x.Log(message, arg1, arg2))
+                    .Verifiable(Times.Once);
                 expected = false;
-                loggerCount = 1;
             }
 
             TokenProcessor processor = GetTokenProcessor();
@@ -932,43 +1008,27 @@
                     .Be(TokenEscapeChar);
             }
 
-            VerifyMocks(loggerCount, 0, 0, 0, 0);
+            VerifyMocks();
         }
 
-        private void VerifyMocks(int loggerCount,
-                                 int locaterLocationCount,
-                                 int locaterCurrentSegmentCount,
-                                 int nameValidaterCount1,
-                                 int nameValidaterCount2)
+        private void VerifyMocks()
         {
-            if (loggerCount > 0)
+            if (_logger.Setups.Any())
             {
-                _logger.Verify(_loggerExpression, Times.Exactly(loggerCount));
+                _logger.Verify();
             }
 
-            if (locaterLocationCount > 0)
+            if (_locater.Setups.Any())
             {
-                _locater.Verify(_mh.LocationExpression, Times.Exactly(locaterLocationCount));
+                _locater.Verify();
             }
 
-            if (locaterCurrentSegmentCount > 0)
+            if (_nameValidater.Setups.Any())
             {
-                _locater.Verify(_mh.CurrentSegmentExpression, Times.Exactly(locaterCurrentSegmentCount));
+                _nameValidater.Verify();
             }
 
-            if (nameValidaterCount1 > 0)
-            {
-                _nameValidater.Verify(_nameValidaterExpression1, Times.Exactly(nameValidaterCount1));
-            }
-
-            if (nameValidaterCount2 > 0)
-            {
-                _nameValidater.Verify(_nameValidaterExpression2, Times.Exactly(nameValidaterCount2));
-            }
-
-            _logger.VerifyNoOtherCalls();
-            _locater.VerifyNoOtherCalls();
-            _nameValidater.VerifyNoOtherCalls();
+            MocksVerifyNoOtherCalls();
         }
     }
 }

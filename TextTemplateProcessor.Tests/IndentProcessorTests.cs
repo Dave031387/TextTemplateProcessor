@@ -1,15 +1,10 @@
 ﻿namespace TextTemplateProcessor
 {
-    using System.Linq.Expressions;
-
     public class IndentProcessorTests
     {
-        private const int LineNumber = 5;
         private const string SegmentName = "Segment1";
         private readonly Mock<ILocater> _locater = new();
         private readonly Mock<ILogger> _logger = new();
-        private readonly MockHelper _mh = new();
-        private Expression<Action<ILogger>> _loggerExpression = x => x.Log("test", null, null);
 
         // Case 01 / firstTimeOffset = 0 / isRelative = true / indent < 0 / calculated value < 0 /
         // isOneTime = true
@@ -791,9 +786,9 @@
         {
             // Arrange
             InitializeMocks();
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgIndentValueMustBeValidNumber,
-                                                       numberString!);
+            _logger
+                .Setup(x => x.Log(MsgIndentValueMustBeValidNumber, numberString, null))
+                .Verifiable(Times.Once);
             IndentProcessor processor = GetIndentProcessor();
 
             // Act
@@ -806,8 +801,7 @@
             actual
                 .Should()
                 .Be(0);
-            _logger.Verify(_loggerExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Theory]
@@ -848,9 +842,9 @@
         {
             // Arrange
             InitializeMocks();
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgIndentValueOutOfRange,
-                                                       numberString);
+            _logger
+                .Setup(x => x.Log(MsgIndentValueOutOfRange, numberString, null))
+                .Verifiable(Times.Once);
             IndentProcessor processor = GetIndentProcessor();
 
             // Act
@@ -863,8 +857,7 @@
             actual
                 .Should()
                 .Be(0);
-            _logger.Verify(_loggerExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Theory]
@@ -876,9 +869,9 @@
         {
             // Arrange
             InitializeMocks();
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgTabSizeValueMustBeValidNumber,
-                                                       numberString!);
+            _logger
+                .Setup(x => x.Log(MsgTabSizeValueMustBeValidNumber, numberString, null))
+                .Verifiable(Times.Once);
             IndentProcessor processor = GetIndentProcessor();
 
             // Act
@@ -891,8 +884,7 @@
             actual
                 .Should()
                 .Be(0);
-            _logger.Verify(_loggerExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Theory]
@@ -932,9 +924,9 @@
         {
             // Arrange
             InitializeMocks();
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgTabSizeValueOutOfRange,
-                                                       numberString);
+            _logger
+                .Setup(x => x.Log(MsgTabSizeValueOutOfRange, numberString, null))
+                .Verifiable(Times.Once);
             IndentProcessor processor = GetIndentProcessor();
 
             // Act
@@ -947,8 +939,7 @@
             actual
                 .Should()
                 .Be(0);
-            _logger.Verify(_loggerExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Fact]
@@ -1023,12 +1014,7 @@
             processor.CurrentIndent
                 .Should()
                 .Be(expectedIndent * expectedTabSize);
-            _logger.VerifyNoOtherCalls();
-            _locater.Verify(_mh.CurrentSegmentExpression, Times.Once);
-            _locater.Verify(_mh.LineNumberExpression, Times.Once);
-            _locater.VerifySet(_mh.SetCurrentSegmentAction, Times.Once);
-            _locater.VerifySet(_mh.SetLineNumberAction, Times.Once);
-            _locater.VerifyNoOtherCalls();
+            MocksVerifyNoOtherCalls();
         }
 
         [Theory]
@@ -1039,11 +1025,11 @@
         {
             // Arrange
             InitializeMocks();
-            IndentProcessor processor = GetIndentProcessor();
             int expectedTabSize = 1;
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgTabSizeTooSmall,
-                                                       expectedTabSize.ToString());
+            _logger
+                .Setup(x => x.Log(MsgTabSizeTooSmall, expectedTabSize.ToString(), null))
+                .Verifiable(Times.Once);
+            IndentProcessor processor = GetIndentProcessor();
 
             // Act
             processor.SetTabSize(tabSize);
@@ -1052,8 +1038,7 @@
             processor.TabSize
                 .Should()
                 .Be(expectedTabSize);
-            _logger.Verify(_loggerExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Theory]
@@ -1064,11 +1049,11 @@
         {
             // Arrange
             InitializeMocks();
-            IndentProcessor processor = GetIndentProcessor();
             int expectedTabSize = 9;
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgTabSizeTooLarge,
-                                                       expectedTabSize.ToString());
+            _logger
+                .Setup(x => x.Log(MsgTabSizeTooLarge, expectedTabSize.ToString(), null))
+                .Verifiable(Times.Once);
+            IndentProcessor processor = GetIndentProcessor();
 
             // Act
             processor.SetTabSize(tabSize);
@@ -1077,8 +1062,7 @@
             processor.TabSize
                 .Should()
                 .Be(expectedTabSize);
-            _logger.Verify(_loggerExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Theory]
@@ -1119,7 +1103,6 @@
         {
             _locater.Reset();
             _logger.Reset();
-            _mh.SetupLocater(_locater, SegmentName, LineNumber);
         }
 
         private void MocksVerifyNoOtherCalls()
@@ -1142,9 +1125,13 @@
 
             if (message is not null)
             {
-                _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                           message,
-                                                           SegmentName);
+                _locater
+                    .Setup(x => x.CurrentSegment)
+                    .Returns(SegmentName)
+                    .Verifiable(Times.Once);
+                _logger
+                    .Setup(x => x.Log(message, SegmentName, null))
+                    .Verifiable(Times.Once);
             }
 
             IndentProcessor processor = GetIndentProcessor();
@@ -1164,11 +1151,12 @@
 
             if (message is not null)
             {
-                _logger.Verify(_loggerExpression, Times.Once);
-                _locater.Verify(_mh.CurrentSegmentExpression, Times.Once);
+                VerifyMocks();
             }
-
-            MocksVerifyNoOtherCalls();
+            else
+            {
+                MocksVerifyNoOtherCalls();
+            }
         }
 
         private void Test_GetIndent(int initialIndent,
@@ -1184,9 +1172,13 @@
 
             if (message is not null)
             {
-                _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                           message,
-                                                           SegmentName);
+                _locater
+                    .Setup(x => x.CurrentSegment)
+                    .Returns(SegmentName)
+                    .Verifiable(Times.Once);
+                _logger
+                    .Setup(x => x.Log(message, SegmentName, null))
+                    .Verifiable(Times.Once);
             }
 
             IndentProcessor processor = GetIndentProcessor();
@@ -1206,8 +1198,24 @@
 
             if (message is not null)
             {
-                _logger.Verify(_loggerExpression, Times.Once);
-                _locater.Verify(_mh.CurrentSegmentExpression, Times.Once);
+                VerifyMocks();
+            }
+            else
+            {
+                MocksVerifyNoOtherCalls();
+            }
+        }
+
+        private void VerifyMocks()
+        {
+            if (_locater.Setups.Any())
+            {
+                _locater.Verify();
+            }
+
+            if (_logger.Setups.Any())
+            {
+                _logger.Verify();
             }
 
             MocksVerifyNoOtherCalls();

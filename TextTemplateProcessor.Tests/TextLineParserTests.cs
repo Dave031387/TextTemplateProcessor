@@ -1,13 +1,11 @@
 ﻿namespace TextTemplateProcessor
 {
     using System;
-    using System.Linq.Expressions;
 
     public class TextLineParserTests
     {
         private readonly Mock<ILogger> _logger = new();
         private readonly Mock<ITokenProcessor> _tokenProcessor = new();
-        private Expression<Action<ILogger>> _loggerExpression = x => x.Log("test", null, null);
 
         [Fact]
         public void IsCommentLine_TextIsCommentLine_ReturnsTrue()
@@ -172,9 +170,9 @@
             // Arrange
             InitializeMocks();
             string text = $"{SegmentHeaderCode}#Segment1";
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgFourthCharacterMustBeBlank,
-                                                       text);
+            _logger
+                .Setup(x => x.Log(MsgFourthCharacterMustBeBlank, text, null))
+                .Verifiable(Times.Once);
             TextLineParser parser = GetTextLineParser();
 
             // Act
@@ -184,8 +182,7 @@
             actual
                 .Should()
                 .BeFalse();
-            _logger.Verify(_loggerExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Fact]
@@ -194,9 +191,9 @@
             // Arrange
             InitializeMocks();
             string text = GenerateTextLine("@.1", "Text");
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgInvalidControlCode,
-                                                       text);
+            _logger
+                .Setup(x => x.Log(MsgInvalidControlCode, text, null))
+                .Verifiable(Times.Once);
             TextLineParser parser = GetTextLineParser();
 
             // Act
@@ -206,8 +203,7 @@
             actual
                 .Should()
                 .BeFalse();
-            _logger.Verify(_loggerExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Theory]
@@ -218,8 +214,9 @@
         {
             // Arrange
             InitializeMocks();
-            _loggerExpression = MockHelper.SetupLogger(_logger,
-                                                       MsgMinimumLineLengthInTemplateFileIs3);
+            _logger
+                .Setup(x => x.Log(MsgMinimumLineLengthInTemplateFileIs3, null, null))
+                .Verifiable(Times.Once);
             TextLineParser parser = GetTextLineParser();
 
             // Act
@@ -229,8 +226,7 @@
             actual
                 .Should()
                 .BeFalse();
-            _logger.Verify(_loggerExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Theory]
@@ -278,14 +274,13 @@
             InitializeMocks();
             string textLine = GenerateTextLine(controlCode, expectedText);
             string actualText = string.Empty;
-            Expression<Action<ITokenProcessor>> tokenProcessorExpression
-                = x => x.ExtractTokens(ref It.Ref<string>.IsAny);
             _tokenProcessor
-                .Setup(tokenProcessorExpression)
+                .Setup(x => x.ExtractTokens(ref It.Ref<string>.IsAny))
                 .Callback((ref string passedText) =>
                 {
                     actualText = passedText;
-                });
+                })
+                .Verifiable(Times.Once);
             TextLineParser parser = GetTextLineParser();
             TextItem expectedTextItem = new(indent, isRelative, isOneTime, expectedText);
 
@@ -299,8 +294,7 @@
             actualText
                 .Should()
                 .Be(expectedText);
-            _tokenProcessor.Verify(tokenProcessorExpression, Times.Once);
-            MocksVerifyNoOtherCalls();
+            VerifyMocks();
         }
 
         [Fact]
@@ -363,6 +357,21 @@
         {
             _logger.VerifyNoOtherCalls();
             _tokenProcessor.VerifyNoOtherCalls();
+        }
+
+        private void VerifyMocks()
+        {
+            if (_logger.Setups.Any())
+            {
+                _logger.Verify();
+            }
+
+            if (_tokenProcessor.Setups.Any())
+            {
+                _tokenProcessor.Verify();
+            }
+
+            MocksVerifyNoOtherCalls();
         }
     }
 }

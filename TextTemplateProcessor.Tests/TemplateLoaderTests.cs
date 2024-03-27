@@ -4,14 +4,14 @@
     {
         private readonly Dictionary<string, ControlItem> _actualControlDictionary = new();
         private readonly Dictionary<string, List<TextItem>> _actualSegmentDictionary = new();
-        private readonly Mock<IDefaultSegmentNameGenerator> _defaultSegmentNameGenerator = new(MockBehavior.Strict);
+        private readonly Mock<IDefaultSegmentNameGenerator> _defaultSegmentNameGenerator = new();
         private readonly Dictionary<string, ControlItem> _expectedControlDictionary = new();
         private readonly Dictionary<string, List<TextItem>> _expectedSegmentDictionary = new();
-        private readonly Mock<ILocater> _locater = new(MockBehavior.Strict);
-        private readonly Mock<ILogger> _logger = new(MockBehavior.Strict);
-        private readonly Mock<ISegmentHeaderParser> _segmentHeaderParser = new(MockBehavior.Strict);
+        private readonly Mock<ILocater> _locater = new();
+        private readonly Mock<ILogger> _logger = new();
+        private readonly Mock<ISegmentHeaderParser> _segmentHeaderParser = new();
         private readonly List<string> _templateLines = new();
-        private readonly Mock<ITextLineParser> _textLineParser = new(MockBehavior.Strict);
+        private readonly Mock<ITextLineParser> _textLineParser = new();
         private string _currentSegmentName = string.Empty;
         private int _defaultSegmentNameCounter = 0;
         private int _lineCounter;
@@ -33,7 +33,6 @@
             // Assert
             VerifyDictionaries();
             VerifyMocks();
-            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -52,7 +51,6 @@
             // Assert
             VerifyDictionaries();
             VerifyMocks();
-            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -69,7 +67,6 @@
             // Assert
             VerifyDictionaries();
             VerifyMocks();
-            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -89,7 +86,6 @@
             // Assert
             VerifyDictionaries();
             VerifyMocks();
-            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -107,7 +103,6 @@
             // Assert
             VerifyDictionaries();
             VerifyMocks();
-            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -129,7 +124,6 @@
             // Assert
             VerifyDictionaries();
             VerifyMocks();
-            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -147,7 +141,6 @@
             // Assert
             VerifyDictionaries();
             VerifyMocks();
-            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -165,7 +158,6 @@
             // Assert
             VerifyDictionaries();
             VerifyMocks();
-            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -184,7 +176,6 @@
             // Assert
             VerifyDictionaries();
             VerifyMocks();
-            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -203,7 +194,6 @@
             // Assert
             VerifyDictionaries();
             VerifyMocks();
-            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -220,7 +210,6 @@
             // Assert
             VerifyDictionaries();
             VerifyMocks();
-            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -239,7 +228,6 @@
             // Assert
             VerifyDictionaries();
             VerifyMocks();
-            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -260,7 +248,6 @@
             // Assert
             VerifyDictionaries();
             VerifyMocks();
-            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -268,9 +255,9 @@
         {
             // Arrange
             InitializeMocks();
-            AddSegmentHeaderLineToTemplateFile("Segment1");
+            AddSegmentHeaderLineToTemplateFile("Segment1", false, true, null, false, 2);
             AddTextLineToTemplateFile();
-            AddSegmentHeaderLineToTemplateFile("Segment1", true);
+            AddSegmentHeaderLineToTemplateFile("Segment1", true, true, null, false, 2);
             AddTextLineToTemplateFile();
 
             // Act
@@ -279,7 +266,6 @@
             // Assert
             VerifyDictionaries();
             VerifyMocks();
-            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -403,22 +389,23 @@
             _templateLines.Add(commentLine);
             _locater
                 .SetupSet(x => x.LineNumber = _lineCounter)
-                .Verifiable();
+                .Verifiable(Times.Once);
             _textLineParser
                 .Setup(x => x.IsValidPrefix(commentLine))
                 .Returns(true)
-                .Verifiable();
+                .Verifiable(Times.Once);
             _textLineParser
                 .Setup(x => x.IsCommentLine(commentLine))
                 .Returns(true)
-                .Verifiable();
+                .Verifiable(Times.Once);
         }
 
         private void AddSegmentHeaderLineToTemplateFile(string segmentName,
                                                         bool isDuplicateSegmentName = false,
                                                         bool isSegmentWithTextLines = true,
                                                         string? padSegment = null,
-                                                        bool isUnknownPadSegment = false)
+                                                        bool isUnknownPadSegment = false,
+                                                        int callCount = 1)
         {
             string padOption = padSegment is null ? string.Empty : $" PAD={padSegment}";
             string segmentHeaderLine = $"{SegmentHeaderCode} {segmentName}{padOption}";
@@ -427,39 +414,17 @@
             _lineCounter++;
             _locater
                 .SetupSet(x => x.LineNumber = _lineCounter)
-                .Verifiable();
-            _textLineParser
-                .Setup(x => x.IsValidPrefix(segmentHeaderLine))
-                .Returns(true)
-                .Verifiable();
-            _textLineParser
-                .Setup(x => x.IsCommentLine(segmentHeaderLine))
-                .Returns(false)
-                .Verifiable();
-            _textLineParser
-                .Setup(x => x.IsSegmentHeader(segmentHeaderLine))
-                .Returns(true)
-                .Verifiable();
+                .Verifiable(Times.Once);
 
             if (isDuplicateSegmentName)
             {
                 string defaultSegmentName = $"{DefaultSegmentNamePrefix}{++_defaultSegmentNameCounter}";
                 _currentSegmentName = defaultSegmentName;
-                _logger
-                    .Setup(MockHelper.GetLoggerExpression(MsgFoundDuplicateSegmentName,
-                                                          segmentName,
-                                                          _currentSegmentName))
-                    .Verifiable();
             }
             else
             {
                 _currentSegmentName = segmentName;
             }
-
-            _logger
-                .Setup(MockHelper.GetLoggerExpression(MsgSegmentHasBeenAdded,
-                                                      _currentSegmentName))
-                .Verifiable();
 
             bool isValidPadOption = true;
 
@@ -474,17 +439,16 @@
 
                 if (isUnknownPadSegment)
                 {
-                    _logger.Setup(MockHelper.GetLoggerExpression(MsgPadSegmentMustBeDefinedEarlier,
-                                                                 segmentName,
-                                                                 padSegment))
-                        .Verifiable();
+                    _logger
+                        .Setup(x => x.Log(MsgPadSegmentMustBeDefinedEarlier, segmentName, padSegment))
+                        .Verifiable(Times.Once);
                     isValidPadOption = false;
                 }
                 else if (padSegment == segmentName)
                 {
-                    _logger.Setup(MockHelper.GetLoggerExpression(MsgPadSegmentNameSameAsSegmentHeaderName,
-                                                                 segmentName))
-                        .Verifiable();
+                    _logger
+                        .Setup(x => x.Log(MsgPadSegmentNameSameAsSegmentHeaderName, segmentName, null))
+                        .Verifiable(Times.Once);
                     isValidPadOption = false;
                 }
             }
@@ -503,9 +467,8 @@
             else
             {
                 _logger
-                    .Setup(MockHelper.GetLoggerExpression(MsgNoTextLinesFollowingSegmentHeader,
-                                                          _currentSegmentName))
-                    .Verifiable();
+                    .Setup(x => x.Log(MsgNoTextLinesFollowingSegmentHeader, _currentSegmentName, null))
+                    .Verifiable(Times.Once);
             }
 
             ControlItem returnedControlItem = new()
@@ -513,10 +476,55 @@
                 PadSegment = padSegment is null ? string.Empty : padSegment
             };
 
-            _segmentHeaderParser
-                .Setup(x => x.ParseSegmentHeader(segmentHeaderLine))
-                .Returns(returnedControlItem)
-                .Verifiable();
+            if (isDuplicateSegmentName)
+            {
+                _logger
+                    .Setup(x => x.Log(MsgFoundDuplicateSegmentName, segmentName, _currentSegmentName))
+                    .Verifiable(Times.Once);
+
+                if (callCount == 1)
+                {
+                    _textLineParser
+                        .Setup(x => x.IsValidPrefix(segmentHeaderLine))
+                        .Returns(true)
+                        .Verifiable(Times.Once);
+                    _textLineParser
+                        .Setup(x => x.IsCommentLine(segmentHeaderLine))
+                        .Returns(false)
+                        .Verifiable(Times.Once);
+                    _textLineParser
+                        .Setup(x => x.IsSegmentHeader(segmentHeaderLine))
+                        .Returns(true)
+                        .Verifiable(Times.Once);
+                    _segmentHeaderParser
+                        .Setup(x => x.ParseSegmentHeader(segmentHeaderLine))
+                        .Returns(returnedControlItem)
+                        .Verifiable(Times.Once);
+                }
+            }
+            else
+            {
+                _textLineParser
+                    .Setup(x => x.IsValidPrefix(segmentHeaderLine))
+                    .Returns(true)
+                    .Verifiable(Times.Exactly(callCount));
+                _textLineParser
+                    .Setup(x => x.IsCommentLine(segmentHeaderLine))
+                    .Returns(false)
+                    .Verifiable(Times.Exactly(callCount));
+                _textLineParser
+                    .Setup(x => x.IsSegmentHeader(segmentHeaderLine))
+                    .Returns(true)
+                    .Verifiable(Times.Exactly(callCount));
+                _segmentHeaderParser
+                    .Setup(x => x.ParseSegmentHeader(segmentHeaderLine))
+                    .Returns(returnedControlItem)
+                    .Verifiable(Times.Exactly(callCount));
+            }
+
+            _logger
+                .Setup(x => x.Log(MsgSegmentHasBeenAdded, _currentSegmentName, null))
+                .Verifiable(Times.Once);
         }
 
         private void AddTextLineToTemplateFile(bool isMissingSegmentHeader = false,
@@ -530,16 +538,15 @@
             _templateLines.Add(templateLine);
             _locater
                 .SetupSet(x => x.LineNumber = _lineCounter)
-                .Verifiable();
+                .Verifiable(Times.Once);
 
             if (isMissingSegmentHeader)
             {
                 string defaultSegmentName = $"{DefaultSegmentNamePrefix}{++_defaultSegmentNameCounter}";
                 _currentSegmentName = defaultSegmentName;
                 _logger
-                    .Setup(MockHelper.GetLoggerExpression(MsgMissingInitialSegmentHeader,
-                                                          _currentSegmentName))
-                    .Verifiable();
+                    .Setup(x => x.Log(MsgMissingInitialSegmentHeader, _currentSegmentName, null))
+                    .Verifiable(Times.Once);
                 _expectedControlDictionary[_currentSegmentName] = new();
             }
 
@@ -548,11 +555,11 @@
                 _textLineParser
                     .Setup(x => x.IsValidPrefix(templateLine))
                     .Returns(true)
-                    .Verifiable();
+                    .Verifiable(Times.Once);
                 _textLineParser
                     .Setup(x => x.IsCommentLine(templateLine))
                     .Returns(false)
-                    .Verifiable();
+                    .Verifiable(Times.Once);
 
                 if (templateLine[..3] == Comment)
                 {
@@ -562,7 +569,7 @@
                 _textLineParser
                     .Setup(x => x.IsSegmentHeader(templateLine))
                     .Returns(false)
-                    .Verifiable();
+                    .Verifiable(Times.Once);
 
                 TextItem textItem = new(0, true, false, text);
 
@@ -578,18 +585,16 @@
                 _textLineParser
                     .Setup(x => x.ParseTextLine(templateLine))
                     .Returns(textItem)
-                    .Verifiable();
+                    .Verifiable(Times.Once);
             }
             else
             {
                 _textLineParser
                     .Setup(x => x.IsValidPrefix(templateLine))
                     .Returns(false)
-                    .Verifiable();
+                    .Verifiable(Times.Once);
             }
         }
-
-        private string GetCurrentSegment() => _currentSegmentName;
 
         private void InitializeMocks()
         {
@@ -614,16 +619,10 @@
                 .Returns($"{DefaultSegmentNamePrefix}4")
                 .Throws<ArgumentException>();
             _locater
-                .SetupSet(x => x.CurrentSegment = It.IsAny<string>())
-                .Callback<string>(x => SetCurrentSegment(x))
-                .Verifiable();
-            _locater
-                .Setup(x => x.CurrentSegment)
-                .Returns(() => GetCurrentSegment())
-                .Verifiable();
+                .SetupProperty(x => x.CurrentSegment);
             _logger
                 .Setup(x => x.SetLogEntryType(LogEntryType.Parsing))
-                .Verifiable();
+                .Verifiable(Times.Once);
         }
 
         private void LoadTemplate()
@@ -648,8 +647,6 @@
             _textLineParser.VerifyNoOtherCalls();
         }
 
-        private void SetCurrentSegment(string segmentName) => _currentSegmentName = segmentName;
-
         private void VerifyDictionaries()
         {
             if (_expectedControlDictionary.Count == 0)
@@ -662,7 +659,7 @@
             {
                 _actualControlDictionary
                     .Should()
-                    .HaveCount(_expectedControlDictionary.Count);
+                    .HaveSameCount(_expectedControlDictionary);
                 _actualControlDictionary
                     .Should()
                     .ContainKeys(_expectedControlDictionary.Keys);
@@ -685,7 +682,7 @@
             {
                 _actualSegmentDictionary
                     .Should()
-                    .HaveCount(_expectedSegmentDictionary.Count);
+                    .HaveSameCount(_expectedSegmentDictionary);
                 _actualSegmentDictionary
                     .Should()
                     .ContainKeys(_expectedSegmentDictionary.Keys);
@@ -706,25 +703,27 @@
                 _defaultSegmentNameGenerator.Verify(x => x.Next, Times.Exactly(_defaultSegmentNameCounter));
             }
 
-            if (_locater.Setups.Count > 0)
+            if (_locater.Setups.Any())
             {
                 _locater.Verify();
             }
 
-            if (_logger.Setups.Count > 0)
+            if (_logger.Setups.Any())
             {
                 _logger.Verify();
             }
 
-            if (_segmentHeaderParser.Setups.Count > 0)
+            if (_segmentHeaderParser.Setups.Any())
             {
                 _segmentHeaderParser.Verify();
             }
 
-            if (_textLineParser.Setups.Count > 0)
+            if (_textLineParser.Setups.Any())
             {
                 _textLineParser.Verify();
             }
+
+            MocksVerifyNoOtherCalls();
         }
     }
 }

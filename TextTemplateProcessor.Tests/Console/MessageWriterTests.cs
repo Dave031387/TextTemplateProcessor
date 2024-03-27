@@ -3,7 +3,6 @@
     public class MessageWriterTests
     {
         private readonly Mock<IConsoleWriter> _consoleWriter = new();
-        private readonly MockHelper _mh = new();
 
         [Fact]
         public void MessageWriter_ConstructUsingNullConsoleWriterObject_ThrowsException()
@@ -38,14 +37,16 @@
         {
             // Arrange
             string expectedMessage = "This is a test";
-            _mh.SetupConsoleWriter(_consoleWriter, expectedMessage);
+            _consoleWriter
+                .Setup(x => x.WriteLine(expectedMessage))
+                .Verifiable(Times.Once);
             MessageWriter messageWriter = GetMessageWriter();
 
             // Act
             messageWriter.WriteLine(expectedMessage);
 
             // Assert
-            _consoleWriter.Verify(_mh.ConsoleWriterExpression, Times.Once);
+            _consoleWriter.Verify();
         }
 
         [Fact]
@@ -55,14 +56,16 @@
             string formatString = "This {0} test";
             string formatItem = "is a";
             string expectedMessage = "This is a test";
-            _mh.SetupConsoleWriter(_consoleWriter, expectedMessage);
+            _consoleWriter
+                .Setup(x => x.WriteLine(expectedMessage))
+                .Verifiable(Times.Once);
             MessageWriter messageWriter = new(_consoleWriter.Object);
 
             // Act
             messageWriter.WriteLine(formatString, formatItem);
 
             // Assert
-            _consoleWriter.Verify(_mh.ConsoleWriterExpression, Times.Once);
+            _consoleWriter.Verify();
         }
 
         [Fact]
@@ -73,14 +76,16 @@
             string formatItem1 = "is a";
             string formatItem2 = "test";
             string expectedMessage = "This is a test";
-            _mh.SetupConsoleWriter(_consoleWriter, expectedMessage);
+            _consoleWriter
+                .Setup(x => x.WriteLine(expectedMessage))
+                .Verifiable(Times.Once);
             MessageWriter messageWriter = new(_consoleWriter.Object);
 
             // Act
             messageWriter.WriteLine(formatString, formatItem1, formatItem2);
 
             // Assert
-            _consoleWriter.Verify(_mh.ConsoleWriterExpression, Times.Once);
+            _consoleWriter.Verify();
         }
 
         private MessageWriter GetMessageWriter() => new(_consoleWriter.Object);

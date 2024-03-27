@@ -94,21 +94,21 @@
         bool IsValidTabSizeValue(string stringValue, out int tabSize);
 
         /// <summary>
-        /// Resets the current indent value to zero.
+        /// Resets the current indent value to zero and sets the tab size to the default value.
         /// </summary>
         void Reset();
 
         /// <summary>
-        /// Restores the current indent, tab size, and location from the saved values.
+        /// Restores the current indent and tab size from the saved values.
         /// </summary>
         /// <remarks>
-        /// This method exits without doing anything if the current indent, tab size, and location
-        /// wasn't previously saved.
+        /// This method exits without doing anything if the current indent and tab size wasn't
+        /// previously saved.
         /// </remarks>
         void RestoreCurrentState();
 
         /// <summary>
-        /// Save the current indent, tab size, and location so that they can be restored later.
+        /// Save the current indent and tab size so that they can be restored later.
         /// </summary>
         void SaveCurrentState();
 

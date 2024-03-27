@@ -10,13 +10,13 @@
     /// </summary>
     public class TextTemplateProcessor : ITextTemplateProcessor
     {
-        private readonly Dictionary<string, ControlItem> _controlDictionary = new();
+        internal readonly Dictionary<string, ControlItem> _controlDictionary = new();
+        internal readonly List<string> _generatedText = new();
+        internal readonly Dictionary<string, List<TextItem>> _segmentDictionary = new();
         private readonly IDefaultSegmentNameGenerator _defaultSegmentNameGenerator;
-        private readonly List<string> _generatedText = new();
         private readonly IIndentProcessor _indentProcessor;
         private readonly ILocater _locater;
         private readonly ILogger _logger;
-        private readonly Dictionary<string, List<TextItem>> _segmentDictionary = new();
         private readonly ITemplateLoader _templateLoader;
         private readonly ITextReader _textReader;
         private readonly ITextWriter _textWriter;
@@ -238,33 +238,19 @@
         /// generated text buffer that is maintained by the <see cref="TextTemplateProcessor" />
         /// class object.
         /// </remarks>
-        public IEnumerable<string> GeneratedText
-        {
-            get
-            {
-                List<string> generatedText = new();
-
-                foreach (string textLine in _generatedText)
-                {
-                    string text = textLine;
-                    generatedText.Add(text);
-                }
-
-                return generatedText;
-            }
-        }
+        public IEnumerable<string> GeneratedText => new List<string>(_generatedText);
 
         /// <summary>
         /// Gets a boolean value that is <see langword="true" /> if the generated text buffer has
         /// been written to the output file.
         /// </summary>
-        public bool IsOutputFileWritten { get; private set; }
+        public bool IsOutputFileWritten { get; internal set; }
 
         /// <summary>
         /// Gets a boolean value that is <see langword="true" /> if a template file has been loaded
         /// into the text template processor.
         /// </summary>
-        public bool IsTemplateLoaded { get; private set; }
+        public bool IsTemplateLoaded { get; internal set; }
 
         /// <summary>
         /// Gets the ordinal number of the current text line that is being processed within the
@@ -314,6 +300,9 @@
 
             if (SegmentCanBeGenerated(CurrentSegment))
             {
+                _logger.Log(MsgProcessingSegment,
+                            CurrentSegment);
+
                 ControlItem controlItem = _controlDictionary[CurrentSegment];
 
                 if (tokenValues is not null)
@@ -323,9 +312,12 @@
 
                 if (controlItem.ShouldGeneratePadSegment)
                 {
+                    string saveSegmentName = CurrentSegment;
                     _indentProcessor.SaveCurrentState();
                     GenerateSegment(controlItem.PadSegment);
                     _indentProcessor.RestoreCurrentState();
+                    CurrentSegment = saveSegmentName;
+                    LineNumber = 0;
                 }
 
                 if (controlItem.TabSize > 0)
@@ -595,6 +587,32 @@
             _generatedText.Add(pad + text);
         }
 
+        private bool IsValidSegmentWithTextLines(string segmentName)
+        {
+            bool result = false;
+
+            if (_controlDictionary.ContainsKey(segmentName))
+            {
+                if (_segmentDictionary.ContainsKey(segmentName)
+                    && _segmentDictionary[segmentName].Any())
+                {
+                    result = true;
+                }
+                else
+                {
+                    _logger.Log(MsgSegmentHasNoTextLines,
+                                segmentName);
+                }
+            }
+            else
+            {
+                _logger.Log(MsgUnknownSegmentName,
+                            segmentName);
+            }
+
+            return result;
+        }
+
         private bool IsValidTemplateFilePath() => string.IsNullOrWhiteSpace(_textReader.FullFilePath) is false;
 
         private bool IsValidTemplateFilePath(string filePath)
@@ -626,27 +644,13 @@
         {
             bool result = false;
 
-            if (IsTemplateLoaded)
+            if (string.IsNullOrWhiteSpace(segmentName))
             {
-                if (_controlDictionary.ContainsKey(segmentName))
-                {
-                    if (_segmentDictionary.ContainsKey(segmentName))
-                    {
-                        _logger.Log(MsgProcessingSegment,
-                                    segmentName);
-                        result = true;
-                    }
-                    else
-                    {
-                        _logger.Log(MsgSegmentHasNoTextLines,
-                                    segmentName);
-                    }
-                }
-                else
-                {
-                    _logger.Log(MsgUnknownSegmentName,
-                                segmentName);
-                }
+                _logger.Log(MsgSegmentNameIsNullOrWhitespace);
+            }
+            else if (IsTemplateLoaded)
+            {
+                result = IsValidSegmentWithTextLines(segmentName);
             }
             else
             {
