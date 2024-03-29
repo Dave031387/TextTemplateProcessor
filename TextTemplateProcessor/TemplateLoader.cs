@@ -14,6 +14,7 @@
         private readonly ILocater _locater;
         private readonly ILogger _logger;
         private readonly ISegmentHeaderParser _segmentHeaderParser;
+        private readonly List<string> _segmentsWithPad = new();
         private readonly ITextLineParser _textLineParser;
         private Dictionary<string, ControlItem> _controlDictionary = new();
         private Dictionary<string, List<TextItem>> _segmentDictionary = new();
@@ -111,6 +112,7 @@
             _controlDictionary = controlDictionary;
             _segmentDictionary.Clear();
             _controlDictionary.Clear();
+            _segmentsWithPad.Clear();
             _locater.CurrentSegment = string.Empty;
             int lineCount = 0;
 
@@ -219,29 +221,39 @@
 
         private string ValidatePadSegmentOption(string segmentName, string? padSegment)
         {
+            string result = string.Empty;
+
             if (string.IsNullOrEmpty(padSegment))
             {
-                return string.Empty;
             }
-
-            if (padSegment == segmentName)
+            else if (padSegment == segmentName)
             {
                 _logger.Log(MsgPadSegmentNameSameAsSegmentHeaderName,
                             segmentName);
-                return string.Empty;
             }
-
-            if (_controlDictionary.ContainsKey(padSegment))
+            else if (_controlDictionary.ContainsKey(padSegment))
             {
-                return padSegment;
+                _segmentsWithPad.Add(segmentName);
+
+                if (_segmentsWithPad.Contains(padSegment))
+                {
+                    _logger.Log(MsgMultipleLevelsOfPadSegments,
+                                segmentName,
+                                padSegment);
+                }
+                else
+                {
+                    result = padSegment;
+                }
             }
             else
             {
                 _logger.Log(MsgPadSegmentMustBeDefinedEarlier,
                             segmentName,
                             padSegment);
-                return string.Empty;
             }
+
+            return result;
         }
     }
 }

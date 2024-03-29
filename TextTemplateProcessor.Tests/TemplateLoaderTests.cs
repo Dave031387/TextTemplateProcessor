@@ -1,5 +1,8 @@
 ﻿namespace TextTemplateProcessor
 {
+    using System.Data;
+    using static System.Net.Mime.MediaTypeNames;
+
     public class TemplateLoaderTests
     {
         private readonly Dictionary<string, ControlItem> _actualControlDictionary = new();
@@ -255,9 +258,63 @@
         {
             // Arrange
             InitializeMocks();
-            AddSegmentHeaderLineToTemplateFile("Segment1", false, true, null, false, 2);
+            AddSegmentHeaderLineToTemplateFile("Segment1",
+                                               false,
+                                               true,
+                                               null,
+                                               false,
+                                               false,
+                                               2);
             AddTextLineToTemplateFile();
-            AddSegmentHeaderLineToTemplateFile("Segment1", true, true, null, false, 2);
+            AddSegmentHeaderLineToTemplateFile("Segment1",
+                                               true,
+                                               true,
+                                               null,
+                                               false,
+                                               false,
+                                               2);
+            AddTextLineToTemplateFile();
+
+            // Act
+            LoadTemplate();
+
+            // Assert
+            VerifyDictionaries();
+            VerifyMocks();
+        }
+
+        [Fact]
+        public void LoadTemplate_ThreeLevelsOfPadSegments_LogsMessage()
+        {
+            // Arrange
+            InitializeMocks();
+            AddSegmentHeaderLineToTemplateFile("Segment1");
+            AddTextLineToTemplateFile();
+            AddSegmentHeaderLineToTemplateFile("Segment2", false, true, "Segment1");
+            AddTextLineToTemplateFile();
+            AddSegmentHeaderLineToTemplateFile("Segment3", false, true, "Segment2", false, true);
+            AddTextLineToTemplateFile();
+            AddSegmentHeaderLineToTemplateFile("Segment4", false, true, "Segment3", false, true);
+            AddTextLineToTemplateFile();
+
+            // Act
+            LoadTemplate();
+
+            // Assert
+            VerifyDictionaries();
+            VerifyMocks();
+        }
+
+        [Fact]
+        public void LoadTemplate_TwoLevelsOfPadSegments_LogsMessage()
+        {
+            // Arrange
+            InitializeMocks();
+            AddSegmentHeaderLineToTemplateFile("Segment1");
+            AddTextLineToTemplateFile();
+            AddSegmentHeaderLineToTemplateFile("Segment2", false, true, "Segment1");
+            AddTextLineToTemplateFile();
+            AddSegmentHeaderLineToTemplateFile("Segment3", false, true, "Segment2", false, true);
             AddTextLineToTemplateFile();
 
             // Act
@@ -405,6 +462,7 @@
                                                         bool isSegmentWithTextLines = true,
                                                         string? padSegment = null,
                                                         bool isUnknownPadSegment = false,
+                                                        bool isMultiplePadLevels = false,
                                                         int callCount = 1)
         {
             string padOption = padSegment is null ? string.Empty : $" PAD={padSegment}";
@@ -412,188 +470,32 @@
 
             _templateLines.Add(segmentHeaderLine);
             _lineCounter++;
-            _locater
-                .SetupSet(x => x.LineNumber = _lineCounter)
-                .Verifiable(Times.Once);
 
-            if (isDuplicateSegmentName)
-            {
-                string defaultSegmentName = $"{DefaultSegmentNamePrefix}{++_defaultSegmentNameCounter}";
-                _currentSegmentName = defaultSegmentName;
-            }
-            else
-            {
-                _currentSegmentName = segmentName;
-            }
-
-            bool isValidPadOption = true;
-
-            if (padSegment is null)
-            {
-                padOption = string.Empty;
-                isValidPadOption = false;
-            }
-            else
-            {
-                padOption = $" PAD={padSegment}";
-
-                if (isUnknownPadSegment)
-                {
-                    _logger
-                        .Setup(x => x.Log(MsgPadSegmentMustBeDefinedEarlier, segmentName, padSegment))
-                        .Verifiable(Times.Once);
-                    isValidPadOption = false;
-                }
-                else if (padSegment == segmentName)
-                {
-                    _logger
-                        .Setup(x => x.Log(MsgPadSegmentNameSameAsSegmentHeaderName, segmentName, null))
-                        .Verifiable(Times.Once);
-                    isValidPadOption = false;
-                }
-            }
-
-            if (isSegmentWithTextLines)
-            {
-                ControlItem savedControlItem = new();
-
-                if (isValidPadOption)
-                {
-                    savedControlItem.PadSegment = padSegment!;
-                }
-
-                _expectedControlDictionary[_currentSegmentName] = savedControlItem;
-            }
-            else
-            {
-                _logger
-                    .Setup(x => x.Log(MsgNoTextLinesFollowingSegmentHeader, _currentSegmentName, null))
-                    .Verifiable(Times.Once);
-            }
-
-            ControlItem returnedControlItem = new()
-            {
-                PadSegment = padSegment is null ? string.Empty : padSegment
-            };
-
-            if (isDuplicateSegmentName)
-            {
-                _logger
-                    .Setup(x => x.Log(MsgFoundDuplicateSegmentName, segmentName, _currentSegmentName))
-                    .Verifiable(Times.Once);
-
-                if (callCount == 1)
-                {
-                    _textLineParser
-                        .Setup(x => x.IsValidPrefix(segmentHeaderLine))
-                        .Returns(true)
-                        .Verifiable(Times.Once);
-                    _textLineParser
-                        .Setup(x => x.IsCommentLine(segmentHeaderLine))
-                        .Returns(false)
-                        .Verifiable(Times.Once);
-                    _textLineParser
-                        .Setup(x => x.IsSegmentHeader(segmentHeaderLine))
-                        .Returns(true)
-                        .Verifiable(Times.Once);
-                    _segmentHeaderParser
-                        .Setup(x => x.ParseSegmentHeader(segmentHeaderLine))
-                        .Returns(returnedControlItem)
-                        .Verifiable(Times.Once);
-                }
-            }
-            else
-            {
-                _textLineParser
-                    .Setup(x => x.IsValidPrefix(segmentHeaderLine))
-                    .Returns(true)
-                    .Verifiable(Times.Exactly(callCount));
-                _textLineParser
-                    .Setup(x => x.IsCommentLine(segmentHeaderLine))
-                    .Returns(false)
-                    .Verifiable(Times.Exactly(callCount));
-                _textLineParser
-                    .Setup(x => x.IsSegmentHeader(segmentHeaderLine))
-                    .Returns(true)
-                    .Verifiable(Times.Exactly(callCount));
-                _segmentHeaderParser
-                    .Setup(x => x.ParseSegmentHeader(segmentHeaderLine))
-                    .Returns(returnedControlItem)
-                    .Verifiable(Times.Exactly(callCount));
-            }
-
-            _logger
-                .Setup(x => x.Log(MsgSegmentHasBeenAdded, _currentSegmentName, null))
-                .Verifiable(Times.Once);
+            SegmentHeader_SetupCommonMocks(segmentHeaderLine, callCount);
+            SegmentHeader_CheckForDuplicateSegmentName(segmentName, isDuplicateSegmentName);
+            string expectedPadSegment = SegmentHeader_CheckForValidPadOption(segmentName,
+                                                                             padSegment,
+                                                                             isUnknownPadSegment,
+                                                                             isMultiplePadLevels);
+            SegmentHeader_CheckForSegmentWithTextLines(isSegmentWithTextLines, expectedPadSegment);
+            SegmentHeader_SetupParseSegmentHeader(segmentHeaderLine, padSegment, callCount);
         }
 
         private void AddTextLineToTemplateFile(bool isMissingSegmentHeader = false,
-                                               bool isValidTemplateLine = true)
+                                               bool isValidTextLine = true)
         {
             string text = $"Text line {++_lineCounter}";
-            string templateLine = isValidTemplateLine
+            string textLine = isValidTextLine
                 ? $"{IndentUnchanged} {text}"
-                : $"XXX Invalid {text}";
+                : $"XXX INVALID {text}";
 
-            _templateLines.Add(templateLine);
+            _templateLines.Add(textLine);
             _locater
                 .SetupSet(x => x.LineNumber = _lineCounter)
                 .Verifiable(Times.Once);
 
-            if (isMissingSegmentHeader)
-            {
-                string defaultSegmentName = $"{DefaultSegmentNamePrefix}{++_defaultSegmentNameCounter}";
-                _currentSegmentName = defaultSegmentName;
-                _logger
-                    .Setup(x => x.Log(MsgMissingInitialSegmentHeader, _currentSegmentName, null))
-                    .Verifiable(Times.Once);
-                _expectedControlDictionary[_currentSegmentName] = new();
-            }
-
-            if (isValidTemplateLine)
-            {
-                _textLineParser
-                    .Setup(x => x.IsValidPrefix(templateLine))
-                    .Returns(true)
-                    .Verifiable(Times.Once);
-                _textLineParser
-                    .Setup(x => x.IsCommentLine(templateLine))
-                    .Returns(false)
-                    .Verifiable(Times.Once);
-
-                if (templateLine[..3] == Comment)
-                {
-                    return;
-                }
-
-                _textLineParser
-                    .Setup(x => x.IsSegmentHeader(templateLine))
-                    .Returns(false)
-                    .Verifiable(Times.Once);
-
-                TextItem textItem = new(0, true, false, text);
-
-                if (_expectedSegmentDictionary.ContainsKey(_currentSegmentName))
-                {
-                    _expectedSegmentDictionary[_currentSegmentName].Add(textItem);
-                }
-                else
-                {
-                    _expectedSegmentDictionary[_currentSegmentName] = new() { textItem };
-                }
-
-                _textLineParser
-                    .Setup(x => x.ParseTextLine(templateLine))
-                    .Returns(textItem)
-                    .Verifiable(Times.Once);
-            }
-            else
-            {
-                _textLineParser
-                    .Setup(x => x.IsValidPrefix(templateLine))
-                    .Returns(false)
-                    .Verifiable(Times.Once);
-            }
+            TextLine_CheckForMissingSegmentHeader(isMissingSegmentHeader);
+            TextLine_CheckForValidTextLine(textLine, isValidTextLine);
         }
 
         private void InitializeMocks()
@@ -647,12 +549,180 @@
             _textLineParser.VerifyNoOtherCalls();
         }
 
+        private void SegmentHeader_CheckForDuplicateSegmentName(string segmentName, bool isDuplicateSegmentName)
+        {
+            if (isDuplicateSegmentName)
+            {
+                string defaultSegmentName = $"{DefaultSegmentNamePrefix}{++_defaultSegmentNameCounter}";
+                _currentSegmentName = defaultSegmentName;
+                _logger
+                    .Setup(x => x.Log(MsgFoundDuplicateSegmentName, segmentName, _currentSegmentName))
+                    .Verifiable(Times.Once);
+            }
+            else
+            {
+                _currentSegmentName = segmentName;
+            }
+        }
+
+        private void SegmentHeader_CheckForSegmentWithTextLines(bool isSegmentWithTextLines, string expectedPadSegment)
+        {
+            if (isSegmentWithTextLines)
+            {
+                ControlItem savedControlItem = new()
+                {
+                    PadSegment = expectedPadSegment
+                };
+                _expectedControlDictionary[_currentSegmentName] = savedControlItem;
+            }
+            else
+            {
+                _logger
+                    .Setup(x => x.Log(MsgNoTextLinesFollowingSegmentHeader, _currentSegmentName, null))
+                    .Verifiable(Times.Once);
+            }
+        }
+
+        private string SegmentHeader_CheckForValidPadOption(string segmentName,
+                                                            string? padSegment,
+                                                            bool isUnknownPadSegment,
+                                                            bool isMultiplePadLevels)
+        {
+            string expectedPadSegment = string.Empty;
+
+            if (padSegment is null)
+            {
+            }
+            else
+            {
+                if (isUnknownPadSegment)
+                {
+                    _logger
+                        .Setup(x => x.Log(MsgPadSegmentMustBeDefinedEarlier, segmentName, padSegment))
+                        .Verifiable(Times.Once);
+                }
+                else if (padSegment == segmentName)
+                {
+                    _logger
+                        .Setup(x => x.Log(MsgPadSegmentNameSameAsSegmentHeaderName, segmentName, null))
+                        .Verifiable(Times.Once);
+                }
+                else if (isMultiplePadLevels)
+                {
+                    _logger
+                        .Setup(x => x.Log(MsgMultipleLevelsOfPadSegments, segmentName, padSegment))
+                        .Verifiable(Times.Once);
+                }
+                else
+                {
+                    expectedPadSegment = padSegment;
+                }
+            }
+
+            return expectedPadSegment;
+        }
+
+        private void SegmentHeader_SetupCommonMocks(string segmentHeaderLine, int callCount)
+        {
+            _locater
+                .SetupSet(x => x.LineNumber = _lineCounter)
+                .Verifiable(Times.Once);
+            _textLineParser
+                .Setup(x => x.IsValidPrefix(segmentHeaderLine))
+                .Returns(true)
+                .Verifiable(Times.Exactly(callCount));
+            _textLineParser
+                .Setup(x => x.IsCommentLine(segmentHeaderLine))
+                .Returns(false)
+                .Verifiable(Times.Exactly(callCount));
+            _textLineParser
+                .Setup(x => x.IsSegmentHeader(segmentHeaderLine))
+                .Returns(true)
+                .Verifiable(Times.Exactly(callCount));
+        }
+
+        private void SegmentHeader_SetupParseSegmentHeader(string segmentHeaderLine, string? padSegment, int callCount)
+        {
+            ControlItem returnedControlItem = new()
+            {
+                PadSegment = padSegment is null ? string.Empty : padSegment
+            };
+
+            _segmentHeaderParser
+                .Setup(x => x.ParseSegmentHeader(segmentHeaderLine))
+                .Returns(returnedControlItem)
+                .Verifiable(Times.Exactly(callCount));
+            _logger
+                .Setup(x => x.Log(MsgSegmentHasBeenAdded, _currentSegmentName, null))
+                .Verifiable(Times.Once);
+        }
+
+        private void TextLine_AddTextItemToSegmentDictionary(string textLine, TextItem textItem)
+        {
+            if (_expectedSegmentDictionary.ContainsKey(_currentSegmentName))
+            {
+                _expectedSegmentDictionary[_currentSegmentName].Add(textItem);
+            }
+            else
+            {
+                _expectedSegmentDictionary[_currentSegmentName] = new() { textItem };
+            }
+
+            _textLineParser
+                .Setup(x => x.ParseTextLine(textLine))
+                .Returns(textItem)
+                .Verifiable(Times.Once);
+        }
+
+        private void TextLine_CheckForMissingSegmentHeader(bool isMissingSegmentHeader)
+        {
+            if (isMissingSegmentHeader)
+            {
+                string defaultSegmentName = $"{DefaultSegmentNamePrefix}{++_defaultSegmentNameCounter}";
+                _currentSegmentName = defaultSegmentName;
+                _logger
+                    .Setup(x => x.Log(MsgMissingInitialSegmentHeader, _currentSegmentName, null))
+                    .Verifiable(Times.Once);
+                _expectedControlDictionary[_currentSegmentName] = new();
+            }
+        }
+
+        private void TextLine_CheckForValidTextLine(string textLine, bool isValidTextLine)
+        {
+            if (isValidTextLine)
+            {
+                _textLineParser
+                    .Setup(x => x.IsValidPrefix(textLine))
+                    .Returns(true)
+                    .Verifiable(Times.Once);
+                _textLineParser
+                    .Setup(x => x.IsCommentLine(textLine))
+                    .Returns(false)
+                    .Verifiable(Times.Once);
+                _textLineParser
+                    .Setup(x => x.IsSegmentHeader(textLine))
+                    .Returns(false)
+                .Verifiable(Times.Once);
+
+                TextItem textItem = new(0, true, false, textLine[4..]);
+
+                TextLine_AddTextItemToSegmentDictionary(textLine, textItem);
+            }
+            else
+            {
+                _textLineParser
+                    .Setup(x => x.IsValidPrefix(textLine))
+                    .Returns(false)
+                    .Verifiable(Times.Once);
+            }
+        }
+
         private void VerifyDictionaries()
         {
             if (_expectedControlDictionary.Count == 0)
             {
                 _actualControlDictionary
-                        .Should()
+                    .Should()
                         .BeEmpty();
             }
             else
@@ -675,7 +745,7 @@
             if (_expectedSegmentDictionary.Count == 0)
             {
                 _actualSegmentDictionary
-                        .Should()
+                    .Should()
                         .BeEmpty();
             }
             else

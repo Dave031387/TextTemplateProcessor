@@ -50,6 +50,7 @@
         internal const string MsgMissingFileName = "The file name is missing from the file path.";
         internal const string MsgMissingInitialSegmentHeader = "The template file is missing the initial segment header. The default segment \"{0}\" will be used.";
         internal const string MsgMissingTokenName = "Found token start and end delimiters with no token name between them. The token will be ignored.";
+        internal const string MsgMultipleLevelsOfPadSegments = "Pad segment \"{1}\" specified for segment \"{0}\" also contains a pad segment. Multiple levels of pad segments are not allowed.";
         internal const string MsgNextLoadRequestBeforeFirstIsWritten = "Template file \"{0}\" is being loaded before any output was written for template file \"{1}\"";
         internal const string MsgNoTextLinesFollowingSegmentHeader = "The header line for segment \"{0}\" must be followed by one or more valid text lines. The segment will be ignored.";
         internal const string MsgNullDirectoryPath = "The directory path must not be null.";
