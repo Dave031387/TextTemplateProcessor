@@ -142,7 +142,7 @@
                     _logger.Log(MsgInvalidSegmentName,
                                 segmentName,
                                 _locater.CurrentSegment);
-                } 
+                }
             }
 
             if (args.Length > 2)

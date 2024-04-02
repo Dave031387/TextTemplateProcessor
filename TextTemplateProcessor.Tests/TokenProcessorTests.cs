@@ -565,7 +565,7 @@
                 .Verifiable(Times.Once);
             _logger
                 .Setup(x => x.Log(MsgTokenHasInvalidName, tokenName3, null))
-                .Verifiable(Times.Once);;
+                .Verifiable(Times.Once);
             _logger
                 .Setup(x => x.Log(MsgTokenNameNotFound, segmentName, tokenName5))
                 .Verifiable(Times.Once);

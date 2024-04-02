@@ -92,10 +92,10 @@
         /// <returns>
         /// The string representation of the current <see cref="ControlItem" /> object.
         /// </returns>
-        public override string ToString() =>
-            $"Is first time: {IsFirstTime} " +
-            $"/ FTI: {FirstTimeIndent} " +
-            $"/ PAD: {PadSegment} " +
-            $"/ TAB: {TabSize}";
+        public override string ToString()
+            => $"Is first time: {IsFirstTime} "
+            + $"/ FTI: {FirstTimeIndent} "
+            + $"/ PAD: {PadSegment} "
+            + $"/ TAB: {TabSize}";
     }
 }

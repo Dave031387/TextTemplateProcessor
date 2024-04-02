@@ -1,7 +1,5 @@
 ﻿namespace TextTemplateProcessor.IO
 {
-    using global::TextTemplateProcessor.TestShared;
-
     public class TextReaderTests
     {
         private readonly Mock<IFileAndDirectoryService> _fileService = new();

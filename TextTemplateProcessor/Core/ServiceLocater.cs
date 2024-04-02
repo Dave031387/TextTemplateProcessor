@@ -14,7 +14,7 @@
 
         public static IServiceLocater Current => _serviceLocater;
 
-        private class DefaultServiceLocater : IServiceLocater
+        private class DefaultServiceLocater : IServiceLocater, IDisposable
         {
             private readonly IKernel _kernel;
 
@@ -45,6 +45,8 @@
                 _kernel.Bind<ITextWriter>().To<TextWriter>().InSingletonScope();
                 _kernel.Bind<ITokenProcessor>().To<TokenProcessor>().InSingletonScope();
             }
+
+            public void Dispose() => _kernel.Dispose();
         }
     }
 }

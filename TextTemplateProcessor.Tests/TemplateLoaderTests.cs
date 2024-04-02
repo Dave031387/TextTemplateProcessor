@@ -1,8 +1,5 @@
 ﻿namespace TextTemplateProcessor
 {
-    using System.Data;
-    using static System.Net.Mime.MediaTypeNames;
-
     public class TemplateLoaderTests
     {
         private readonly Dictionary<string, ControlItem> _actualControlDictionary = new();

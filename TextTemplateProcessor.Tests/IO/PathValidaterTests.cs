@@ -603,15 +603,9 @@
         {
             // Arrange
             PathValidater pathValidater = new();
-            Action action;
-            if (validateFullPath)
-            {
-                action = () => { pathValidater.ValidateFullPath(path!, isFilePath, shouldExist); };
-            }
-            else
-            {
-                action = () => { pathValidater.ValidatePath(path!, isFilePath, shouldExist); };
-            }
+            Action action = validateFullPath
+                ? (() => { pathValidater.ValidateFullPath(path!, isFilePath, shouldExist); })
+                : (() => { pathValidater.ValidatePath(path!, isFilePath, shouldExist); });
 
             // Act/Assert
             action

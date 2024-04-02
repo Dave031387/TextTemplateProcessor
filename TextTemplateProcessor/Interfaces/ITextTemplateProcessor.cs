@@ -60,10 +60,18 @@
         int TabSize { get; }
 
         /// <summary>
+        /// Gets the name of the text template file that is loaded into memory.
+        /// </summary>
+        /// <remarks>
+        /// This will return an empty string if a template file hasn't yet been loaded.
+        /// </remarks>
+        string TemplateFileName { get; }
+
+        /// <summary>
         /// Gets the full file path of the text template file that is loaded in memory.
         /// </summary>
         /// <remarks>
-        /// This will return an empty string if the template file hasn't yet been loaded.
+        /// This will return an empty string if a template file hasn't yet been loaded.
         /// </remarks>
         string TemplateFilePath { get; }
 

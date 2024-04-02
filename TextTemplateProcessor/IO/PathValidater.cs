@@ -176,12 +176,9 @@
 
         private static string GetFullDirectoryPath(string directoryPath)
         {
-            if (string.IsNullOrWhiteSpace(directoryPath))
-            {
-                return Directory.GetCurrentDirectory();
-            }
-
-            return Path.IsPathRooted(directoryPath) ? directoryPath : Path.GetFullPath(directoryPath);
+            return string.IsNullOrWhiteSpace(directoryPath)
+                ? Directory.GetCurrentDirectory()
+                : Path.IsPathRooted(directoryPath) ? directoryPath : Path.GetFullPath(directoryPath);
         }
 
         private static void VerifyExists(string fullPath, bool isFilePath)

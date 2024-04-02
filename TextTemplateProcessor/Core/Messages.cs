@@ -32,7 +32,7 @@
         internal const string MsgFourthCharacterMustBeBlank = "The fourth character of each template line should be blank:\n{0}\n   ^";
         internal const string MsgFullPathCannotBeDetermined = "The full path can't be determined because the solution directory path is unknown.";
         internal const string MsgGeneratedTextHasBeenReset = "The generated text cache for template file \"{0}\" has been reset.";
-        internal const string MsgGeneratedTextIsEmpty = "Unable to write the output file because the generated text is empty.";
+        internal const string MsgGeneratedTextIsEmpty = "The generated text is empty. Unable to write to output file \"{0}\"";
         internal const string MsgGeneratedTextIsNull = "Unable to write to the output file because the generated text is null.";
         internal const string MsgIndentValueMustBeValidNumber = "The indent value \"{0}\" is not a valid integer value.";
         internal const string MsgIndentValueOutOfRange = "The FTI option value must be a number between -9 and 9. The value given was {0}.";
@@ -72,7 +72,7 @@
         internal const string MsgTabSizeTooSmall = "The requested tab size is too small. The minimum value \"{0}\" will be used.";
         internal const string MsgTabSizeValueMustBeValidNumber = "The tab size value \"{0}\" is not a valid integer value.";
         internal const string MsgTabSizeValueOutOfRange = "The tab size must be an integer between 1 and 9, but the specified value was \"{0}\".";
-        internal const string MsgTemplateFileIsEmpty = "The template file is empty.";
+        internal const string MsgTemplateFileIsEmpty = "This template file is empty: {0}";
         internal const string MsgTemplateFilePathNotSet = "Unable to load the template file because a valid file path has not been set.";
         internal const string MsgTemplateHasBeenReset = "The environment for template file \"{0}\" has been reset.";
         internal const string MsgTokenDictionaryContainsInvalidTokenName = "The token dictionary contained an invalid token name \"{1}\" for segment \"{0}\".";

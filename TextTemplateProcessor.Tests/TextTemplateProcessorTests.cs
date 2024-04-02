@@ -14,6 +14,7 @@ namespace TextTemplateProcessor
         private readonly Mock<ITextWriter> _textWriter = new();
         private readonly Mock<ITokenProcessor> _tokenProcessor = new();
         private int _currentIndent;
+        private int _currentTabSize;
         private int _textLineCounter;
 
         [Fact]
@@ -93,6 +94,183 @@ namespace TextTemplateProcessor
         }
 
         [Fact]
+        public void GenerateSegment_IsOutputFileWrittenFlagIsTrue_GeneratesTextAndSetsFlagToFalse()
+        {
+            // Arrange
+            InitializeMocks();
+            string segmentName = "Segment1";
+            ControlItem controlItem = new();
+            SetupGenerateSegment(segmentName);
+            TextTemplateProcessor processor = GetTextTemplateProcessor();
+            processor._controlDictionary[segmentName] = controlItem;
+            List<string> expected = new()
+            {
+                SetupGenerateTextLine(processor, segmentName, 0),
+                SetupGenerateTextLine(processor, segmentName, 1),
+                SetupGenerateTextLine(processor, segmentName, -1)
+            };
+            processor.IsTemplateLoaded = true;
+            processor.IsOutputFileWritten = true;
+
+            // Act
+            processor.GenerateSegment(segmentName);
+
+            // Assert
+            processor.GeneratedText
+                .Should()
+                .ContainInConsecutiveOrder(expected);
+            processor.IsOutputFileWritten
+                .Should()
+                .BeFalse();
+            _locater.Object.CurrentSegment
+                .Should()
+                .Be(segmentName);
+            _locater.Object.LineNumber
+                .Should()
+                .Be(expected.Count);
+            VerifyMocks();
+        }
+
+        [Fact]
+        public void GenerateSegment_PassInTokenValueDictionary_CallsLoadTokenValuesOnTokenProcessor()
+        {
+            // Arrange
+            InitializeMocks();
+            string segmentName = "Segment1";
+            ControlItem controlItem = new();
+            Dictionary<string, string> tokenValues = new()
+            {
+                ["Token1"] = "Token value 1"
+            };
+            SetupGenerateSegment(segmentName, null, tokenValues);
+            TextTemplateProcessor processor = GetTextTemplateProcessor();
+            processor._controlDictionary[segmentName] = controlItem;
+            List<string> expected = new()
+            {
+                SetupGenerateTextLine(processor, segmentName, 0),
+                SetupGenerateTextLine(processor, segmentName, 0),
+                SetupGenerateTextLine(processor, segmentName, 0)
+            };
+            processor.IsTemplateLoaded = true;
+            processor.IsOutputFileWritten = false;
+
+            // Act
+            processor.GenerateSegment(segmentName, tokenValues);
+
+            // Assert
+            processor.GeneratedText
+                .Should()
+                .ContainInConsecutiveOrder(expected);
+            processor.IsOutputFileWritten
+                .Should()
+                .BeFalse();
+            _locater.Object.CurrentSegment
+                .Should()
+                .Be(segmentName);
+            _locater.Object.LineNumber
+                .Should()
+                .Be(expected.Count);
+            VerifyMocks();
+        }
+
+        [Fact]
+        public void GenerateSegment_SegmentHasFirstTimeIndentOption_GeneratesTextWithCorrectFirstTimeIndent()
+        {
+            // Arrange
+            InitializeMocks();
+            string segmentName = "Segment1";
+            int firstTimeIndent = 2;
+            ControlItem controlItem = new() { FirstTimeIndent = firstTimeIndent };
+            SetupGenerateSegment(segmentName);
+            TextTemplateProcessor processor = GetTextTemplateProcessor();
+            processor._controlDictionary[segmentName] = controlItem;
+            List<string> expected = new()
+            {
+                SetupGenerateTextLine(processor, segmentName, 0, firstTimeIndent),
+                SetupGenerateTextLine(processor, segmentName, 1),
+                SetupGenerateTextLine(processor, segmentName, -1),
+                SetupGenerateTextLine(processor, segmentName, -1)
+            };
+            processor.IsTemplateLoaded = true;
+            processor.IsOutputFileWritten = false;
+
+            // Act
+            processor.GenerateSegment(segmentName);
+
+            // Assert
+            processor.GeneratedText
+                .Should()
+                .ContainInConsecutiveOrder(expected);
+            processor.IsOutputFileWritten
+                .Should()
+                .BeFalse();
+            _locater.Object.CurrentSegment
+                .Should()
+                .Be(segmentName);
+            _locater.Object.LineNumber
+                .Should()
+                .Be(expected.Count);
+            VerifyMocks();
+        }
+
+        [Fact]
+        public void GenerateSegment_SegmentHasMultipleOptions_GeneratesTextAndHandlesOptionsCorrectly()
+        {
+            // Arrange
+            InitializeMocks();
+            string padSegment = "PadSegment";
+            string segmentName = "Segment1";
+            int firstTimeIndent = 1;
+            int tabSize = 2;
+            ControlItem controlItem1 = new();
+            ControlItem controlItem2 = new()
+            {
+                FirstTimeIndent = firstTimeIndent,
+                PadSegment = padSegment,
+                TabSize = tabSize
+            };
+            SetupGenerateSegment(padSegment);
+            SetupGenerateSegment(segmentName, padSegment, null, tabSize);
+            TextTemplateProcessor processor = GetTextTemplateProcessor();
+            processor._controlDictionary[padSegment] = controlItem1;
+            processor._controlDictionary[segmentName] = controlItem2;
+            List<string> expected = new()
+            {
+                SetupGenerateTextLine(processor, padSegment, 1),
+                SetupGenerateTextLine(processor, padSegment, 0),
+                SetupGenerateTextLine(processor, padSegment, 1)
+            };
+            _currentIndent = 0;
+            expected.AddRange(new[]
+            {
+                SetupGenerateTextLine(processor, segmentName, 0, firstTimeIndent),
+                SetupGenerateTextLine(processor, segmentName, 1),
+                SetupGenerateTextLine(processor, segmentName, -2),
+                SetupGenerateTextLine(processor, segmentName, 0)
+            });
+            processor.IsTemplateLoaded = true;
+            processor.IsOutputFileWritten = false;
+
+            // Act
+            processor.GenerateSegment(segmentName);
+
+            // Assert
+            processor.GeneratedText
+                .Should()
+                .ContainInConsecutiveOrder(expected);
+            processor.IsOutputFileWritten
+                .Should()
+                .BeFalse();
+            _locater.Object.CurrentSegment
+                .Should()
+                .Be(segmentName);
+            _locater.Object.LineNumber
+                .Should()
+                .Be(processor._segmentDictionary[segmentName].Count);
+            VerifyMocks();
+        }
+
+        [Fact]
         public void GenerateSegment_SegmentHasNoTextLines_LogsMessage()
         {
             // Arrange
@@ -123,6 +301,96 @@ namespace TextTemplateProcessor
         }
 
         [Fact]
+        public void GenerateSegment_SegmentHasPadOption_GeneratesTextWithCorrectPad()
+        {
+            // Arrange
+            InitializeMocks();
+            string padSegment = "PadSegment";
+            string segmentName = "Segment1";
+            ControlItem controlItem1 = new();
+            ControlItem controlItem2 = new() { PadSegment = padSegment };
+            SetupGenerateSegment(padSegment);
+            SetupGenerateSegment(segmentName, padSegment);
+            TextTemplateProcessor processor = GetTextTemplateProcessor();
+            processor._controlDictionary[padSegment] = controlItem1;
+            processor._controlDictionary[segmentName] = controlItem2;
+            List<string> expected = new()
+            {
+                SetupGenerateTextLine(processor, padSegment, 2),
+                SetupGenerateTextLine(processor, padSegment, 0),
+                SetupGenerateTextLine(processor, padSegment, 0)
+            };
+            _currentIndent = 0;
+            expected.AddRange(new[]
+            {
+                SetupGenerateTextLine(processor, segmentName, 1),
+                SetupGenerateTextLine(processor, segmentName, 1),
+                SetupGenerateTextLine(processor, segmentName, -2),
+                SetupGenerateTextLine(processor, segmentName, 0)
+            });
+            processor.IsTemplateLoaded = true;
+            processor.IsOutputFileWritten = false;
+
+            // Act
+            processor.GenerateSegment(segmentName);
+
+            // Assert
+            processor.GeneratedText
+                .Should()
+                .ContainInConsecutiveOrder(expected);
+            processor.IsOutputFileWritten
+                .Should()
+                .BeFalse();
+            _locater.Object.CurrentSegment
+                .Should()
+                .Be(segmentName);
+            _locater.Object.LineNumber
+                .Should()
+                .Be(processor._segmentDictionary[segmentName].Count);
+            VerifyMocks();
+        }
+
+        [Fact]
+        public void GenerateSegment_SegmentHasTabOption_GeneratesTextWithCorrectTabSetting()
+        {
+            // Arrange
+            InitializeMocks();
+            string segmentName = "Segment1";
+            int tabSize = 2;
+            ControlItem controlItem = new() { TabSize = tabSize };
+            SetupGenerateSegment(segmentName, null, null, tabSize);
+            TextTemplateProcessor processor = GetTextTemplateProcessor();
+            processor._controlDictionary[segmentName] = controlItem;
+            List<string> expected = new()
+            {
+                SetupGenerateTextLine(processor, segmentName, 1),
+                SetupGenerateTextLine(processor, segmentName, 1),
+                SetupGenerateTextLine(processor, segmentName, -2),
+                SetupGenerateTextLine(processor, segmentName, 0)
+            };
+            processor.IsTemplateLoaded = true;
+            processor.IsOutputFileWritten = false;
+
+            // Act
+            processor.GenerateSegment(segmentName);
+
+            // Assert
+            processor.GeneratedText
+                .Should()
+                .ContainInConsecutiveOrder(expected);
+            processor.IsOutputFileWritten
+                .Should()
+                .BeFalse();
+            _locater.Object.CurrentSegment
+                .Should()
+                .Be(segmentName);
+            _locater.Object.LineNumber
+                .Should()
+                .Be(expected.Count);
+            VerifyMocks();
+        }
+
+        [Fact]
         public void GenerateSegment_SegmentHasTextLinesAndDefaultSegmentOptions_GeneratesText()
         {
             // Arrange
@@ -140,7 +408,7 @@ namespace TextTemplateProcessor
                 SetupGenerateTextLine(processor, segmentName, 2)
             };
             processor.IsTemplateLoaded = true;
-            processor.IsOutputFileWritten = true;
+            processor.IsOutputFileWritten = false;
 
             // Act
             processor.GenerateSegment(segmentName);
@@ -307,9 +575,8 @@ namespace TextTemplateProcessor
             string expected = GetNullDependencyMessage(ClassNames.TextTemplateProcessorClass,
                                                        ServiceNames.DefaultSegmentNameGeneratorService,
                                                        ServiceParameterNames.DefaultSegmentNameGeneratorParameter);
-            if (useTemplateFilePath)
-            {
-                action = () =>
+            action = useTemplateFilePath
+                ? (() =>
                 {
                     processor = new(_templateFilePath,
                                     _logger.Object,
@@ -320,11 +587,8 @@ namespace TextTemplateProcessor
                                     _textReader.Object,
                                     _textWriter.Object,
                                     _tokenProcessor.Object);
-                };
-            }
-            else
-            {
-                action = () =>
+                })
+                : (() =>
                 {
                     processor = new(_logger.Object,
                                     null!,
@@ -334,8 +598,7 @@ namespace TextTemplateProcessor
                                     _textReader.Object,
                                     _textWriter.Object,
                                     _tokenProcessor.Object);
-                };
-            }
+                });
 
             // Act/Assert
             action
@@ -355,9 +618,8 @@ namespace TextTemplateProcessor
             string expected = GetNullDependencyMessage(ClassNames.TextTemplateProcessorClass,
                                                        ServiceNames.IndentProcessorService,
                                                        ServiceParameterNames.IndentProcessorParameter);
-            if (useTemplateFilePath)
-            {
-                action = () =>
+            action = useTemplateFilePath
+                ? (() =>
                 {
                     processor = new(_templateFilePath,
                                     _logger.Object,
@@ -368,11 +630,8 @@ namespace TextTemplateProcessor
                                     _textReader.Object,
                                     _textWriter.Object,
                                     _tokenProcessor.Object);
-                };
-            }
-            else
-            {
-                action = () =>
+                })
+                : (() =>
                 {
                     processor = new(_logger.Object,
                                     _defaultSegmentNameGenerator.Object,
@@ -382,8 +641,7 @@ namespace TextTemplateProcessor
                                     _textReader.Object,
                                     _textWriter.Object,
                                     _tokenProcessor.Object);
-                };
-            }
+                });
 
             // Act/Assert
             action
@@ -403,9 +661,8 @@ namespace TextTemplateProcessor
             string expected = GetNullDependencyMessage(ClassNames.TextTemplateProcessorClass,
                                                        ServiceNames.LocaterService,
                                                        ServiceParameterNames.LocaterParameter);
-            if (useTemplateFilePath)
-            {
-                action = () =>
+            action = useTemplateFilePath
+                ? (() =>
                 {
                     processor = new(_templateFilePath,
                                     _logger.Object,
@@ -416,11 +673,8 @@ namespace TextTemplateProcessor
                                     _textReader.Object,
                                     _textWriter.Object,
                                     _tokenProcessor.Object);
-                };
-            }
-            else
-            {
-                action = () =>
+                })
+                : (() =>
                 {
                     processor = new(_logger.Object,
                                     _defaultSegmentNameGenerator.Object,
@@ -430,8 +684,7 @@ namespace TextTemplateProcessor
                                     _textReader.Object,
                                     _textWriter.Object,
                                     _tokenProcessor.Object);
-                };
-            }
+                });
 
             // Act/Assert
             action
@@ -451,9 +704,8 @@ namespace TextTemplateProcessor
             string expected = GetNullDependencyMessage(ClassNames.TextTemplateProcessorClass,
                                                        ServiceNames.LoggerService,
                                                        ServiceParameterNames.LoggerParameter);
-            if (useTemplateFilePath)
-            {
-                action = () =>
+            action = useTemplateFilePath
+                ? (() =>
                 {
                     processor = new(_templateFilePath,
                                     null!,
@@ -464,11 +716,8 @@ namespace TextTemplateProcessor
                                     _textReader.Object,
                                     _textWriter.Object,
                                     _tokenProcessor.Object);
-                };
-            }
-            else
-            {
-                action = () =>
+                })
+                : (() =>
                 {
                     processor = new(null!,
                                     _defaultSegmentNameGenerator.Object,
@@ -478,8 +727,7 @@ namespace TextTemplateProcessor
                                     _textReader.Object,
                                     _textWriter.Object,
                                     _tokenProcessor.Object);
-                };
-            }
+                });
 
             // Act/Assert
             action
@@ -499,9 +747,8 @@ namespace TextTemplateProcessor
             string expected = GetNullDependencyMessage(ClassNames.TextTemplateProcessorClass,
                                                        ServiceNames.TemplateLoaderService,
                                                        ServiceParameterNames.TemplateLoaderParameter);
-            if (useTemplateFilePath)
-            {
-                action = () =>
+            action = useTemplateFilePath
+                ? (() =>
                 {
                     processor = new(_templateFilePath,
                                     _logger.Object,
@@ -512,11 +759,8 @@ namespace TextTemplateProcessor
                                     _textReader.Object,
                                     _textWriter.Object,
                                     _tokenProcessor.Object);
-                };
-            }
-            else
-            {
-                action = () =>
+                })
+                : (() =>
                 {
                     processor = new(_logger.Object,
                                     _defaultSegmentNameGenerator.Object,
@@ -526,8 +770,7 @@ namespace TextTemplateProcessor
                                     _textReader.Object,
                                     _textWriter.Object,
                                     _tokenProcessor.Object);
-                };
-            }
+                });
 
             // Act/Assert
             action
@@ -547,9 +790,8 @@ namespace TextTemplateProcessor
             string expected = GetNullDependencyMessage(ClassNames.TextTemplateProcessorClass,
                                                        ServiceNames.TextReaderService,
                                                        ServiceParameterNames.TextReaderParameter);
-            if (useTemplateFilePath)
-            {
-                action = () =>
+            action = useTemplateFilePath
+                ? (() =>
                 {
                     processor = new(_templateFilePath,
                                     _logger.Object,
@@ -560,11 +802,8 @@ namespace TextTemplateProcessor
                                     null!,
                                     _textWriter.Object,
                                     _tokenProcessor.Object);
-                };
-            }
-            else
-            {
-                action = () =>
+                })
+                : (() =>
                 {
                     processor = new(_logger.Object,
                                     _defaultSegmentNameGenerator.Object,
@@ -574,8 +813,7 @@ namespace TextTemplateProcessor
                                     null!,
                                     _textWriter.Object,
                                     _tokenProcessor.Object);
-                };
-            }
+                });
 
             // Act/Assert
             action
@@ -595,9 +833,8 @@ namespace TextTemplateProcessor
             string expected = GetNullDependencyMessage(ClassNames.TextTemplateProcessorClass,
                                                        ServiceNames.TextWriterService,
                                                        ServiceParameterNames.TextWriterParameter);
-            if (useTemplateFilePath)
-            {
-                action = () =>
+            action = useTemplateFilePath
+                ? (() =>
                 {
                     processor = new(_templateFilePath,
                                     _logger.Object,
@@ -608,11 +845,8 @@ namespace TextTemplateProcessor
                                     _textReader.Object,
                                     null!,
                                     _tokenProcessor.Object);
-                };
-            }
-            else
-            {
-                action = () =>
+                })
+                : (() =>
                 {
                     processor = new(_logger.Object,
                                     _defaultSegmentNameGenerator.Object,
@@ -622,8 +856,7 @@ namespace TextTemplateProcessor
                                     _textReader.Object,
                                     null!,
                                     _tokenProcessor.Object);
-                };
-            }
+                });
 
             // Act/Assert
             action
@@ -643,9 +876,8 @@ namespace TextTemplateProcessor
             string expected = GetNullDependencyMessage(ClassNames.TextTemplateProcessorClass,
                                                        ServiceNames.TokenProcessorService,
                                                        ServiceParameterNames.TokenProcessorParameter);
-            if (useTemplateFilePath)
-            {
-                action = () =>
+            action = useTemplateFilePath
+                ? (() =>
                 {
                     processor = new(_templateFilePath,
                                     _logger.Object,
@@ -656,11 +888,8 @@ namespace TextTemplateProcessor
                                     _textReader.Object,
                                     _textWriter.Object,
                                     null!);
-                };
-            }
-            else
-            {
-                action = () =>
+                })
+                : (() =>
                 {
                     processor = new(_logger.Object,
                                     _defaultSegmentNameGenerator.Object,
@@ -670,8 +899,7 @@ namespace TextTemplateProcessor
                                     _textReader.Object,
                                     _textWriter.Object,
                                     null!);
-                };
-            }
+                });
 
             // Act/Assert
             action
@@ -698,17 +926,8 @@ namespace TextTemplateProcessor
                     .Verifiable(Times.Once);
             }
 
-            TextTemplateProcessor processor;
-
             // Act
-            if (useTemplateFilePath)
-            {
-                processor = GetTextTemplateProcessor(_templateFilePath);
-            }
-            else
-            {
-                processor = GetTextTemplateProcessor();
-            }
+            TextTemplateProcessor processor = useTemplateFilePath ? GetTextTemplateProcessor(_templateFilePath) : GetTextTemplateProcessor();
 
             // Assert
             processor._controlDictionary
@@ -740,29 +959,24 @@ namespace TextTemplateProcessor
 
         private TextTemplateProcessor GetTextTemplateProcessor(string? templateFilePath = null)
         {
-            if (templateFilePath is null)
-            {
-                return new TextTemplateProcessor(_logger.Object,
-                                                 _defaultSegmentNameGenerator.Object,
-                                                 _indentProcessor.Object,
-                                                 _locater.Object,
-                                                 _templateLoader.Object,
-                                                 _textReader.Object,
-                                                 _textWriter.Object,
-                                                 _tokenProcessor.Object);
-            }
-            else
-            {
-                return new TextTemplateProcessor(templateFilePath,
-                                                 _logger.Object,
-                                                 _defaultSegmentNameGenerator.Object,
-                                                 _indentProcessor.Object,
-                                                 _locater.Object,
-                                                 _templateLoader.Object,
-                                                 _textReader.Object,
-                                                 _textWriter.Object,
-                                                 _tokenProcessor.Object);
-            }
+            return templateFilePath is null
+                ? new TextTemplateProcessor(_logger.Object,
+                                            _defaultSegmentNameGenerator.Object,
+                                            _indentProcessor.Object,
+                                            _locater.Object,
+                                            _templateLoader.Object,
+                                            _textReader.Object,
+                                            _textWriter.Object,
+                                            _tokenProcessor.Object)
+                : new TextTemplateProcessor(templateFilePath,
+                                            _logger.Object,
+                                            _defaultSegmentNameGenerator.Object,
+                                            _indentProcessor.Object,
+                                            _locater.Object,
+                                            _templateLoader.Object,
+                                            _textReader.Object,
+                                            _textWriter.Object,
+                                            _tokenProcessor.Object);
         }
 
         private void InitializeMocks()
@@ -776,6 +990,7 @@ namespace TextTemplateProcessor
             _textWriter.Reset();
             _tokenProcessor.Reset();
             _currentIndent = 0;
+            _currentTabSize = DefaultTabSize;
             _textLineCounter = 0;
         }
 
@@ -791,25 +1006,57 @@ namespace TextTemplateProcessor
             _tokenProcessor.VerifyNoOtherCalls();
         }
 
-        private void SetupGenerateSegment(string segmentName, string? padSegment = null)
+        private void SetupGenerateSegment(string segmentName,
+                                          string? padSegment = null,
+                                          Dictionary<string, string>? tokenValues = null,
+                                          int tabSize = 0)
         {
+            int expectedGeneratingCount = 1;
+
             _locater
                 .SetupProperty(x => x.LineNumber);
             _locater
                 .SetupProperty(x => x.CurrentSegment);
             _logger
-                .Setup(x => x.SetLogEntryType(LogEntryType.Generating))
-                .Verifiable(Times.Once);
-            _logger
                 .Setup(x => x.Log(MsgProcessingSegment, segmentName, null))
                 .Verifiable(Times.Once);
+
+            if (tokenValues is not null)
+            {
+                _tokenProcessor
+                    .Setup(x => x.LoadTokenValues(tokenValues))
+                    .Verifiable(Times.Once);
+            }
 
             if (padSegment is not null)
             {
                 _logger
                     .Setup(x => x.Log(MsgProcessingSegment, padSegment, null))
                     .Verifiable(Times.Once);
+                _indentProcessor
+                    .Setup(x => x.SaveCurrentState())
+                    .Verifiable(Times.Once);
+                _indentProcessor
+                    .Setup(x => x.RestoreCurrentState())
+                    .Verifiable(Times.Once);
+                expectedGeneratingCount++;
             }
+
+            if (tabSize > 0)
+            {
+                _logger
+                    .Setup(x => x.SetLogEntryType(LogEntryType.Setup))
+                    .Verifiable(Times.Once);
+                _indentProcessor
+                    .Setup(x => x.SetTabSize(tabSize))
+                    .Verifiable(Times.Once);
+                expectedGeneratingCount++;
+                _currentTabSize = tabSize;
+            }
+
+            _logger
+                .Setup(x => x.SetLogEntryType(LogEntryType.Generating))
+                    .Verifiable(Times.Exactly(expectedGeneratingCount));
         }
 
         private string SetupGenerateTextLine(TextTemplateProcessor processor,
@@ -823,7 +1070,7 @@ namespace TextTemplateProcessor
             if (processor._segmentDictionary.ContainsKey(segmentName))
             {
                 processor._segmentDictionary[segmentName].Add(textItem);
-                _currentIndent += indent * DefaultTabSize;
+                _currentIndent += indent * _currentTabSize;
                 _indentProcessor
                     .Setup(x => x.GetIndent(textItem))
                     .Returns(_currentIndent)
@@ -835,11 +1082,11 @@ namespace TextTemplateProcessor
 
                 if (firstTimeIndent > 0)
                 {
-                    _currentIndent += firstTimeIndent * DefaultTabSize;
+                    _currentIndent += firstTimeIndent * _currentTabSize;
                 }
                 else
                 {
-                    _currentIndent += indent * DefaultTabSize;
+                    _currentIndent += indent * _currentTabSize;
                 }
 
                 _indentProcessor

@@ -83,24 +83,25 @@
         /// </remarks>
         public bool WriteTextFile(string filePath, IEnumerable<string> textLines)
         {
-            bool isValid = IsValidTextLines(textLines);
+            bool isValid = false;
 
-            if (isValid)
+            try
             {
-                try
+                ValidateOutputFilePath(filePath);
+
+                if (IsValidTextLines(textLines))
                 {
-                    ValidateOutputFilePath(filePath);
                     _fileAndDirectoryService.CreateDirectory(_directoryPath);
                     _logger.Log(MsgWritingTextFile,
                                 _fileName);
                     _fileAndDirectoryService.WriteTextFile(_filePath, textLines);
+                    isValid = true;
                 }
-                catch (Exception ex)
-                {
-                    _logger.Log(MsgUnableToWriteFile,
-                                ex.Message);
-                    isValid = false;
-                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(MsgUnableToWriteFile,
+                            ex.Message);
             }
 
             return isValid;
@@ -116,7 +117,8 @@
 
             if (textLines.Any() is false)
             {
-                _logger.Log(MsgGeneratedTextIsEmpty);
+                _logger.Log(MsgGeneratedTextIsEmpty,
+                            _fileName);
                 return false;
             }
 

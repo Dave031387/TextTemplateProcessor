@@ -271,10 +271,18 @@
         public int TabSize => _indentProcessor.TabSize;
 
         /// <summary>
+        /// Gets the name of the text template file that is loaded into memory.
+        /// </summary>
+        /// <remarks>
+        /// This will return an empty string if a template file hasn't yet been loaded.
+        /// </remarks>
+        public string TemplateFileName => _textReader.FileName;
+
+        /// <summary>
         /// Gets the full file path of the text template file that is loaded in memory.
         /// </summary>
         /// <remarks>
-        /// This will return an empty string if the template file hasn't yet been loaded.
+        /// This will return an empty string if a template file hasn't yet been loaded.
         /// </remarks>
         public string TemplateFilePath => _textReader.FullFilePath;
 
@@ -323,6 +331,7 @@
                 if (controlItem.TabSize > 0)
                 {
                     SetTabSize(controlItem.TabSize);
+                    _logger.SetLogEntryType(LogEntryType.Generating);
                 }
 
                 foreach (TextItem textItem in _segmentDictionary[CurrentSegment])
@@ -354,8 +363,6 @@
             }
             else if (IsValidTemplateFilePath())
             {
-                ResetAll(false);
-                _logger.SetLogEntryType(LogEntryType.Loading);
                 LoadTemplateLines();
             }
             else
@@ -376,7 +383,7 @@
         {
             _logger.SetLogEntryType(LogEntryType.Loading);
 
-            string lastFileName = _textReader.FileName;
+            string lastFileName = TemplateFileName;
             string lastFilePath = TemplateFilePath;
 
             if (IsValidTemplateFilePath(filePath))
@@ -385,21 +392,17 @@
                 {
                     _logger.Log(MsgAttemptToLoadMoreThanOnce,
                                 lastFileName);
-                    return;
                 }
-
-                bool isOutputFileWritten = IsOutputFileWritten;
-                ResetAll(false);
-                _logger.SetLogEntryType(LogEntryType.Loading);
-
-                if ((isOutputFileWritten || string.IsNullOrEmpty(lastFileName)) is false)
+                else if (IsOutputFileWritten || string.IsNullOrEmpty(lastFileName))
+                {
+                    LoadTemplateLines();
+                }
+                else
                 {
                     _logger.Log(MsgNextLoadRequestBeforeFirstIsWritten,
                                 _textReader.FileName,
                                 lastFileName);
                 }
-
-                LoadTemplateLines();
             }
             else
             {
@@ -424,6 +427,7 @@
             IsTemplateLoaded = false;
             IsOutputFileWritten = false;
             _defaultSegmentNameGenerator.Reset();
+            _indentProcessor.Reset();
             _tokenProcessor.ClearTokens();
 
             if (shouldDisplayMessage)
@@ -548,7 +552,8 @@
         /// </param>
         /// <remarks>
         /// The output file will be created if it doesn't already exist. Otherwise, the existing
-        /// file will be overwritten.
+        /// file will be overwritten. However, nothing will be written if the generated text buffer
+        /// is empty.
         /// </remarks>
         public void WriteGeneratedTextToFile(string filePath, bool resetGeneratedText = true)
         {
@@ -625,15 +630,19 @@
         {
             List<string> templateLines = _textReader.ReadTextFile().ToList();
 
+            ResetAll(false);
+
             if (IsEmptyTemplateFile(templateLines))
             {
-                _logger.Log(MsgTemplateFileIsEmpty);
+                _logger.Log(MsgTemplateFileIsEmpty,
+                            TemplateFilePath);
                 IsTemplateLoaded = false;
+                IsOutputFileWritten = true;
             }
             else
             {
                 _logger.Log(MsgLoadingTemplateFile,
-                            _textReader.FileName);
+                            TemplateFileName);
                 _templateLoader.LoadTemplate(templateLines, _segmentDictionary, _controlDictionary);
                 IsTemplateLoaded = true;
                 IsOutputFileWritten = false;

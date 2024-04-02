@@ -118,17 +118,7 @@
 
             int sep = path.LastIndexOf(Path.DirectorySeparatorChar);
 
-            if (sep <= 0)
-            {
-                return string.Empty;
-            }
-
-            if (sep == 2 && path[1] == ':')
-            {
-                return string.Empty;
-            }
-
-            return path[..sep];
+            return sep <= 0 ? string.Empty : sep == 2 && path[1] == ':' ? string.Empty : path[..sep];
         }
 
         /// <summary>
@@ -154,12 +144,7 @@
 
             int sep = path.LastIndexOf(Path.DirectorySeparatorChar) + 1;
 
-            if (sep >= path.Length)
-            {
-                return string.Empty;
-            }
-
-            return path[sep..];
+            return sep >= path.Length ? string.Empty : path[sep..];
         }
 
         /// <summary>
@@ -194,32 +179,15 @@
                 throw new FilePathException(msg);
             }
 
-            if (rootPath is null)
-            {
-                throw new FilePathException(MsgRootPathIsNull);
-            }
-
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                if (string.IsNullOrWhiteSpace(rootPath))
-                {
-                    return Directory.GetCurrentDirectory();
-                }
-
-                return Path.GetFullPath(rootPath);
-            }
-
-            if (Path.IsPathRooted(path))
-            {
-                return Path.GetFullPath(path);
-            }
-
-            if (string.IsNullOrWhiteSpace(rootPath))
-            {
-                return Path.Combine(Directory.GetCurrentDirectory(), path);
-            }
-
-            return Path.GetFullPath(Path.Combine(rootPath, path));
+            return rootPath is null
+                ? throw new FilePathException(MsgRootPathIsNull)
+                : string.IsNullOrWhiteSpace(path)
+                    ? string.IsNullOrWhiteSpace(rootPath) ? Directory.GetCurrentDirectory() : Path.GetFullPath(rootPath)
+                    : Path.IsPathRooted(path)
+                        ? Path.GetFullPath(path)
+                        : string.IsNullOrWhiteSpace(rootPath)
+                            ? Path.Combine(Directory.GetCurrentDirectory(), path)
+                            : Path.GetFullPath(Path.Combine(rootPath, path));
         }
 
         /// <summary>

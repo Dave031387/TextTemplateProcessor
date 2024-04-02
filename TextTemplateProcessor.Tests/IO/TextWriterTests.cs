@@ -118,9 +118,23 @@
         {
             // Arrange
             InitializeMocks();
-            string filePath = NextAbsoluteFilePath;
+            string directoryPath = NextAbsoluteName;
+            string fileName = NextFileName;
+            string filePath = Path.Combine(directoryPath, fileName);
+            _pathValidater
+                .Setup(x => x.ValidateFullPath(filePath, true, false))
+                .Returns(filePath)
+                .Verifiable(Times.Once);
+            _fileService
+                .Setup(x => x.GetDirectoryName(filePath))
+                .Returns(directoryPath)
+                .Verifiable(Times.Once);
+            _fileService
+                .Setup(x => x.GetFileName(filePath))
+                .Returns(fileName)
+                .Verifiable(Times.Once);
             _logger
-                .Setup(x => x.Log(MsgGeneratedTextIsEmpty, null, null))
+                .Setup(x => x.Log(MsgGeneratedTextIsEmpty, fileName, null))
                 .Verifiable(Times.Once);
             TextWriter writer = GetTextWriter();
 
@@ -139,7 +153,21 @@
         {
             // Arrange
             InitializeMocks();
-            string filePath = NextAbsoluteFilePath;
+            string directoryPath = NextAbsoluteName;
+            string fileName = NextFileName;
+            string filePath = Path.Combine(directoryPath, fileName);
+            _pathValidater
+                .Setup(x => x.ValidateFullPath(filePath, true, false))
+                .Returns(filePath)
+                .Verifiable(Times.Once);
+            _fileService
+                .Setup(x => x.GetDirectoryName(filePath))
+                .Returns(directoryPath)
+                .Verifiable(Times.Once);
+            _fileService
+                .Setup(x => x.GetFileName(filePath))
+                .Returns(fileName)
+                .Verifiable(Times.Once);
             _logger
                 .Setup(x => x.Log(MsgGeneratedTextIsNull, null, null))
                 .Verifiable(Times.Once);
