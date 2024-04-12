@@ -65,6 +65,7 @@
         internal const string MsgProcessingSegment = "Processing segment \"{0}\"...";
         internal const string MsgRootPathIsNull = "The root directory path must not be null.";
         internal const string MsgSegmentHasBeenAdded = "Segment \"{0}\" has been added to the control dictionary.";
+        internal const string MsgSegmentHasBeenReset = "Segment \"{0}\" has been reset.";
         internal const string MsgSegmentHasNoTextLines = "Tried to generate segment \"{0}\" but the segment has no text lines.";
         internal const string MsgSegmentNameIsNullOrWhitespace = "The segment name passed into the GenerateSegment method was null, empty or whitespace.";
         internal const string MsgSegmentNameMustStartInColumn5 = "The segment name must start in column 5 of the segment header line. The default name \"{0}\" will be used instead.\n{1}\n    ^";

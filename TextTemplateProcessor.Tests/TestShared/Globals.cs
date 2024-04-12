@@ -73,7 +73,7 @@ namespace TextTemplateProcessor.TestShared
             DeleteTestFiles(directoryPath);
             Directory.CreateDirectory(directoryPath);
             string fileName = NextFileName;
-            string fullFilePath = Path.Combine(directoryPath, fileName);
+            string fullFilePath = $"{directoryPath}{Sep}{fileName}";
             File.WriteAllLines(fullFilePath, text);
             return fullFilePath;
         }
@@ -86,7 +86,7 @@ namespace TextTemplateProcessor.TestShared
 
             for (int i = 0; i < numFiles; i++)
             {
-                string filePath = Path.Combine(directoryPath, NextFileName);
+                string filePath = $"{directoryPath}{Sep}{NextFileName}";
                 File.WriteAllLines(filePath, Array.Empty<string>());
             }
         }
@@ -103,7 +103,7 @@ namespace TextTemplateProcessor.TestShared
             }
 
             string fileName = NextFileName;
-            string fullFilePath = Path.Combine(directoryPath, fileName);
+            string fullFilePath = $"{directoryPath}{Sep}{fileName}";
             File.WriteAllLines(fullFilePath, Array.Empty<string>());
             return fileName;
         }

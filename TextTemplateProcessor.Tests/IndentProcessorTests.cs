@@ -5,6 +5,7 @@
         private const string SegmentName = "Segment1";
         private readonly Mock<ILocater> _locater = new();
         private readonly Mock<ILogger> _logger = new();
+        private readonly MethodCallOrderVerifier _verifier = new();
 
         // Case 01 / firstTimeOffset = 0 / isRelative = true / indent < 0 / calculated value < 0 /
         // isOneTime = true
@@ -732,6 +733,7 @@
         public void IndentProcessor_ConstructUsingNullLocater_ThrowsException()
         {
             // Arrange
+            InitializeMocks();
             Action action = () => { IndentProcessor processor = new(_logger.Object, null!); };
             string expected = GetNullDependencyMessage(ClassNames.IndentProcessorClass,
                                                        ServiceNames.LocaterService,
@@ -742,12 +744,14 @@
                 .Should()
                 .Throw<ArgumentNullException>()
                 .WithMessage(expected);
+            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
         public void IndentProcessor_ConstructUsingNullLogger_ThrowsException()
         {
             // Arrange
+            InitializeMocks();
             Action action = () => { IndentProcessor processor = new(null!, _locater.Object); };
             string expected = GetNullDependencyMessage(ClassNames.IndentProcessorClass,
                                                        ServiceNames.LoggerService,
@@ -758,6 +762,7 @@
                 .Should()
                 .Throw<ArgumentNullException>()
                 .WithMessage(expected);
+            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -992,7 +997,6 @@
         public void RestoreCurrentState_SavedStateExists_RestoresSavedLocation()
         {
             // Arrange (part 1) - change tab size and current indent and save the current state
-            InitializeMocks();
             IndentProcessor processor = GetIndentProcessor();
             int expectedTabSize = DefaultTabSize + 1;
             processor.SetTabSize(expectedTabSize);
@@ -1001,6 +1005,7 @@
             processor.SaveCurrentState();
 
             // Arrange (part 2) - change tab size and current indent to new values
+            InitializeMocks();
             SetCurrentIndent(processor, 6);
             processor.SetTabSize(DefaultTabSize - 1);
 
@@ -1103,6 +1108,7 @@
         {
             _locater.Reset();
             _logger.Reset();
+            _verifier.Reset();
         }
 
         private void MocksVerifyNoOtherCalls()
@@ -1128,10 +1134,13 @@
                 _locater
                     .Setup(x => x.CurrentSegment)
                     .Returns(SegmentName)
+                    .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter))
                     .Verifiable(Times.Once);
                 _logger
                     .Setup(x => x.Log(message, SegmentName, null))
+                    .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_Message))
                     .Verifiable(Times.Once);
+                _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Getter, MethodCall.Logger_Log_Message);
             }
 
             IndentProcessor processor = GetIndentProcessor();
@@ -1148,15 +1157,7 @@
             processor.CurrentIndent
                 .Should()
                 .Be(expectedCurrentIndent);
-
-            if (message is not null)
-            {
-                VerifyMocks();
-            }
-            else
-            {
-                MocksVerifyNoOtherCalls();
-            }
+            VerifyMocks();
         }
 
         private void Test_GetIndent(int initialIndent,
@@ -1175,10 +1176,13 @@
                 _locater
                     .Setup(x => x.CurrentSegment)
                     .Returns(SegmentName)
+                    .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter))
                     .Verifiable(Times.Once);
                 _logger
                     .Setup(x => x.Log(message, SegmentName, null))
+                    .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_Message))
                     .Verifiable(Times.Once);
+                _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Getter, MethodCall.Logger_Log_Message);
             }
 
             IndentProcessor processor = GetIndentProcessor();
@@ -1195,15 +1199,7 @@
             processor.CurrentIndent
                 .Should()
                 .Be(expectedCurrentIndent);
-
-            if (message is not null)
-            {
-                VerifyMocks();
-            }
-            else
-            {
-                MocksVerifyNoOtherCalls();
-            }
+            VerifyMocks();
         }
 
         private void VerifyMocks()
@@ -1219,6 +1215,7 @@
             }
 
             MocksVerifyNoOtherCalls();
+            _verifier.Verify();
         }
     }
 }

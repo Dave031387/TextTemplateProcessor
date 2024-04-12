@@ -145,7 +145,7 @@
             // Arrange
             FileAndDirectoryService service = new();
             string path = NextRelativeName;
-            string fullPath = Path.Combine(CurrentDirectory, path);
+            string fullPath = $"{CurrentDirectory}{Sep}{path}";
 
             // Act
             service.CreateDirectory(path);
@@ -186,8 +186,8 @@
             FileAndDirectoryService service = new();
             string relativeRoot = NextRootName;
             string relativePath = NextRelativeName;
-            string fullRoot = Path.Combine(CurrentDirectory, relativeRoot);
-            string expected = Path.Combine(fullRoot, relativePath);
+            string fullRoot = $"{CurrentDirectory}{Sep}{relativeRoot}";
+            string expected = $"{fullRoot}{Sep}{relativePath}";
             DeleteTestFiles(fullRoot);
 
             // Act
@@ -234,7 +234,7 @@
             // Arrange
             FileAndDirectoryService service = new();
             string relativeDirectory = NextRelativeName;
-            string expected = Path.Combine(CurrentDirectory, relativeDirectory);
+            string expected = $"{CurrentDirectory}{Sep}{relativeDirectory}";
             DeleteTestFiles(expected);
 
             // Act
@@ -297,7 +297,7 @@
             // Arrange
             FileAndDirectoryService service = new();
             string relativeDirectory = NextRelativeName;
-            string expected = Path.Combine(CurrentDirectory, relativeDirectory);
+            string expected = $"{CurrentDirectory}{Sep}{relativeDirectory}";
             DeleteTestFiles(expected);
 
             // Act
@@ -774,7 +774,7 @@
             FileAndDirectoryService service = new();
             string directoryPath = NextAbsoluteName;
             string fileName = NextFileName;
-            string filePath = Path.Combine(directoryPath, fileName);
+            string filePath = $"{directoryPath}{Sep}{fileName}";
             string[] text =
             {
                 "Text 1",

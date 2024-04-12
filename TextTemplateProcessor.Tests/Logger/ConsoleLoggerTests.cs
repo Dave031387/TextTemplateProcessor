@@ -26,7 +26,7 @@
                 .Returns(LineNumber);
             ConsoleLogger consoleLogger = GetConsoleLogger();
             WriteLogEntries(consoleLogger);
-            _locater.Reset();
+            InitializeMocks();
 
             // Act
             consoleLogger.Clear();
@@ -42,6 +42,7 @@
         internal void ConsoleLogger_ConstructUsingNullLocaterObject_ThrowsException()
         {
             // Arrange
+            InitializeMocks();
             Action action = () => { _ = new ConsoleLogger(_messageWriter.Object, null!); };
             string expected = GetNullDependencyMessage(ClassNames.ConsoleLoggerClass,
                                                        ServiceNames.LocaterService,
@@ -52,12 +53,14 @@
                 .Should()
                 .Throw<ArgumentNullException>()
                 .WithMessage(expected);
+            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
         internal void ConsoleLogger_ConstructUsingNullMessageWriterObject_ThrowsException()
         {
             // Arrange
+            InitializeMocks();
             Action action = () => { _ = new ConsoleLogger(null!, _locater.Object); };
             string expected = GetNullDependencyMessage(ClassNames.ConsoleLoggerClass,
                                                        ServiceNames.MessageWriterService,
@@ -68,6 +71,7 @@
                 .Should()
                 .Throw<ArgumentNullException>()
                 .WithMessage(expected);
+            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
@@ -307,7 +311,6 @@
         internal void WriteLogEntries_LoggerContainsLogEntries_WritesAllLogEntriesAndClearsTheBuffer()
         {
             // Arrange
-            InitializeMocks();
             List<string> expectedMessages = new()
             {
                 $"<{LogEntryType.Generating}> {SegmentName}[{LineNumber}] : {_expectedMessage}",
@@ -318,16 +321,6 @@
                 $"<{LogEntryType.Setup}> {_expectedMessage}"
             };
             List<string> writeBuffer = new();
-            void callback(string x) => writeBuffer.Add(x);
-
-            foreach (string message in expectedMessages)
-            {
-                _messageWriter
-                    .Setup(x => x.WriteLine(message))
-                    .Callback(callback)
-                    .Verifiable
-                    (Times.Once);
-            }
 
             _locater
                 .Setup(x => x.CurrentSegment)
@@ -337,7 +330,16 @@
                 .Returns(LineNumber);
             ConsoleLogger consoleLogger = GetConsoleLogger();
             WriteLogEntries(consoleLogger);
-            _locater.Reset();
+            InitializeMocks();
+            void callback(string x) => writeBuffer.Add(x);
+
+            foreach (string message in expectedMessages)
+            {
+                _messageWriter
+                    .Setup(x => x.WriteLine(message))
+                    .Callback(callback)
+                    .Verifiable(Times.Once);
+            }
 
             // Act
             consoleLogger.WriteLogEntries();

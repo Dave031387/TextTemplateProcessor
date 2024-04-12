@@ -9,7 +9,7 @@
             // Arrange
             string fileName = NextFileName;
             string filePath = $@"{whitespace}{Sep}{fileName}";
-            string fullFilePath = Path.Combine(CurrentDirectory, fileName);
+            string fullFilePath = $"{CurrentDirectory}{Sep}{fileName}";
 
             // Act/Assert
             AssertValidCall(filePath,
@@ -109,7 +109,7 @@
         {
             // Arrange
             string relativePath = NextRelativeName;
-            string fullFilePath = Path.Combine(CurrentDirectory, relativePath);
+            string fullFilePath = $"{CurrentDirectory}{Sep}{relativePath}";
 
             // Act/Assert
             AssertValidCall(relativePath,
@@ -124,7 +124,7 @@
         {
             // Arrange
             string filePath = NextRelativeFilePath;
-            string fullFilePath = Path.Combine(CurrentDirectory, filePath);
+            string fullFilePath = $"{CurrentDirectory}{Sep}{filePath}";
 
             // Act/Assert
             AssertValidCall(filePath,
@@ -242,7 +242,7 @@
         {
             // Arrange
             string relativePath = NextRelativeName;
-            string fullDirectoryPath = Path.Combine(CurrentDirectory, relativePath);
+            string fullDirectoryPath = $"{CurrentDirectory}{Sep}{relativePath}";
             CreateTestFiles(fullDirectoryPath, true);
 
             // Act/Assert
@@ -261,7 +261,7 @@
         {
             // Arrange
             string relativePath = NextRelativeName;
-            string fullDirectoryPath = Path.Combine(CurrentDirectory, relativePath);
+            string fullDirectoryPath = $"{CurrentDirectory}{Sep}{relativePath}";
 
             // Act/Assert
             AssertException(relativePath,
@@ -276,10 +276,10 @@
         {
             // Arrange
             string relativePath = NextRelativeName;
-            string fullDirectoryPath = Path.Combine(CurrentDirectory, relativePath);
+            string fullDirectoryPath = $"{CurrentDirectory}{Sep}{relativePath}";
             string fileName = CreateTestFiles(fullDirectoryPath);
             string filePath = $@"{relativePath}{Sep}{fileName}";
-            string fullFilePath = Path.Combine(CurrentDirectory, filePath);
+            string fullFilePath = $"{CurrentDirectory}{Sep}{filePath}";
 
             // Act/Assert
             AssertValidCall(filePath,
@@ -297,7 +297,7 @@
         {
             // Arrange
             string filePath = NextRelativeFilePath;
-            string fullFilePath = Path.Combine(CurrentDirectory, filePath);
+            string fullFilePath = $"{CurrentDirectory}{Sep}{filePath}";
 
             // Act/Assert
             AssertException(filePath,
@@ -531,7 +531,7 @@
         {
             // Arrange
             string relativePath = NextRelativeName;
-            string fullDirectoryPath = Path.Combine(CurrentDirectory, relativePath);
+            string fullDirectoryPath = $"{CurrentDirectory}{Sep}{relativePath}";
             CreateTestFiles(fullDirectoryPath, true);
 
             // Act/Assert
@@ -550,7 +550,7 @@
         {
             // Arrange
             string relativePath = NextRelativeName;
-            string fullDirectoryPath = Path.Combine(CurrentDirectory, relativePath);
+            string fullDirectoryPath = $"{CurrentDirectory}{Sep}{relativePath}";
 
             // Act/Assert
             AssertException(relativePath,
@@ -565,7 +565,7 @@
         {
             // Arrange
             string relativePath = NextRelativeName;
-            string fullDirectoryPath = Path.Combine(CurrentDirectory, relativePath);
+            string fullDirectoryPath = $"{CurrentDirectory}{Sep}{relativePath}";
             string fileName = CreateTestFiles(fullDirectoryPath);
             string filePath = $@"{relativePath}{Sep}{fileName}";
 
@@ -585,7 +585,7 @@
         {
             // Arrange
             string filePath = NextRelativeFilePath;
-            string fullFilePath = Path.Combine(CurrentDirectory, filePath);
+            string fullFilePath = $"{CurrentDirectory}{Sep}{filePath}";
 
             // Act/Assert
             AssertException(filePath,

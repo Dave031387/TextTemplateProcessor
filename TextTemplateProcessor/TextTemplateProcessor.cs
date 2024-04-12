@@ -368,7 +368,6 @@
             else
             {
                 _logger.Log(MsgTemplateFilePathNotSet);
-                IsTemplateLoaded = false;
             }
         }
 
@@ -393,15 +392,16 @@
                     _logger.Log(MsgAttemptToLoadMoreThanOnce,
                                 lastFileName);
                 }
-                else if (IsOutputFileWritten || string.IsNullOrEmpty(lastFileName))
-                {
-                    LoadTemplateLines();
-                }
                 else
                 {
-                    _logger.Log(MsgNextLoadRequestBeforeFirstIsWritten,
-                                _textReader.FileName,
-                                lastFileName);
+                    if ((IsOutputFileWritten || string.IsNullOrEmpty(lastFilePath)) is false)
+                    {
+                        _logger.Log(MsgNextLoadRequestBeforeFirstIsWritten,
+                                    _textReader.FileName,
+                                    lastFileName);
+                    }
+
+                    LoadTemplateLines();
                 }
             }
             else
@@ -420,8 +420,8 @@
         /// </param>
         public void ResetAll(bool shouldDisplayMessage = true)
         {
-            _logger.SetLogEntryType(LogEntryType.Reset);
-            ResetGeneratedText(false);
+            _generatedText.Clear();
+            _locater.Reset();
             _segmentDictionary.Clear();
             _controlDictionary.Clear();
             IsTemplateLoaded = false;
@@ -432,6 +432,7 @@
 
             if (shouldDisplayMessage)
             {
+                _logger.SetLogEntryType(LogEntryType.Reset);
                 _logger.Log(MsgTemplateHasBeenReset,
                             _textReader.FileName);
             }
@@ -480,9 +481,11 @@
             CurrentSegment = segmentName is null ? string.Empty : segmentName;
             LineNumber = 0;
 
-            if (segmentName is not null && _controlDictionary.ContainsKey(CurrentSegment))
+            if (_controlDictionary.ContainsKey(CurrentSegment))
             {
                 _controlDictionary[CurrentSegment].IsFirstTime = true;
+                _logger.Log(MsgSegmentHasBeenReset,
+                            CurrentSegment);
             }
             else
             {
@@ -637,7 +640,7 @@
                 _logger.Log(MsgTemplateFileIsEmpty,
                             TemplateFilePath);
                 IsTemplateLoaded = false;
-                IsOutputFileWritten = true;
+                IsOutputFileWritten = false;
             }
             else
             {

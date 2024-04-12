@@ -1,0 +1,42 @@
+﻿namespace TextTemplateProcessor.TestShared
+{
+    public enum MethodCall
+    {
+        DefaultSegmentNameGenerator_Next,
+        DefaultSegmentNameGenerator_Reset,
+        FileAndDirectoryService_CreateDirectory,
+        FileAndDirectoryService_GetDirectoryName,
+        FileAndDirectoryService_GetFileName,
+        FileAndDirectoryService_ReadTextFile,
+        FileAndDirectoryService_WriteTextFile,
+        IndentProcessor_IsValidIndentValue,
+        IndentProcessor_IsValidTabSizeValue,
+        IndentProcessor_Reset,
+        IndentProcessor_SetTabSize,
+        Locater_CurrentSegment_Getter,
+        Locater_CurrentSegment_Setter,
+        Locater_LineNumber_Getter,
+        Locater_LineNumber_Setter,
+        Locater_Reset,
+        Logger_Log_FirstMessage,
+        Logger_Log_Message,
+        Logger_Log_SecondMessage,
+        Logger_SetLogEntryType_Generating,
+        Logger_SetLogEntryType_Loading,
+        Logger_SetLogEntryType_Reset,
+        Logger_SetLogEntryType_Setup,
+        Logger_SetLogEntryType_Writing,
+        NameValidater_IsValidName,
+        NameValidater_IsValidName_FirstName,
+        NameValidater_IsValidName_SecondName,
+        PathValidater_ValidateFullPath,
+        TemplateLoader_LoadTemplate,
+        TextReader_GetFileName,
+        TextReader_GetFullFilePath,
+        TextReader_ReadTextFile,
+        TextReader_SetFilePath,
+        TextWriter_WriteTextFile,
+        TokenProcessor_ClearTokens,
+        TokenProcessor_SetTokenDelimiters
+    }
+}
