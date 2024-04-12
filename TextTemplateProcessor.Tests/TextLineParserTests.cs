@@ -301,6 +301,7 @@
         public void TextLineParser_ConstructWithNullLogger_ThrowsException()
         {
             // Arrange
+            InitializeMocks();
             string expected = GetNullDependencyMessage(ClassNames.TextLineParserClass,
                                                        ServiceNames.LoggerService,
                                                        ServiceParameterNames.LoggerParameter);
@@ -311,12 +312,14 @@
                 .Should()
                 .Throw<ArgumentNullException>()
                 .WithMessage(expected);
+            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
         public void TextLineParser_ConstructWithNullTokenProcessor_ThrowsException()
         {
             // Arrange
+            InitializeMocks();
             string expected = GetNullDependencyMessage(ClassNames.TextLineParserClass,
                                                        ServiceNames.TokenProcessorService,
                                                        ServiceParameterNames.TokenProcessorParameter);
@@ -327,12 +330,14 @@
                 .Should()
                 .Throw<ArgumentNullException>()
                 .WithMessage(expected);
+            MocksVerifyNoOtherCalls();
         }
 
         [Fact]
         public void TextLineParser_ConstructWithValidDependencies_ShouldNotThrow()
         {
             // Arrange
+            InitializeMocks();
             Action action = () => GetTextLineParser();
 
             // Act/Assert

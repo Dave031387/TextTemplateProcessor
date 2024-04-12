@@ -67,6 +67,12 @@
                     }
                 }
 
+                firstCallOrder
+                    .Should()
+                    .BePositive($"the call order count for {firstCallName} should be greater than 0");
+                secondCallOrder
+                    .Should()
+                    .BePositive($"the call order count for {secondCallName} should be greater than 0");
                 secondCallOrder
                     .Should()
                     .BeGreaterThan(firstCallOrder, $"{secondCallName} should be called after {firstCallName}");

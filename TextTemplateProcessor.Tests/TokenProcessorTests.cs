@@ -5,6 +5,7 @@
         private readonly Mock<ILocater> _locater = new();
         private readonly Mock<ILogger> _logger = new();
         private readonly Mock<INameValidater> _nameValidater = new();
+        private readonly MethodCallOrderVerifier _verifier = new();
 
         [Fact]
         public void ClearTokens_TokenDictionaryContainsTokens_ClearsTheTokenDictionary()
@@ -35,9 +36,7 @@
             string token = GenerateToken(tokenName);
             string text = $"text {token} text {token} text";
             string expected = $"text {token} text {token} text";
-            _nameValidater
-                .Setup(x => x.IsValidName(tokenName))
-                .Returns(true)
+            _nameValidater.Setup(x => x.IsValidName(tokenName)).Returns(true).Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName))
                 .Verifiable(Times.Exactly(2));
             TokenProcessor processor = GetTokenProcessor();
 
@@ -108,11 +107,14 @@
             _nameValidater
                 .Setup(x => x.IsValidName(tokenName1))
                 .Returns(true)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName_FirstName))
                 .Verifiable(Times.Once);
             _nameValidater
                 .Setup(x => x.IsValidName(tokenName2))
                 .Returns(true)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName_SecondName))
                 .Verifiable(Times.Once);
+            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName_FirstName, MethodCall.NameValidater_IsValidName_SecondName);
             TokenProcessor processor = GetTokenProcessor();
 
             // Act
@@ -147,9 +149,7 @@
             string token = GenerateToken(tokenName);
             string text = $"{text1}{token}{text2}";
             string expected = $"{text1}{token}{text2}";
-            _nameValidater
-                .Setup(x => x.IsValidName(tokenName))
-                .Returns(true)
+            _nameValidater.Setup(x => x.IsValidName(tokenName)).Returns(true).Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName))
                 .Verifiable(Times.Once);
             TokenProcessor processor = GetTokenProcessor();
 
@@ -229,9 +229,7 @@
             string token = GenerateToken(paddedName);
             string text = $"text{token}text";
             string expected = $"text{token}text";
-            _nameValidater
-                .Setup(x => x.IsValidName(tokenName))
-                .Returns(true)
+            _nameValidater.Setup(x => x.IsValidName(tokenName)).Returns(true).Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName))
                 .Verifiable(Times.Once);
             TokenProcessor processor = GetTokenProcessor();
 
@@ -263,10 +261,13 @@
             _nameValidater
                 .Setup(x => x.IsValidName(tokenName))
                 .Returns(false)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(x => x.Log(MsgTokenHasInvalidName, tokenName, null))
+                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_Message))
                 .Verifiable(Times.Once);
+            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName, MethodCall.Logger_Log_Message);
             TokenProcessor processor = GetTokenProcessor();
 
             // Act
@@ -316,10 +317,13 @@
             _locater
                 .Setup(x => x.CurrentSegment)
                 .Returns(segmentName)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter, null, true))
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(x => x.Log(MsgTokenDictionaryIsEmpty, segmentName, null))
+                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_Message))
                 .Verifiable(Times.Once);
+            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Getter, MethodCall.Logger_Log_Message);
             TokenProcessor processor = GetTokenProcessor();
             Dictionary<string, string> tokenValues = new();
 
@@ -339,10 +343,13 @@
             _locater
                 .Setup(x => x.CurrentSegment)
                 .Returns(segmentName)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter, null, true))
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(x => x.Log(MsgTokenDictionaryIsNull, segmentName, null))
+                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_Message))
                 .Verifiable(Times.Once);
+            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Getter, MethodCall.Logger_Log_Message);
             TokenProcessor processor = GetTokenProcessor();
 
             // Act
@@ -362,14 +369,19 @@
             _locater
                 .Setup(x => x.CurrentSegment)
                 .Returns(segmentName)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter, null, true))
                 .Verifiable(Times.AtLeastOnce);
             _nameValidater
                 .Setup(x => x.IsValidName(tokenName))
                 .Returns(false)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(x => x.Log(MsgTokenDictionaryContainsInvalidTokenName, segmentName, tokenName))
+                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_Message))
                 .Verifiable(Times.Once);
+            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName, MethodCall.Locater_CurrentSegment_Getter);
+            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Getter, MethodCall.Logger_Log_Message);
             TokenProcessor processor = GetTokenProcessor();
             Dictionary<string, string> tokenValues = new()
             {
@@ -393,14 +405,19 @@
             _locater
                 .Setup(x => x.CurrentSegment)
                 .Returns(segmentName)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter, null, true))
                 .Verifiable(Times.AtLeastOnce);
             _nameValidater
                 .Setup(x => x.IsValidName(tokenName))
                 .Returns(true)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(x => x.Log(MsgTokenWithEmptyValue, segmentName, tokenName))
+                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_Message))
                 .Verifiable(Times.Once);
+            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName, MethodCall.Locater_CurrentSegment_Getter);
+            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Getter, MethodCall.Logger_Log_Message);
             TokenProcessor processor = GetTokenProcessor();
             processor.TokenDictionary.Add(tokenName, "test");
             Dictionary<string, string> tokenValues = new()
@@ -425,9 +442,7 @@
             InitializeMocks();
             string tokenName = "Token2";
             string expected = "new value";
-            _nameValidater
-                .Setup(x => x.IsValidName(tokenName))
-                .Returns(true)
+            _nameValidater.Setup(x => x.IsValidName(tokenName)).Returns(true).Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName))
                 .Verifiable(Times.Once);
             TokenProcessor processor = GetTokenProcessor();
             processor.TokenDictionary.Add("Token1", "test1");
@@ -457,14 +472,19 @@
             _locater
                 .Setup(x => x.CurrentSegment)
                 .Returns(segmentName)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter, null, true))
                 .Verifiable(Times.AtLeastOnce);
             _nameValidater
                 .Setup(x => x.IsValidName(tokenName))
                 .Returns(true)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(x => x.Log(MsgTokenWithNullValue, segmentName, tokenName))
+                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_Message))
                 .Verifiable(Times.Once);
+            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName, MethodCall.Locater_CurrentSegment_Getter);
+            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Getter, MethodCall.Logger_Log_Message);
             TokenProcessor processor = GetTokenProcessor();
             processor.TokenDictionary.Add(tokenName, "test");
             Dictionary<string, string> tokenValues = new()
@@ -492,14 +512,19 @@
             _locater
                 .Setup(x => x.CurrentSegment)
                 .Returns(segmentName)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter, null, true))
                 .Verifiable(Times.AtLeastOnce);
             _nameValidater
                 .Setup(x => x.IsValidName(tokenName))
                 .Returns(true)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(x => x.Log(MsgUnknownTokenName, segmentName, tokenName))
+                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_Message))
                 .Verifiable(Times.Once);
+            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName, MethodCall.Locater_CurrentSegment_Getter);
+            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Getter, MethodCall.Logger_Log_Message);
             TokenProcessor processor = GetTokenProcessor();
             Dictionary<string, string> tokenValues = new()
             {
@@ -540,38 +565,57 @@
             _locater
                 .Setup(x => x.CurrentSegment)
                 .Returns(segmentName)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter, null, true))
                 .Verifiable(Times.AtLeast(2));
             _nameValidater
                 .Setup(x => x.IsValidName(tokenName3))
                 .Returns(false)
-                .Verifiable(Times.Once);
-            _nameValidater
-                .Setup(x => x.IsValidName(tokenName5))
-                .Returns(true)
-                .Verifiable(Times.Once);
-            _nameValidater
-                .Setup(x => x.IsValidName(tokenName6))
-                .Returns(true)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName_FirstName))
                 .Verifiable(Times.Once);
             _nameValidater
                 .Setup(x => x.IsValidName(tokenName4))
                 .Returns(true)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName_SecondName))
                 .Verifiable(Times.Once);
-            _logger
-                .Setup(x => x.Log(MsgTokenMissingEndDelimiter, null, null))
+            _nameValidater
+                .Setup(x => x.IsValidName(tokenName5))
+                .Returns(true)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName_ThirdName))
+                .Verifiable(Times.Once);
+            _nameValidater
+                .Setup(x => x.IsValidName(tokenName6))
+                .Returns(true)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName_FourthName))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(x => x.Log(MsgMissingTokenName, null, null))
+                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_FirstMessage))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(x => x.Log(MsgTokenHasInvalidName, tokenName3, null))
+                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_SecondMessage))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(x => x.Log(MsgTokenNameNotFound, segmentName, tokenName5))
+                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_ThirdMessage))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(x => x.Log(MsgTokenValueIsEmpty, segmentName, tokenName6))
+                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_FourthMessage))
                 .Verifiable(Times.Once);
+            _logger
+                .Setup(x => x.Log(MsgTokenMissingEndDelimiter, null, null))
+                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_FifthMessage))
+                .Verifiable(Times.Once);
+            _verifier.DefineExpectedCallOrder(MethodCall.Logger_Log_FirstMessage, MethodCall.NameValidater_IsValidName_FirstName);
+            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName_FirstName, MethodCall.Logger_Log_SecondMessage);
+            _verifier.DefineExpectedCallOrder(MethodCall.Logger_Log_SecondMessage, MethodCall.NameValidater_IsValidName_SecondName);
+            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName_SecondName, MethodCall.NameValidater_IsValidName_ThirdName);
+            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName_ThirdName, MethodCall.Logger_Log_ThirdMessage);
+            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Getter, MethodCall.Logger_Log_ThirdMessage);
+            _verifier.DefineExpectedCallOrder(MethodCall.Logger_Log_ThirdMessage, MethodCall.NameValidater_IsValidName_FourthName);
+            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName_FourthName, MethodCall.Logger_Log_FourthMessage);
+            _verifier.DefineExpectedCallOrder(MethodCall.Logger_Log_FourthMessage, MethodCall.Logger_Log_FifthMessage);
             TokenProcessor processor = GetTokenProcessor();
             processor.TokenDictionary.Add(tokenName3, tokenValue3);
             processor.TokenDictionary.Add(tokenName2, tokenValue2);
@@ -663,10 +707,13 @@
             _nameValidater
                 .Setup(x => x.IsValidName(tokenName))
                 .Returns(false)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(x => x.Log(MsgTokenHasInvalidName, tokenName, null))
+                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_Message))
                 .Verifiable(Times.Once);
+            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName, MethodCall.Logger_Log_Message);
             TokenProcessor processor = GetTokenProcessor();
             string expected = $"Text line {TokenStart}{tokenName}{TokenEnd} end";
             processor.TokenDictionary.Add(tokenName, "value");
@@ -712,14 +759,19 @@
             _locater
                 .Setup(x => x.CurrentSegment)
                 .Returns(segmentName)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter, null, true))
                 .Verifiable(Times.AtLeastOnce);
             _nameValidater
                 .Setup(x => x.IsValidName(tokenName))
                 .Returns(true)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(x => x.Log(MsgTokenNameNotFound, segmentName, tokenName))
+                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_Message))
                 .Verifiable(Times.Once);
+            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName, MethodCall.Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Getter, MethodCall.Logger_Log_Message);
             TokenProcessor processor = GetTokenProcessor();
             string expected = $"Text line {TokenStart}{tokenName}{TokenEnd} end";
             processor.TokenDictionary.Add("anotherToken", "value");
@@ -744,14 +796,19 @@
             _locater
                 .Setup(x => x.CurrentSegment)
                 .Returns(segmentName)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter, null, true))
                 .Verifiable(Times.AtLeastOnce);
             _nameValidater
                 .Setup(x => x.IsValidName(tokenName))
                 .Returns(true)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(x => x.Log(MsgTokenValueIsEmpty, segmentName, tokenName))
+                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_Message))
                 .Verifiable(Times.Once);
+            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName, MethodCall.Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Getter, MethodCall.Logger_Log_Message);
             TokenProcessor processor = GetTokenProcessor();
             string text = $"Text line {TokenStart}{tokenName}{TokenEnd} end";
             string expected = "Text line  end";
@@ -868,6 +925,7 @@
         public void TokenProcessor_ConstructWithNullLocater_ThrowsException()
         {
             // Arrange
+            InitializeMocks();
             Action action = () => { TokenProcessor processor = new(_logger.Object, null!, _nameValidater.Object); };
             string expected = GetNullDependencyMessage(ClassNames.TokenProcessorClass,
                                                        ServiceNames.LocaterService,
@@ -885,6 +943,7 @@
         public void TokenProcessor_ConstructWithNullLogger_ThrowsException()
         {
             // Arrange
+            InitializeMocks();
             Action action = () => { TokenProcessor processor = new(null!, _locater.Object, _nameValidater.Object); };
             string expected = GetNullDependencyMessage(ClassNames.TokenProcessorClass,
                                                        ServiceNames.LoggerService,
@@ -902,6 +961,7 @@
         public void TokenProcessor_ConstructWithNullNameValidater_ThrowsException()
         {
             // Arrange
+            InitializeMocks();
             Action action = () => { TokenProcessor processor = new(_logger.Object, _locater.Object, null!); };
             string expected = GetNullDependencyMessage(ClassNames.TokenProcessorClass,
                                                        ServiceNames.NameValidaterService,
@@ -945,6 +1005,7 @@
             _locater.Reset();
             _logger.Reset();
             _nameValidater.Reset();
+            _verifier.Reset();
         }
 
         private void MocksVerifyNoOtherCalls()
@@ -1029,6 +1090,7 @@
             }
 
             MocksVerifyNoOtherCalls();
+            _verifier.Verify();
         }
     }
 }
