@@ -15,8 +15,6 @@
         private const int MaxTabSize = 9;
         private const int MinIndentValue = -9;
         private const int MinTabSize = 1;
-        private readonly ILocater _locater;
-        private readonly ILogger _logger;
         private bool _isCurrentStateSaved = false;
         private int _saveCurrentIndent = 0;
         private int _saveTabSize = 0;
@@ -57,8 +55,8 @@
                                         ServiceNames.LocaterService,
                                         ServiceParameterNames.LocaterParameter);
 
-            _logger = logger;
-            _locater = locater;
+            Logger = logger;
+            Locater = locater;
             CurrentIndent = 0;
             TabSize = DefaultTabSize;
         }
@@ -79,6 +77,10 @@
         /// The value returned is the number of spaces in a single tab.
         /// </remarks>
         public int TabSize { get; private set; }
+
+        private ILocater Locater { get; init; }
+
+        private ILogger Logger { get; init; }
 
         /// <summary>
         /// Determines the first time indent value for the given text item.
@@ -106,8 +108,8 @@
 
                 if (indent < 0)
                 {
-                    _logger.Log(MsgFirstTimeIndentHasBeenTruncated,
-                                _locater.CurrentSegment);
+                    Logger.Log(MsgFirstTimeIndentHasBeenTruncated,
+                               Locater.CurrentSegment);
                     indent = 0;
                 }
 
@@ -145,8 +147,8 @@
 
             if (indent < 0)
             {
-                _logger.Log(MsgLeftIndentHasBeenTruncated,
-                            _locater.CurrentSegment);
+                Logger.Log(MsgLeftIndentHasBeenTruncated,
+                           Locater.CurrentSegment);
                 indent = 0;
             }
 
@@ -182,8 +184,8 @@
             {
                 if (indentValue is < MinIndentValue or > MaxIndentValue)
                 {
-                    _logger.Log(MsgIndentValueOutOfRange,
-                                indentValue.ToString());
+                    Logger.Log(MsgIndentValueOutOfRange,
+                               indentValue.ToString());
                 }
                 else
                 {
@@ -193,8 +195,8 @@
             }
             else
             {
-                _logger.Log(MsgIndentValueMustBeValidNumber,
-                            stringValue);
+                Logger.Log(MsgIndentValueMustBeValidNumber,
+                           stringValue);
             }
 
             indent = 0;
@@ -224,8 +226,8 @@
             {
                 if (tabValue is < MinTabSize or > MaxTabSize)
                 {
-                    _logger.Log(MsgTabSizeValueOutOfRange,
-                                tabValue.ToString());
+                    Logger.Log(MsgTabSizeValueOutOfRange,
+                               tabValue.ToString());
                 }
                 else
                 {
@@ -235,8 +237,8 @@
             }
             else
             {
-                _logger.Log(MsgTabSizeValueMustBeValidNumber,
-                            stringValue);
+                Logger.Log(MsgTabSizeValueMustBeValidNumber,
+                           stringValue);
             }
 
             tabSize = 0;
@@ -293,14 +295,14 @@
         {
             if (tabSize < MinTabSize)
             {
-                _logger.Log(MsgTabSizeTooSmall,
-                            MinTabSize.ToString());
+                Logger.Log(MsgTabSizeTooSmall,
+                           MinTabSize.ToString());
                 TabSize = MinTabSize;
             }
             else if (tabSize > MaxTabSize)
             {
-                _logger.Log(MsgTabSizeTooLarge,
-                            MaxTabSize.ToString());
+                Logger.Log(MsgTabSizeTooLarge,
+                           MaxTabSize.ToString());
                 TabSize = MaxTabSize;
             }
             else

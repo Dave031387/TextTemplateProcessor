@@ -12,12 +12,6 @@
     /// </summary>
     public abstract class TextTemplateConsoleBase : TextTemplateProcessor
     {
-        private readonly IConsoleReader _consoleReader;
-        private readonly IFileAndDirectoryService _fileAndDirectoryService;
-        private readonly ILogger _logger;
-        private readonly IMessageWriter _messageWriter;
-        private readonly IPathValidater _pathValidater;
-
         /// <summary>
         /// Default constructor that creates an instance of the
         /// <see cref="TextTemplateConsoleBase" /> class.
@@ -26,7 +20,14 @@
                                                 ServiceLocater.Current.Get<IConsoleReader>(),
                                                 ServiceLocater.Current.Get<IMessageWriter>(),
                                                 ServiceLocater.Current.Get<IFileAndDirectoryService>(),
-                                                ServiceLocater.Current.Get<IPathValidater>())
+                                                ServiceLocater.Current.Get<IPathValidater>(),
+                                                ServiceLocater.Current.Get<IDefaultSegmentNameGenerator>(),
+                                                ServiceLocater.Current.Get<IIndentProcessor>(),
+                                                ServiceLocater.Current.Get<ILocater>(),
+                                                ServiceLocater.Current.Get<ITemplateLoader>(),
+                                                ServiceLocater.Current.Get<ITextReader>(),
+                                                ServiceLocater.Current.Get<ITextWriter>(),
+                                                ServiceLocater.Current.Get<ITokenProcessor>())
         {
         }
 
@@ -37,8 +38,21 @@
         /// <param name="templateFilePath">
         /// The file path (relative or absolute) of the text template file.
         /// </param>
-        public TextTemplateConsoleBase(string templateFilePath) : this()
-            => LoadTemplate(templateFilePath);
+        public TextTemplateConsoleBase(string templateFilePath) : this(templateFilePath,
+                                                                       ServiceLocater.Current.Get<ILogger>(),
+                                                                       ServiceLocater.Current.Get<IConsoleReader>(),
+                                                                       ServiceLocater.Current.Get<IMessageWriter>(),
+                                                                       ServiceLocater.Current.Get<IFileAndDirectoryService>(),
+                                                                       ServiceLocater.Current.Get<IPathValidater>(),
+                                                                       ServiceLocater.Current.Get<IDefaultSegmentNameGenerator>(),
+                                                                       ServiceLocater.Current.Get<IIndentProcessor>(),
+                                                                       ServiceLocater.Current.Get<ILocater>(),
+                                                                       ServiceLocater.Current.Get<ITemplateLoader>(),
+                                                                       ServiceLocater.Current.Get<ITextReader>(),
+                                                                       ServiceLocater.Current.Get<ITextWriter>(),
+                                                                       ServiceLocater.Current.Get<ITokenProcessor>())
+        {
+        }
 
         /// <summary>
         /// Constructor that creates an instance of the <see cref="TextTemplateConsoleBase" /> class
@@ -61,6 +75,31 @@
         /// A reference to a path validater object that is used for validating file and directory
         /// paths.
         /// </param>
+        /// <param name="defaultSegmentNameGenerator">
+        /// A reference to a default segment name generator object.
+        /// </param>
+        /// <param name="indentProcessor">
+        /// A reference to an indent processor object used for managing indentation of the text that
+        /// is generated from a text template file.
+        /// </param>
+        /// <param name="locater">
+        /// A reference to a locater object used for keeping track of the current location being
+        /// processed in a text template file.
+        /// </param>
+        /// <param name="templateLoader">
+        /// A reference to a template loader object used for parsing and loading a text template
+        /// file so that it can be processed.
+        /// </param>
+        /// <param name="textReader">
+        /// A reference to a text reader object used for reading text files.
+        /// </param>
+        /// <param name="textWriter">
+        /// A reference to a text writer object used for writing text files.
+        /// </param>
+        /// <param name="tokenProcessor">
+        /// A reference to a token processor object used for parsing, extracting, and managing
+        /// tokens in a text template file.
+        /// </param>
         /// <exception cref="ArgumentNullException">
         /// Exception is thrown if any of the dependencies passed into the constructor are
         /// <see langword="null" />.
@@ -69,13 +108,22 @@
                                          IConsoleReader consoleReader,
                                          IMessageWriter messageWriter,
                                          IFileAndDirectoryService fileAndDirectoryService,
-                                         IPathValidater pathValidater)
+                                         IPathValidater pathValidater,
+                                         IDefaultSegmentNameGenerator defaultSegmentNameGenerator,
+                                         IIndentProcessor indentProcessor,
+                                         ILocater locater,
+                                         ITemplateLoader templateLoader,
+                                         ITextReader textReader,
+                                         ITextWriter textWriter,
+                                         ITokenProcessor tokenProcessor) : base(logger,
+                                                                                defaultSegmentNameGenerator,
+                                                                                indentProcessor,
+                                                                                locater,
+                                                                                templateLoader,
+                                                                                textReader,
+                                                                                textWriter,
+                                                                                tokenProcessor)
         {
-            Utility.NullDependencyCheck(logger,
-                                        ClassNames.TextTemplateConsoleBaseClass,
-                                        ServiceNames.LoggerService,
-                                        ServiceParameterNames.LoggerParameter);
-
             Utility.NullDependencyCheck(consoleReader,
                                         ClassNames.TextTemplateConsoleBaseClass,
                                         ServiceNames.ConsoleReaderService,
@@ -96,24 +144,113 @@
                                         ServiceNames.PathValidaterService,
                                         ServiceParameterNames.PathValidaterParameter);
 
-            _logger = logger;
-            _logger.SetLogEntryType(LogEntryType.Setup);
-            _consoleReader = consoleReader;
-            _messageWriter = messageWriter;
-            _fileAndDirectoryService = fileAndDirectoryService;
-            _pathValidater = pathValidater;
-            OutputDirectory = string.Empty;
+            ConsoleReader = consoleReader;
+            MessageWriter = messageWriter;
+            FileAndDirectoryService = fileAndDirectoryService;
+            PathValidater = pathValidater;
+            GetSolutionDirectoryPath();
+        }
 
-            try
-            {
-                SolutionDirectory = _fileAndDirectoryService.GetSolutionDirectory();
-            }
-            catch (Exception ex)
-            {
-                _logger.Log(MsgErrorWhenLocatingSolutionDirectory,
-                            ex.Message);
-                SolutionDirectory = string.Empty;
-            }
+        /// <summary>
+        /// Constructor that creates an instance of the <see cref="TextTemplateConsoleBase" /> class
+        /// and initializes dependencies.
+        /// </summary>
+        /// <param name="templateFilePath">
+        /// The file path (relative or absolute) of the text template file.
+        /// </param>
+        /// <param name="logger">
+        /// A reference to a logger object that is used for logging messages.
+        /// </param>
+        /// <param name="consoleReader">
+        /// A reference to a console reader object for reading text from the <see cref="Console" />.
+        /// </param>
+        /// <param name="messageWriter">
+        /// A reference to a console writer object that is used for writing messages to the
+        /// <see cref="Console" />.
+        /// </param>
+        /// <param name="fileAndDirectoryService">
+        /// A reference to a path service object used for performing file I/O functions.
+        /// </param>
+        /// <param name="pathValidater">
+        /// A reference to a path validater object that is used for validating file and directory
+        /// paths.
+        /// </param>
+        /// <param name="defaultSegmentNameGenerator">
+        /// A reference to a default segment name generator object.
+        /// </param>
+        /// <param name="indentProcessor">
+        /// A reference to an indent processor object used for managing indentation of the text that
+        /// is generated from a text template file.
+        /// </param>
+        /// <param name="locater">
+        /// A reference to a locater object used for keeping track of the current location being
+        /// processed in a text template file.
+        /// </param>
+        /// <param name="templateLoader">
+        /// A reference to a template loader object used for parsing and loading a text template
+        /// file so that it can be processed.
+        /// </param>
+        /// <param name="textReader">
+        /// A reference to a text reader object used for reading text files.
+        /// </param>
+        /// <param name="textWriter">
+        /// A reference to a text writer object used for writing text files.
+        /// </param>
+        /// <param name="tokenProcessor">
+        /// A reference to a token processor object used for parsing, extracting, and managing
+        /// tokens in a text template file.
+        /// </param>
+        /// <exception cref="ArgumentNullException">
+        /// Exception is thrown if any of the dependencies passed into the constructor are
+        /// <see langword="null" />.
+        /// </exception>
+        internal TextTemplateConsoleBase(string templateFilePath,
+                                         ILogger logger,
+                                         IConsoleReader consoleReader,
+                                         IMessageWriter messageWriter,
+                                         IFileAndDirectoryService fileAndDirectoryService,
+                                         IPathValidater pathValidater,
+                                         IDefaultSegmentNameGenerator defaultSegmentNameGenerator,
+                                         IIndentProcessor indentProcessor,
+                                         ILocater locater,
+                                         ITemplateLoader templateLoader,
+                                         ITextReader textReader,
+                                         ITextWriter textWriter,
+                                         ITokenProcessor tokenProcessor) : base(logger,
+                                                                                defaultSegmentNameGenerator,
+                                                                                indentProcessor,
+                                                                                locater,
+                                                                                templateLoader,
+                                                                                textReader,
+                                                                                textWriter,
+                                                                                tokenProcessor)
+        {
+            Utility.NullDependencyCheck(consoleReader,
+                                        ClassNames.TextTemplateConsoleBaseClass,
+                                        ServiceNames.ConsoleReaderService,
+                                        ServiceParameterNames.ConsoleReaderParameter);
+
+            Utility.NullDependencyCheck(messageWriter,
+                                        ClassNames.TextTemplateConsoleBaseClass,
+                                        ServiceNames.MessageWriterService,
+                                        ServiceParameterNames.MessageWriterParameter);
+
+            Utility.NullDependencyCheck(fileAndDirectoryService,
+                                        ClassNames.TextTemplateConsoleBaseClass,
+                                        ServiceNames.FileAndDirectoryService,
+                                        ServiceParameterNames.FileAndDirectoryServiceParameter);
+
+            Utility.NullDependencyCheck(pathValidater,
+                                        ClassNames.TextTemplateConsoleBaseClass,
+                                        ServiceNames.PathValidaterService,
+                                        ServiceParameterNames.PathValidaterParameter);
+
+            ConsoleReader = consoleReader;
+            MessageWriter = messageWriter;
+            FileAndDirectoryService = fileAndDirectoryService;
+            PathValidater = pathValidater;
+            GetSolutionDirectoryPath();
+            LoadTemplate(templateFilePath);
         }
 
         /// <summary>
@@ -122,13 +259,21 @@
         /// <remarks>
         /// An empty string will be returned if no directory has been set.
         /// </remarks>
-        public string OutputDirectory { get; private set; }
+        public string OutputDirectory { get; private set; } = string.Empty;
 
         /// <summary>
         /// Gets the directory where the solution file is located for the current code project that
         /// is using this class library.
         /// </summary>
-        public string SolutionDirectory { get; private set; }
+        public string SolutionDirectory { get; private set; } = string.Empty;
+
+        private IConsoleReader ConsoleReader { get; init; }
+
+        private IFileAndDirectoryService FileAndDirectoryService { get; init; }
+
+        private IMessageWriter MessageWriter { get; init; }
+
+        private IPathValidater PathValidater { get; init; }
 
         /// <summary>
         /// Clears the contents of the directory that is pointed to by the
@@ -140,28 +285,28 @@
         /// </remarks>
         public void ClearOutputDirectory()
         {
-            _logger.SetLogEntryType(LogEntryType.Reset);
+            Logger.SetLogEntryType(LogEntryType.Reset);
 
             if (string.IsNullOrWhiteSpace(OutputDirectory) is false)
             {
-                _messageWriter.WriteLine(MsgClearTheOutputDirectory, OutputDirectory);
+                MessageWriter.WriteLine(MsgClearTheOutputDirectory, OutputDirectory);
                 string response = ShowContinuationPrompt(MsgYesNoPrompt);
 
                 if (response.ToUpper() == "Y")
                 {
                     try
                     {
-                        _fileAndDirectoryService.ClearDirectory(OutputDirectory);
-                        _logger.Log(MsgOutputDirectoryCleared);
+                        FileAndDirectoryService.ClearDirectory(OutputDirectory);
+                        Logger.Log(MsgOutputDirectoryCleared);
                     }
                     catch (Exception ex)
                     {
-                        _logger.Log(MsgErrorWhenClearingOutputDirectory,
-                                    ex.Message);
+                        Logger.Log(MsgErrorWhenClearingOutputDirectory,
+                                   ex.Message);
                     }
                 }
 
-                _logger.WriteLogEntries();
+                Logger.WriteLogEntries();
             }
         }
 
@@ -173,22 +318,22 @@
         /// </param>
         public new void LoadTemplate(string filePath)
         {
-            _logger.SetLogEntryType(LogEntryType.Loading);
+            Logger.SetLogEntryType(LogEntryType.Loading);
 
             try
             {
-                string fullFilePath = _fileAndDirectoryService.GetFullPath(filePath, SolutionDirectory, true);
-                string templateFilePath = _pathValidater.ValidateFullPath(fullFilePath, true, true);
+                string fullFilePath = FileAndDirectoryService.GetFullPath(filePath, SolutionDirectory, true);
+                string templateFilePath = PathValidater.ValidateFullPath(fullFilePath, true, true);
                 base.LoadTemplate(templateFilePath);
             }
             catch (Exception ex)
             {
-                _logger.Log(MsgUnableToLoadTemplateFile,
-                            ex.Message);
+                Logger.Log(MsgUnableToLoadTemplateFile,
+                           ex.Message);
                 ResetAll();
             }
 
-            _logger.WriteLogEntries();
+            Logger.WriteLogEntries();
         }
 
         /// <summary>
@@ -200,21 +345,21 @@
         /// </param>
         public void SetOutputDirectory(string directoryPath)
         {
-            _logger.SetLogEntryType(LogEntryType.Setup);
+            Logger.SetLogEntryType(LogEntryType.Setup);
 
             try
             {
-                _pathValidater.ValidatePath(directoryPath);
-                OutputDirectory = _fileAndDirectoryService.CreateDirectory(directoryPath, SolutionDirectory);
+                PathValidater.ValidatePath(directoryPath);
+                OutputDirectory = FileAndDirectoryService.CreateDirectory(directoryPath, SolutionDirectory);
             }
             catch (Exception ex)
             {
-                _logger.Log(MsgErrorWhenCreatingOutputDirectory,
-                            ex.Message);
+                Logger.Log(MsgErrorWhenCreatingOutputDirectory,
+                           ex.Message);
                 OutputDirectory = string.Empty;
             }
 
-            _logger.WriteLogEntries();
+            Logger.WriteLogEntries();
         }
 
         /// <summary>
@@ -233,20 +378,19 @@
         /// </returns>
         public string ShowContinuationPrompt(string message = MsgContinuationPrompt)
         {
-            _logger.WriteLogEntries();
-            _logger.SetLogEntryType(LogEntryType.Setup);
-            _messageWriter.WriteLine("\n" + message + "\n");
-            string userResponse;
+            Logger.WriteLogEntries();
+            Logger.SetLogEntryType(LogEntryType.Setup);
+            MessageWriter.WriteLine("\n" + message + "\n");
+            string userResponse = string.Empty;
 
             try
             {
-                userResponse = _consoleReader.ReadLine();
+                userResponse = ConsoleReader.ReadLine();
             }
             catch (Exception ex)
             {
-                _logger.Log(MsgErrorWhileReadingUserResponse,
-                            ex.Message);
-                return string.Empty;
+                Logger.Log(MsgErrorWhileReadingUserResponse,
+                           ex.Message);
             }
 
             return userResponse ?? string.Empty;
@@ -266,31 +410,51 @@
         public new void WriteGeneratedTextToFile(string fileName, bool resetGeneratedText = true)
         {
             string filePath;
-            _logger.SetLogEntryType(LogEntryType.Writing);
+            Logger.SetLogEntryType(LogEntryType.Writing);
 
             if (string.IsNullOrWhiteSpace(OutputDirectory))
             {
-                _logger.Log(MsgOutputDirectoryNotSet);
+                Logger.Log(MsgOutputDirectoryNotSet);
             }
             else
             {
-                try
-                {
-                    filePath = string.IsNullOrWhiteSpace(fileName)
-                        ? OutputDirectory
-                        : _fileAndDirectoryService.CombineDirectoryAndFileName(OutputDirectory, fileName);
-                }
-                catch (Exception ex)
-                {
-                    _logger.Log(MsgErrorWhileConstructingFilePath,
-                                ex.Message);
-                    filePath = string.Empty;
-                }
-
+                filePath = GetOutputFilePath(fileName);
                 base.WriteGeneratedTextToFile(filePath, resetGeneratedText);
             }
 
-            _logger.WriteLogEntries();
+            Logger.WriteLogEntries();
+        }
+
+        private string GetOutputFilePath(string fileName)
+        {
+            try
+            {
+                return string.IsNullOrWhiteSpace(fileName)
+                    ? OutputDirectory
+                    : FileAndDirectoryService.CombineDirectoryAndFileName(OutputDirectory, fileName);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(MsgErrorWhileConstructingFilePath,
+                           ex.Message);
+                return string.Empty;
+            }
+        }
+
+        private void GetSolutionDirectoryPath()
+        {
+            Logger.SetLogEntryType(LogEntryType.Setup);
+
+            try
+            {
+                SolutionDirectory = FileAndDirectoryService.GetSolutionDirectory();
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(MsgErrorWhenLocatingSolutionDirectory,
+                           ex.Message);
+                SolutionDirectory = string.Empty;
+            }
         }
     }
 }

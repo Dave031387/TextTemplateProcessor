@@ -13,14 +13,6 @@
         internal readonly Dictionary<string, ControlItem> _controlDictionary = new();
         internal readonly List<string> _generatedText = new();
         internal readonly Dictionary<string, List<TextItem>> _segmentDictionary = new();
-        private readonly IDefaultSegmentNameGenerator _defaultSegmentNameGenerator;
-        private readonly IIndentProcessor _indentProcessor;
-        private readonly ILocater _locater;
-        private readonly ILogger _logger;
-        private readonly ITemplateLoader _templateLoader;
-        private readonly ITextReader _textReader;
-        private readonly ITextWriter _textWriter;
-        private readonly ITokenProcessor _tokenProcessor;
 
         /// <summary>
         /// Default constructor that creates an instance of the <see cref="TextTemplateProcessor" />
@@ -141,14 +133,14 @@
                                         ServiceNames.TokenProcessorService,
                                         ServiceParameterNames.TokenProcessorParameter);
 
-            _logger = logger;
-            _defaultSegmentNameGenerator = defaultSegmentNameGenerator;
-            _indentProcessor = indentProcessor;
-            _locater = locater;
-            _templateLoader = templateLoader;
-            _textReader = textReader;
-            _textWriter = textWriter;
-            _tokenProcessor = tokenProcessor;
+            Logger = logger;
+            DefaultSegmentNameGenerator = defaultSegmentNameGenerator;
+            IndentProcessor = indentProcessor;
+            Locater = locater;
+            TemplateLoader = templateLoader;
+            TextReader = textReader;
+            TextWriter = textWriter;
+            TokenProcessor = tokenProcessor;
         }
 
         /// <summary>
@@ -207,8 +199,8 @@
                                                                               textWriter,
                                                                               tokenProcessor)
         {
-            _logger.SetLogEntryType(LogEntryType.Setup);
-            _textReader.SetFilePath(templateFilePath);
+            Logger.SetLogEntryType(LogEntryType.Setup);
+            TextReader.SetFilePath(templateFilePath);
         }
 
         /// <summary>
@@ -218,15 +210,15 @@
         /// The indent value is the number of tabs that will get inserted at the beginning of the
         /// next generated text line.
         /// </remarks>
-        public int CurrentIndent => _indentProcessor.CurrentIndent;
+        public int CurrentIndent => IndentProcessor.CurrentIndent;
 
         /// <summary>
         /// Gets the name of the current segment that is being processed in the text template file.
         /// </summary>
         public string CurrentSegment
         {
-            get => _locater.CurrentSegment;
-            private set => _locater.CurrentSegment = value;
+            get => Locater.CurrentSegment;
+            private set => Locater.CurrentSegment = value;
         }
 
         /// <summary>
@@ -258,8 +250,8 @@
         /// </summary>
         public int LineNumber
         {
-            get => _locater.LineNumber;
-            private set => _locater.LineNumber = value;
+            get => Locater.LineNumber;
+            private set => Locater.LineNumber = value;
         }
 
         /// <summary>
@@ -268,7 +260,7 @@
         /// <remarks>
         /// The tab size is the number of space characters that make up one tab.
         /// </remarks>
-        public int TabSize => _indentProcessor.TabSize;
+        public int TabSize => IndentProcessor.TabSize;
 
         /// <summary>
         /// Gets the name of the text template file that is loaded into memory.
@@ -276,7 +268,7 @@
         /// <remarks>
         /// This will return an empty string if a template file hasn't yet been loaded.
         /// </remarks>
-        public string TemplateFileName => _textReader.FileName;
+        public string TemplateFileName => TextReader.FileName;
 
         /// <summary>
         /// Gets the full file path of the text template file that is loaded in memory.
@@ -284,7 +276,23 @@
         /// <remarks>
         /// This will return an empty string if a template file hasn't yet been loaded.
         /// </remarks>
-        public string TemplateFilePath => _textReader.FullFilePath;
+        public string TemplateFilePath => TextReader.FullFilePath;
+
+        internal IDefaultSegmentNameGenerator DefaultSegmentNameGenerator { get; init; }
+
+        internal IIndentProcessor IndentProcessor { get; init; }
+
+        internal ILocater Locater { get; init; }
+
+        internal ILogger Logger { get; init; }
+
+        internal ITemplateLoader TemplateLoader { get; init; }
+
+        internal ITextReader TextReader { get; init; }
+
+        internal ITextWriter TextWriter { get; init; }
+
+        internal ITokenProcessor TokenProcessor { get; init; }
 
         /// <summary>
         /// Generates the text lines for the given segment in the text template file.
@@ -302,28 +310,28 @@
         /// </remarks>
         public void GenerateSegment(string segmentName, Dictionary<string, string>? tokenValues = null)
         {
-            _logger.SetLogEntryType(LogEntryType.Generating);
+            Logger.SetLogEntryType(LogEntryType.Generating);
             CurrentSegment = segmentName is null ? string.Empty : segmentName;
             LineNumber = 0;
 
             if (SegmentCanBeGenerated(CurrentSegment))
             {
-                _logger.Log(MsgProcessingSegment,
-                            CurrentSegment);
+                Logger.Log(MsgProcessingSegment,
+                           CurrentSegment);
 
                 ControlItem controlItem = _controlDictionary[CurrentSegment];
 
                 if (tokenValues is not null)
                 {
-                    _tokenProcessor.LoadTokenValues(tokenValues);
+                    TokenProcessor.LoadTokenValues(tokenValues);
                 }
 
                 if (controlItem.ShouldGeneratePadSegment)
                 {
                     string saveSegmentName = CurrentSegment;
-                    _indentProcessor.SaveCurrentState();
+                    IndentProcessor.SaveCurrentState();
                     GenerateSegment(controlItem.PadSegment);
-                    _indentProcessor.RestoreCurrentState();
+                    IndentProcessor.RestoreCurrentState();
                     CurrentSegment = saveSegmentName;
                     LineNumber = 0;
                 }
@@ -331,7 +339,7 @@
                 if (controlItem.TabSize > 0)
                 {
                     SetTabSize(controlItem.TabSize);
-                    _logger.SetLogEntryType(LogEntryType.Generating);
+                    Logger.SetLogEntryType(LogEntryType.Generating);
                 }
 
                 foreach (TextItem textItem in _segmentDictionary[CurrentSegment])
@@ -354,12 +362,12 @@
         /// </remarks>
         public void LoadTemplate()
         {
-            _logger.SetLogEntryType(LogEntryType.Loading);
+            Logger.SetLogEntryType(LogEntryType.Loading);
 
             if (IsTemplateLoaded)
             {
-                _logger.Log(MsgAttemptToLoadMoreThanOnce,
-                            _textReader.FileName);
+                Logger.Log(MsgAttemptToLoadMoreThanOnce,
+                           TextReader.FileName);
             }
             else if (IsValidTemplateFilePath())
             {
@@ -367,7 +375,7 @@
             }
             else
             {
-                _logger.Log(MsgTemplateFilePathNotSet);
+                Logger.Log(MsgTemplateFilePathNotSet);
             }
         }
 
@@ -380,7 +388,7 @@
         /// </param>
         public void LoadTemplate(string filePath)
         {
-            _logger.SetLogEntryType(LogEntryType.Loading);
+            Logger.SetLogEntryType(LogEntryType.Loading);
 
             string lastFileName = TemplateFileName;
             string lastFilePath = TemplateFilePath;
@@ -389,16 +397,16 @@
             {
                 if (IsTemplateLoaded && TemplateFilePath == lastFilePath)
                 {
-                    _logger.Log(MsgAttemptToLoadMoreThanOnce,
-                                lastFileName);
+                    Logger.Log(MsgAttemptToLoadMoreThanOnce,
+                               lastFileName);
                 }
                 else
                 {
                     if ((IsOutputFileWritten || string.IsNullOrEmpty(lastFilePath)) is false)
                     {
-                        _logger.Log(MsgNextLoadRequestBeforeFirstIsWritten,
-                                    _textReader.FileName,
-                                    lastFileName);
+                        Logger.Log(MsgNextLoadRequestBeforeFirstIsWritten,
+                                   TextReader.FileName,
+                                   lastFileName);
                     }
 
                     LoadTemplateLines();
@@ -421,20 +429,20 @@
         public void ResetAll(bool shouldDisplayMessage = true)
         {
             _generatedText.Clear();
-            _locater.Reset();
+            Locater.Reset();
             _segmentDictionary.Clear();
             _controlDictionary.Clear();
             IsTemplateLoaded = false;
             IsOutputFileWritten = false;
-            _defaultSegmentNameGenerator.Reset();
-            _indentProcessor.Reset();
-            _tokenProcessor.ClearTokens();
+            DefaultSegmentNameGenerator.Reset();
+            IndentProcessor.Reset();
+            TokenProcessor.ClearTokens();
 
             if (shouldDisplayMessage)
             {
-                _logger.SetLogEntryType(LogEntryType.Reset);
-                _logger.Log(MsgTemplateHasBeenReset,
-                            _textReader.FileName);
+                Logger.SetLogEntryType(LogEntryType.Reset);
+                Logger.Log(MsgTemplateHasBeenReset,
+                           TextReader.FileName);
             }
         }
 
@@ -448,10 +456,10 @@
         /// </param>
         public void ResetGeneratedText(bool shouldDisplayMessage = true)
         {
-            _logger.SetLogEntryType(LogEntryType.Reset);
+            Logger.SetLogEntryType(LogEntryType.Reset);
             _generatedText.Clear();
-            _locater.Reset();
-            _indentProcessor.Reset();
+            Locater.Reset();
+            IndentProcessor.Reset();
 
             foreach (string segmentName in _controlDictionary.Keys)
             {
@@ -460,8 +468,8 @@
 
             if (shouldDisplayMessage)
             {
-                _logger.Log(MsgGeneratedTextHasBeenReset,
-                            _textReader.FileName);
+                Logger.Log(MsgGeneratedTextHasBeenReset,
+                           TextReader.FileName);
             }
         }
 
@@ -477,20 +485,20 @@
         /// </remarks>
         public void ResetSegment(string segmentName)
         {
-            _logger.SetLogEntryType(LogEntryType.Reset);
+            Logger.SetLogEntryType(LogEntryType.Reset);
             CurrentSegment = segmentName is null ? string.Empty : segmentName;
             LineNumber = 0;
 
             if (_controlDictionary.ContainsKey(CurrentSegment))
             {
                 _controlDictionary[CurrentSegment].IsFirstTime = true;
-                _logger.Log(MsgSegmentHasBeenReset,
-                            CurrentSegment);
+                Logger.Log(MsgSegmentHasBeenReset,
+                           CurrentSegment);
             }
             else
             {
-                _logger.Log(MsgUnableToResetSegment,
-                            CurrentSegment);
+                Logger.Log(MsgUnableToResetSegment,
+                           CurrentSegment);
             }
         }
 
@@ -502,8 +510,8 @@
         /// </param>
         public void SetTabSize(int tabSize)
         {
-            _logger.SetLogEntryType(LogEntryType.Setup);
-            _indentProcessor.SetTabSize(tabSize);
+            Logger.SetLogEntryType(LogEntryType.Setup);
+            IndentProcessor.SetTabSize(tabSize);
         }
 
         /// <summary>
@@ -514,8 +522,8 @@
         /// </param>
         public void SetTemplateFilePath(string templateFilePath)
         {
-            _logger.SetLogEntryType(LogEntryType.Setup);
-            _textReader.SetFilePath(templateFilePath);
+            Logger.SetLogEntryType(LogEntryType.Setup);
+            TextReader.SetFilePath(templateFilePath);
         }
 
         /// <summary>
@@ -537,8 +545,8 @@
         /// </returns>
         public bool SetTokenDelimiters(string tokenStart, string tokenEnd, char tokenEscapeChar)
         {
-            _logger.SetLogEntryType(LogEntryType.Setup);
-            return _tokenProcessor.SetTokenDelimiters(tokenStart, tokenEnd, tokenEscapeChar);
+            Logger.SetLogEntryType(LogEntryType.Setup);
+            return TokenProcessor.SetTokenDelimiters(tokenStart, tokenEnd, tokenEscapeChar);
         }
 
         /// <summary>
@@ -560,9 +568,9 @@
         /// </remarks>
         public void WriteGeneratedTextToFile(string filePath, bool resetGeneratedText = true)
         {
-            _logger.SetLogEntryType(LogEntryType.Writing);
+            Logger.SetLogEntryType(LogEntryType.Writing);
 
-            if (_textWriter.WriteTextFile(filePath, _generatedText))
+            if (TextWriter.WriteTextFile(filePath, _generatedText))
             {
                 if (resetGeneratedText)
                 {
@@ -582,16 +590,16 @@
 
             if (controlItem.IsFirstTime)
             {
-                indent = _indentProcessor.GetFirstTimeIndent(controlItem.FirstTimeIndent, textItem);
+                indent = IndentProcessor.GetFirstTimeIndent(controlItem.FirstTimeIndent, textItem);
                 controlItem.IsFirstTime = false;
             }
             else
             {
-                indent = _indentProcessor.GetIndent(textItem);
+                indent = IndentProcessor.GetIndent(textItem);
             }
 
             string pad = new(' ', indent);
-            string text = _tokenProcessor.ReplaceTokens(textItem.Text);
+            string text = TokenProcessor.ReplaceTokens(textItem.Text);
             _generatedText.Add(pad + text);
         }
 
@@ -608,45 +616,45 @@
                 }
                 else
                 {
-                    _logger.Log(MsgSegmentHasNoTextLines,
-                                segmentName);
+                    Logger.Log(MsgSegmentHasNoTextLines,
+                               segmentName);
                 }
             }
             else
             {
-                _logger.Log(MsgUnknownSegmentName,
-                            segmentName);
+                Logger.Log(MsgUnknownSegmentName,
+                           segmentName);
             }
 
             return result;
         }
 
-        private bool IsValidTemplateFilePath() => string.IsNullOrWhiteSpace(_textReader.FullFilePath) is false;
+        private bool IsValidTemplateFilePath() => string.IsNullOrWhiteSpace(TextReader.FullFilePath) is false;
 
         private bool IsValidTemplateFilePath(string filePath)
         {
-            _textReader.SetFilePath(filePath);
+            TextReader.SetFilePath(filePath);
             return IsValidTemplateFilePath();
         }
 
         private void LoadTemplateLines()
         {
-            List<string> templateLines = _textReader.ReadTextFile().ToList();
+            List<string> templateLines = TextReader.ReadTextFile().ToList();
 
             ResetAll(false);
 
             if (IsEmptyTemplateFile(templateLines))
             {
-                _logger.Log(MsgTemplateFileIsEmpty,
-                            TemplateFilePath);
+                Logger.Log(MsgTemplateFileIsEmpty,
+                           TemplateFilePath);
                 IsTemplateLoaded = false;
                 IsOutputFileWritten = false;
             }
             else
             {
-                _logger.Log(MsgLoadingTemplateFile,
-                            TemplateFileName);
-                _templateLoader.LoadTemplate(templateLines, _segmentDictionary, _controlDictionary);
+                Logger.Log(MsgLoadingTemplateFile,
+                           TemplateFileName);
+                TemplateLoader.LoadTemplate(templateLines, _segmentDictionary, _controlDictionary);
                 IsTemplateLoaded = true;
                 IsOutputFileWritten = false;
             }
@@ -658,7 +666,7 @@
 
             if (string.IsNullOrWhiteSpace(segmentName))
             {
-                _logger.Log(MsgSegmentNameIsNullOrWhitespace);
+                Logger.Log(MsgSegmentNameIsNullOrWhitespace);
             }
             else if (IsTemplateLoaded)
             {
@@ -666,8 +674,8 @@
             }
             else
             {
-                _logger.Log(MsgAttemptToGenerateSegmentBeforeItWasLoaded,
-                            segmentName);
+                Logger.Log(MsgAttemptToGenerateSegmentBeforeItWasLoaded,
+                           segmentName);
             }
 
             return result;

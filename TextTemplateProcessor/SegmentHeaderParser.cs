@@ -13,11 +13,6 @@
         private const string FirstTimeIndentOption = "FTI";
         private const string PadSegmentNameOption = "PAD";
         private const string TabSizeOption = "TAB";
-        private readonly IDefaultSegmentNameGenerator _defaultSegmentNameGenerator;
-        private readonly IIndentProcessor _indentProcessor;
-        private readonly ILocater _locater;
-        private readonly ILogger _logger;
-        private readonly INameValidater _nameValidater;
 
         /// <summary>
         /// Default constructor that creates an instance of the <see cref="SegmentHeaderParser" />
@@ -87,12 +82,22 @@
                                         ServiceNames.NameValidaterService,
                                         ServiceParameterNames.NameValidaterParameter);
 
-            _logger = logger;
-            _defaultSegmentNameGenerator = defaultSegmentNameGenerator;
-            _locater = locater;
-            _indentProcessor = indentProcessor;
-            _nameValidater = nameValidater;
+            Logger = logger;
+            DefaultSegmentNameGenerator = defaultSegmentNameGenerator;
+            Locater = locater;
+            IndentProcessor = indentProcessor;
+            NameValidater = nameValidater;
         }
+
+        private IDefaultSegmentNameGenerator DefaultSegmentNameGenerator { get; init; }
+
+        private IIndentProcessor IndentProcessor { get; init; }
+
+        private ILocater Locater { get; init; }
+
+        private ILogger Logger { get; init; }
+
+        private INameValidater NameValidater { get; init; }
 
         /// <summary>
         /// This method parses a segment header line from a text template file and extracts the
@@ -111,19 +116,19 @@
 
             if (headerLine.Length < 5)
             {
-                _locater.CurrentSegment = _defaultSegmentNameGenerator.Next;
-                _logger.Log(MsgSegmentNameMustStartInColumn5,
-                            _locater.CurrentSegment);
+                Locater.CurrentSegment = DefaultSegmentNameGenerator.Next;
+                Logger.Log(MsgSegmentNameMustStartInColumn5,
+                           Locater.CurrentSegment);
                 return controlItem;
             }
 
             if (headerLine[4] == ' ')
             {
-                _locater.CurrentSegment = _defaultSegmentNameGenerator.Next;
-                _logger.Log(MsgSegmentNameMustStartInColumn5,
-                            _locater.CurrentSegment,
-                            headerLine);
-                headerLine = headerLine.Insert(4, _locater.CurrentSegment);
+                Locater.CurrentSegment = DefaultSegmentNameGenerator.Next;
+                Logger.Log(MsgSegmentNameMustStartInColumn5,
+                           Locater.CurrentSegment,
+                           headerLine);
+                headerLine = headerLine.Insert(4, Locater.CurrentSegment);
                 usingDefaultSegmentName = true;
             }
 
@@ -132,16 +137,16 @@
 
             if (usingDefaultSegmentName is false)
             {
-                if (_nameValidater.IsValidName(segmentName))
+                if (NameValidater.IsValidName(segmentName))
                 {
-                    _locater.CurrentSegment = segmentName;
+                    Locater.CurrentSegment = segmentName;
                 }
                 else
                 {
-                    _locater.CurrentSegment = _defaultSegmentNameGenerator.Next;
-                    _logger.Log(MsgInvalidSegmentName,
-                                segmentName,
-                                _locater.CurrentSegment);
+                    Locater.CurrentSegment = DefaultSegmentNameGenerator.Next;
+                    Logger.Log(MsgInvalidSegmentName,
+                               segmentName,
+                               Locater.CurrentSegment);
                 }
             }
 
@@ -165,16 +170,16 @@
             }
             else
             {
-                _logger.Log(MsgInvalidFormOfOption,
-                            _locater.CurrentSegment,
-                            arg);
+                Logger.Log(MsgInvalidFormOfOption,
+                           Locater.CurrentSegment,
+                           arg);
                 return result;
             }
 
             if (optionIndex < 1)
             {
-                _logger.Log(MsgOptionNameMustPrecedeEqualsSign,
-                            _locater.CurrentSegment);
+                Logger.Log(MsgOptionNameMustPrecedeEqualsSign,
+                           Locater.CurrentSegment);
                 return result;
             }
 
@@ -182,9 +187,9 @@
 
             if (result.optionName is not FirstTimeIndentOption and not PadSegmentNameOption and not TabSizeOption)
             {
-                _logger.Log(MsgUnknownSegmentOptionFound,
-                            _locater.CurrentSegment,
-                            arg);
+                Logger.Log(MsgUnknownSegmentOptionFound,
+                           Locater.CurrentSegment,
+                           arg);
                 return result;
             }
 
@@ -192,9 +197,9 @@
 
             if (optionIndex == arg.Length)
             {
-                _logger.Log(MsgOptionValueMustFollowEqualsSign,
-                            _locater.CurrentSegment,
-                            result.optionName);
+                Logger.Log(MsgOptionValueMustFollowEqualsSign,
+                           Locater.CurrentSegment,
+                           result.optionName);
                 return result;
             }
 
@@ -223,9 +228,9 @@
                     || (optionName == PadSegmentNameOption && padSegmentOptionFound)
                     || (optionName == TabSizeOption && tabOptionFound))
                 {
-                    _logger.Log(MsgFoundDuplicateOptionNameOnHeaderLine,
-                                _locater.CurrentSegment,
-                                optionName);
+                    Logger.Log(MsgFoundDuplicateOptionNameOnHeaderLine,
+                               Locater.CurrentSegment,
+                               optionName);
                     continue;
                 }
 
@@ -256,48 +261,48 @@
 
         private void SetFirstTimeIndentOption(ControlItem controlItem, string optionValue)
         {
-            if (_indentProcessor.IsValidIndentValue(optionValue, out int indentValue))
+            if (IndentProcessor.IsValidIndentValue(optionValue, out int indentValue))
             {
                 if (indentValue == 0)
                 {
-                    _logger.Log(MsgFirstTimeIndentSetToZero,
-                                _locater.CurrentSegment);
+                    Logger.Log(MsgFirstTimeIndentSetToZero,
+                               Locater.CurrentSegment);
                 }
 
                 controlItem.FirstTimeIndent = indentValue;
             }
             else
             {
-                _logger.Log(MsgFirstTimeIndentIsInvalid,
-                            _locater.CurrentSegment,
-                            optionValue);
+                Logger.Log(MsgFirstTimeIndentIsInvalid,
+                           Locater.CurrentSegment,
+                           optionValue);
             }
         }
 
         private void SetPadSegmentOption(ControlItem controlItem, string optionValue)
         {
-            if (_nameValidater.IsValidName(optionValue))
+            if (NameValidater.IsValidName(optionValue))
             {
                 controlItem.PadSegment = optionValue;
             }
             else
             {
-                _logger.Log(MsgInvalidPadSegmentName,
-                            _locater.CurrentSegment,
-                            optionValue);
+                Logger.Log(MsgInvalidPadSegmentName,
+                           Locater.CurrentSegment,
+                           optionValue);
             }
         }
 
         private void SetTabSizeOption(ControlItem controlItem, string optionValue)
         {
-            if (_indentProcessor.IsValidTabSizeValue(optionValue, out int tabValue))
+            if (IndentProcessor.IsValidTabSizeValue(optionValue, out int tabValue))
             {
                 controlItem.TabSize = tabValue;
             }
             else
             {
-                _logger.Log(MsgInvalidTabSizeOption,
-                            _locater.CurrentSegment);
+                Logger.Log(MsgInvalidTabSizeOption,
+                           Locater.CurrentSegment);
             }
         }
     }

@@ -10,8 +10,6 @@
     /// </summary>
     internal class MessageWriter : IMessageWriter
     {
-        private readonly IConsoleWriter _consoleWriter;
-
         /// <summary>
         /// Default constructor that creates an instance of the <see cref="MessageWriter" /> class.
         /// </summary>
@@ -36,8 +34,10 @@
                                         ServiceNames.ConsoleWriterService,
                                         ServiceParameterNames.ConsoleWriterParameter);
 
-            _consoleWriter = consoleWriter;
+            ConsoleWriter = consoleWriter;
         }
+
+        private IConsoleWriter ConsoleWriter { get; init; }
 
         /// <summary>
         /// Writes a single <see langword="string" /> message to the <see cref="Console" />.
@@ -47,7 +47,7 @@
         /// </param>
         public void WriteLine(string message)
         {
-            _consoleWriter.WriteLine(message);
+            ConsoleWriter.WriteLine(message);
         }
 
         /// <summary>

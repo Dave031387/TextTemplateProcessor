@@ -11,10 +11,6 @@
     /// </summary>
     internal class TokenProcessor : ITokenProcessor
     {
-        private readonly ILocater _locater;
-        private readonly ILogger _logger;
-        private readonly INameValidater _nameValidater;
-
         /// <summary>
         /// The default constructor that creates an instance of the <see cref="TokenProcessor" />
         /// class.
@@ -60,18 +56,21 @@
                                         ServiceNames.NameValidaterService,
                                         ServiceParameterNames.NameValidaterParameter);
 
-            _logger = logger;
-            _locater = locater;
-            _nameValidater = nameValidater;
+            Logger = logger;
+            Locater = locater;
+            NameValidater = nameValidater;
         }
 
         internal Dictionary<string, string> TokenDictionary { get; } = new();
-
         internal string TokenEnd { get; private set; } = "#>";
-
         internal char TokenEscapeChar { get; private set; } = '\\';
-
         internal string TokenStart { get; private set; } = "<#=";
+
+        private ILocater Locater { get; init; }
+
+        private ILogger Logger { get; init; }
+
+        private INameValidater NameValidater { get; init; }
 
         /// <summary>
         /// Clears all tokens from the token dictionary.
@@ -136,14 +135,14 @@
                 }
                 else
                 {
-                    _logger.Log(MsgTokenDictionaryIsEmpty,
-                                _locater.CurrentSegment);
+                    Logger.Log(MsgTokenDictionaryIsEmpty,
+                               Locater.CurrentSegment);
                 }
             }
             else
             {
-                _logger.Log(MsgTokenDictionaryIsNull,
-                            _locater.CurrentSegment);
+                Logger.Log(MsgTokenDictionaryIsNull,
+                           Locater.CurrentSegment);
             }
         }
 
@@ -180,18 +179,18 @@
                 {
                     if (string.IsNullOrEmpty(TokenDictionary[tokenName]))
                     {
-                        _logger.Log(MsgTokenValueIsEmpty,
-                                    _locater.CurrentSegment,
-                                    tokenName);
+                        Logger.Log(MsgTokenValueIsEmpty,
+                                   Locater.CurrentSegment,
+                                   tokenName);
                     }
 
                     _ = builder.Replace(token, TokenDictionary[tokenName]);
                 }
                 else
                 {
-                    _logger.Log(MsgTokenNameNotFound,
-                                _locater.CurrentSegment,
-                                tokenName);
+                    Logger.Log(MsgTokenNameNotFound,
+                               Locater.CurrentSegment,
+                               tokenName);
                 }
             }
 
@@ -220,49 +219,49 @@
         {
             if (tokenStart is null)
             {
-                _logger.Log(MsgTokenStartDelimiterIsNull);
+                Logger.Log(MsgTokenStartDelimiterIsNull);
                 return false;
             }
 
             if (tokenEnd is null)
             {
-                _logger.Log(MsgTokenEndDelimiterIsNull);
+                Logger.Log(MsgTokenEndDelimiterIsNull);
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(tokenStart))
             {
-                _logger.Log(MsgTokenStartDelimiterIsEmpty);
+                Logger.Log(MsgTokenStartDelimiterIsEmpty);
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(tokenEnd))
             {
-                _logger.Log(MsgTokenEndDelimiterIsEmpty);
+                Logger.Log(MsgTokenEndDelimiterIsEmpty);
                 return false;
             }
 
             if (tokenStart == tokenEnd)
             {
-                _logger.Log(MsgTokenStartAndTokenEndAreSame,
-                            tokenStart,
-                            tokenEnd);
+                Logger.Log(MsgTokenStartAndTokenEndAreSame,
+                           tokenStart,
+                           tokenEnd);
                 return false;
             }
 
             if (tokenStart == tokenEscapeChar.ToString())
             {
-                _logger.Log(MsgTokenStartAndTokenEscapeAreSame,
-                            tokenStart,
-                            tokenEscapeChar.ToString());
+                Logger.Log(MsgTokenStartAndTokenEscapeAreSame,
+                           tokenStart,
+                           tokenEscapeChar.ToString());
                 return false;
             }
 
             if (tokenEnd == tokenEscapeChar.ToString())
             {
-                _logger.Log(MsgTokenEndAndTokenEscapeAreSame,
-                            tokenEnd,
-                            tokenEscapeChar.ToString());
+                Logger.Log(MsgTokenEndAndTokenEscapeAreSame,
+                           tokenEnd,
+                           tokenEscapeChar.ToString());
                 return false;
             }
 
@@ -283,13 +282,13 @@
 
             if (string.IsNullOrWhiteSpace(tokenName))
             {
-                _logger.Log(MsgMissingTokenName);
+                Logger.Log(MsgMissingTokenName);
                 isValidToken = false;
             }
-            else if (_nameValidater.IsValidName(tokenName) is false)
+            else if (NameValidater.IsValidName(tokenName) is false)
             {
-                _logger.Log(MsgTokenHasInvalidName,
-                            tokenName);
+                Logger.Log(MsgTokenHasInvalidName,
+                           tokenName);
                 isValidToken = false;
             }
 
@@ -347,7 +346,7 @@
 
             if (tokenEnd < 0)
             {
-                _logger.Log(MsgTokenMissingEndDelimiter);
+                Logger.Log(MsgTokenMissingEndDelimiter);
                 text = InsertEscapeCharacter(tokenStart, text);
                 return (false, text.Length);
             }
@@ -371,38 +370,38 @@
             string tokenName = keyValuePair.Key;
             string tokenValue = keyValuePair.Value;
 
-            if (_nameValidater.IsValidName(tokenName))
+            if (NameValidater.IsValidName(tokenName))
             {
                 if (TokenDictionary.ContainsKey(tokenName))
                 {
                     if (tokenValue is null)
                     {
-                        _logger.Log(MsgTokenWithNullValue,
-                                    _locater.CurrentSegment,
-                                    tokenName);
+                        Logger.Log(MsgTokenWithNullValue,
+                                   Locater.CurrentSegment,
+                                   tokenName);
                         tokenValue = string.Empty;
                     }
                     else if (string.IsNullOrEmpty(tokenValue))
                     {
-                        _logger.Log(MsgTokenWithEmptyValue,
-                                    _locater.CurrentSegment,
-                                    tokenName);
+                        Logger.Log(MsgTokenWithEmptyValue,
+                                   Locater.CurrentSegment,
+                                   tokenName);
                     }
 
                     TokenDictionary[tokenName] = tokenValue;
                 }
                 else
                 {
-                    _logger.Log(MsgUnknownTokenName,
-                                _locater.CurrentSegment,
-                                tokenName);
+                    Logger.Log(MsgUnknownTokenName,
+                               Locater.CurrentSegment,
+                               tokenName);
                 }
             }
             else
             {
-                _logger.Log(MsgTokenDictionaryContainsInvalidTokenName,
-                            _locater.CurrentSegment,
-                            tokenName);
+                Logger.Log(MsgTokenDictionaryContainsInvalidTokenName,
+                           Locater.CurrentSegment,
+                           tokenName);
             }
         }
     }

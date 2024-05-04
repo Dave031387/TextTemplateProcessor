@@ -28,10 +28,10 @@
 
             private void LoadBindings()
             {
-                _kernel.Bind<IConsoleReader>().To<ConsoleReader>();
-                _kernel.Bind<IConsoleWriter>().To<ConsoleWriter>();
-                _kernel.Bind<IDefaultSegmentNameGenerator>().To<DefaultSegmentNameGenerator>();
-                _kernel.Bind<IFileAndDirectoryService>().To<FileAndDirectoryService>();
+                _kernel.Bind<IConsoleReader>().To<ConsoleReader>().InSingletonScope();
+                _kernel.Bind<IConsoleWriter>().To<ConsoleWriter>().InSingletonScope();
+                _kernel.Bind<IDefaultSegmentNameGenerator>().To<DefaultSegmentNameGenerator>().InSingletonScope();
+                _kernel.Bind<IFileAndDirectoryService>().To<FileAndDirectoryService>().InSingletonScope();
                 _kernel.Bind<IIndentProcessor>().To<IndentProcessor>().InSingletonScope();
                 _kernel.Bind<IMessageWriter>().To<MessageWriter>().InSingletonScope();
                 _kernel.Bind<ILocater>().To<Locater>().InSingletonScope();

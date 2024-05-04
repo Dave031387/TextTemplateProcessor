@@ -9,9 +9,7 @@
     /// </summary>
     internal class ConsoleLogger : ILogger
     {
-        private readonly ILocater _locater;
         private readonly List<LogEntry> _logEntries = new();
-        private readonly IMessageWriter _messageWriter;
         private LogEntryType _currentLogEntryType = LogEntryType.Setup;
 
         /// <summary>
@@ -48,8 +46,8 @@
                                         ServiceNames.LocaterService,
                                         ServiceParameterNames.LocaterParameter);
 
-            _messageWriter = messageWriter;
-            _locater = locater;
+            MessageWriter = messageWriter;
+            Locater = locater;
         }
 
         /// <summary>
@@ -57,6 +55,10 @@
         /// <see cref="Console" /> yet.
         /// </summary>
         public IEnumerable<LogEntry> LogEntries => _logEntries;
+
+        private ILocater Locater { get; init; }
+
+        private IMessageWriter MessageWriter { get; init; }
 
         /// <summary>
         /// Clears the list of <see cref="LogEntry" /> objects that haven't yet been written to the
@@ -93,7 +95,7 @@
 
                 case LogEntryType.Parsing:
                 case LogEntryType.Generating:
-                    _logEntries.Add(new(_currentLogEntryType, _locater.CurrentSegment, _locater.LineNumber, formattedMessage));
+                    _logEntries.Add(new(_currentLogEntryType, Locater.CurrentSegment, Locater.LineNumber, formattedMessage));
                     break;
 
                 default:
@@ -117,7 +119,7 @@
         {
             foreach (LogEntry logEntry in _logEntries)
             {
-                _messageWriter.WriteLine(logEntry.ToString());
+                MessageWriter.WriteLine(logEntry.ToString());
             }
 
             Clear();

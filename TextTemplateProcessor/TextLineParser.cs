@@ -25,9 +25,7 @@
         private const string RestOfLine = ".*$";
         private const string SegmentHeaderCode = "###";
         private readonly Regex _absoluteIndent = new($"^{IndentCodePart1}{AbsoluteIndentCode}{IndentValue}{RestOfLine}");
-        private readonly ILogger _logger;
         private readonly Regex _oneTimeIndent = new($"^{OneTimeIndentCode}{IndentCodePart2}{IndentValue}{RestOfLine}");
-        private readonly ITokenProcessor _tokenProcessor;
         private readonly Regex _validCommentLine = new($"^{CommentCode}{RestOfLine}");
         private readonly Regex _validSegmentHeaderLine = new($"^{SegmentHeaderCode}{RestOfLine}");
         private readonly Regex _validTemplateLine = new($"^({NoIndentCode}|{SegmentHeaderCode}|{CommentCode}|{IndentCode}){RestOfLine}");
@@ -69,9 +67,13 @@
                                         ServiceNames.TokenProcessorService,
                                         ServiceParameterNames.TokenProcessorParameter);
 
-            _logger = logger;
-            _tokenProcessor = tokenProcessor;
+            Logger = logger;
+            TokenProcessor = tokenProcessor;
         }
+
+        private ILogger Logger { get; init; }
+
+        private ITokenProcessor TokenProcessor { get; init; }
 
         /// <summary>
         /// Determines whether or not the given line from the text template file is a comment line.
@@ -125,14 +127,14 @@
         {
             if (templateLine.Length < 3)
             {
-                _logger.Log(MsgMinimumLineLengthInTemplateFileIs3);
+                Logger.Log(MsgMinimumLineLengthInTemplateFileIs3);
                 return false;
             }
 
             if (templateLine.Length > 3 && templateLine[3] is not ' ')
             {
-                _logger.Log(MsgFourthCharacterMustBeBlank,
-                            templateLine);
+                Logger.Log(MsgFourthCharacterMustBeBlank,
+                           templateLine);
                 return false;
             }
 
@@ -141,8 +143,8 @@
                 return true;
             }
 
-            _logger.Log(MsgInvalidControlCode,
-                        templateLine);
+            Logger.Log(MsgInvalidControlCode,
+                       templateLine);
             return false;
         }
 
@@ -184,7 +186,7 @@
                 isRelative = false;
             }
 
-            _tokenProcessor.ExtractTokens(ref text);
+            TokenProcessor.ExtractTokens(ref text);
 
             return new(indent, isRelative, isOneTime, text);
         }

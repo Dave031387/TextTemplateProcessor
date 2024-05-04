@@ -10,12 +10,7 @@
     /// </summary>
     internal class TemplateLoader : ITemplateLoader
     {
-        private readonly IDefaultSegmentNameGenerator _defaultSegmentNameGenerator;
-        private readonly ILocater _locater;
-        private readonly ILogger _logger;
-        private readonly ISegmentHeaderParser _segmentHeaderParser;
         private readonly List<string> _segmentsWithPad = new();
-        private readonly ITextLineParser _textLineParser;
         private Dictionary<string, ControlItem> _controlDictionary = new();
         private Dictionary<string, List<TextItem>> _segmentDictionary = new();
         private int _textLineCount = 0;
@@ -80,12 +75,22 @@
                                         ServiceNames.TextLineParserService,
                                         ServiceParameterNames.TextLineParserParameter);
 
-            _logger = logger;
-            _defaultSegmentNameGenerator = defaultSegmentNameGenerator;
-            _locater = locater;
-            _segmentHeaderParser = segmentHeaderParser;
-            _textLineParser = textLineParser;
+            Logger = logger;
+            DefaultSegmentNameGenerator = defaultSegmentNameGenerator;
+            Locater = locater;
+            SegmentHeaderParser = segmentHeaderParser;
+            TextLineParser = textLineParser;
         }
+
+        private IDefaultSegmentNameGenerator DefaultSegmentNameGenerator { get; init; }
+
+        private ILocater Locater { get; init; }
+
+        private ILogger Logger { get; init; }
+
+        private ISegmentHeaderParser SegmentHeaderParser { get; init; }
+
+        private ITextLineParser TextLineParser { get; init; }
 
         /// <summary>
         /// This method parses and loads a text template file for processing. Individual segments
@@ -107,20 +112,20 @@
                                  Dictionary<string, List<TextItem>> segmentDictionary,
                                  Dictionary<string, ControlItem> controlDictionary)
         {
-            _logger.SetLogEntryType(LogEntryType.Parsing);
+            Logger.SetLogEntryType(LogEntryType.Parsing);
             _segmentDictionary = segmentDictionary;
             _controlDictionary = controlDictionary;
             _segmentDictionary.Clear();
             _controlDictionary.Clear();
             _segmentsWithPad.Clear();
-            _locater.CurrentSegment = string.Empty;
+            Locater.CurrentSegment = string.Empty;
             int lineCount = 0;
 
             foreach (string templateLine in templateLines)
             {
-                _locater.LineNumber = ++lineCount;
+                Locater.LineNumber = ++lineCount;
 
-                if (_textLineParser.IsValidPrefix(templateLine))
+                if (TextLineParser.IsValidPrefix(templateLine))
                 {
                     ParseTemplateLine(templateLine);
                 }
@@ -137,29 +142,29 @@
         {
             if (_controlDictionary.ContainsKey(segmentName))
             {
-                _locater.CurrentSegment = _defaultSegmentNameGenerator.Next;
-                _logger.Log(MsgFoundDuplicateSegmentName,
-                            segmentName,
-                            _locater.CurrentSegment);
+                Locater.CurrentSegment = DefaultSegmentNameGenerator.Next;
+                Logger.Log(MsgFoundDuplicateSegmentName,
+                           segmentName,
+                           Locater.CurrentSegment);
             }
 
             controlItem.PadSegment = ValidatePadSegmentOption(segmentName, controlItem.PadSegment);
 
-            _controlDictionary[_locater.CurrentSegment] = controlItem;
+            _controlDictionary[Locater.CurrentSegment] = controlItem;
             _textLineCount = 0;
-            _logger.Log(MsgSegmentHasBeenAdded,
-                        _locater.CurrentSegment);
+            Logger.Log(MsgSegmentHasBeenAdded,
+                       Locater.CurrentSegment);
         }
 
         private void AddTextItemToSegmentDictionary(TextItem textItem)
         {
-            if (_segmentDictionary.ContainsKey(_locater.CurrentSegment))
+            if (_segmentDictionary.ContainsKey(Locater.CurrentSegment))
             {
-                _segmentDictionary[_locater.CurrentSegment].Add(textItem);
+                _segmentDictionary[Locater.CurrentSegment].Add(textItem);
             }
             else
             {
-                _segmentDictionary[_locater.CurrentSegment] = new List<TextItem>() { textItem };
+                _segmentDictionary[Locater.CurrentSegment] = new List<TextItem>() { textItem };
             }
 
             _textLineCount++;
@@ -167,37 +172,37 @@
 
         private void CheckForEmptySegment()
         {
-            if (string.IsNullOrEmpty(_locater.CurrentSegment))
+            if (string.IsNullOrEmpty(Locater.CurrentSegment))
             {
                 return;
             }
             else if (_textLineCount == 0)
             {
-                _logger.Log(MsgNoTextLinesFollowingSegmentHeader,
-                            _locater.CurrentSegment);
-                _controlDictionary.Remove(_locater.CurrentSegment);
+                Logger.Log(MsgNoTextLinesFollowingSegmentHeader,
+                           Locater.CurrentSegment);
+                _controlDictionary.Remove(Locater.CurrentSegment);
             }
         }
 
         private void CheckForMissingSegmentHeader()
         {
-            if (string.IsNullOrEmpty(_locater.CurrentSegment))
+            if (string.IsNullOrEmpty(Locater.CurrentSegment))
             {
-                _locater.CurrentSegment = _defaultSegmentNameGenerator.Next;
-                _controlDictionary[_locater.CurrentSegment] = new();
+                Locater.CurrentSegment = DefaultSegmentNameGenerator.Next;
+                _controlDictionary[Locater.CurrentSegment] = new();
                 _textLineCount = 0;
-                _logger.Log(MsgMissingInitialSegmentHeader,
-                            _locater.CurrentSegment);
+                Logger.Log(MsgMissingInitialSegmentHeader,
+                           Locater.CurrentSegment);
             }
         }
 
         private void ParseTemplateLine(string templateLine)
         {
-            if (_textLineParser.IsCommentLine(templateLine))
+            if (TextLineParser.IsCommentLine(templateLine))
             {
                 return;
             }
-            else if (_textLineParser.IsSegmentHeader(templateLine))
+            else if (TextLineParser.IsSegmentHeader(templateLine))
             {
                 CheckForEmptySegment();
 
@@ -205,16 +210,16 @@
                 // order for the mocks to work I need to capture the current segment name before
                 // parsing the segment header.
                 string segmentName = templateLine.Split(' ', ',')[1];
-                _locater.CurrentSegment = segmentName;
+                Locater.CurrentSegment = segmentName;
 
-                ControlItem controlItem = _segmentHeaderParser.ParseSegmentHeader(templateLine);
-                AddSegmentToControlDictionary(_locater.CurrentSegment, controlItem);
+                ControlItem controlItem = SegmentHeaderParser.ParseSegmentHeader(templateLine);
+                AddSegmentToControlDictionary(Locater.CurrentSegment, controlItem);
             }
             else
             {
                 CheckForMissingSegmentHeader();
 
-                TextItem textItem = _textLineParser.ParseTextLine(templateLine);
+                TextItem textItem = TextLineParser.ParseTextLine(templateLine);
                 AddTextItemToSegmentDictionary(textItem);
             }
         }
@@ -228,8 +233,8 @@
             }
             else if (padSegment == segmentName)
             {
-                _logger.Log(MsgPadSegmentNameSameAsSegmentHeaderName,
-                            segmentName);
+                Logger.Log(MsgPadSegmentNameSameAsSegmentHeaderName,
+                           segmentName);
             }
             else if (_controlDictionary.ContainsKey(padSegment))
             {
@@ -237,9 +242,9 @@
 
                 if (_segmentsWithPad.Contains(padSegment))
                 {
-                    _logger.Log(MsgMultipleLevelsOfPadSegments,
-                                segmentName,
-                                padSegment);
+                    Logger.Log(MsgMultipleLevelsOfPadSegments,
+                               segmentName,
+                               padSegment);
                 }
                 else
                 {
@@ -248,9 +253,9 @@
             }
             else
             {
-                _logger.Log(MsgPadSegmentMustBeDefinedEarlier,
-                            segmentName,
-                            padSegment);
+                Logger.Log(MsgPadSegmentMustBeDefinedEarlier,
+                           segmentName,
+                           padSegment);
             }
 
             return result;

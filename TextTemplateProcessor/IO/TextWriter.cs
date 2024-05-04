@@ -6,9 +6,6 @@
 
     internal class TextWriter : ITextWriter
     {
-        private readonly IFileAndDirectoryService _fileAndDirectoryService;
-        private readonly ILogger _logger;
-        private readonly IPathValidater _pathValidater;
         private string _directoryPath = string.Empty;
         private string _fileName = string.Empty;
         private string _filePath = string.Empty;
@@ -58,10 +55,16 @@
                                         ServiceNames.PathValidaterService,
                                         ServiceParameterNames.PathValidaterParameter);
 
-            _logger = logger;
-            _fileAndDirectoryService = fileAndDirectoryService;
-            _pathValidater = pathValidater;
+            Logger = logger;
+            FileAndDirectoryService = fileAndDirectoryService;
+            PathValidater = pathValidater;
         }
+
+        private IFileAndDirectoryService FileAndDirectoryService { get; init; }
+
+        private ILogger Logger { get; init; }
+
+        private IPathValidater PathValidater { get; init; }
 
         /// <summary>
         /// Write the contents of the given string collection to the specified file path.
@@ -91,17 +94,17 @@
 
                 if (IsValidTextLines(textLines))
                 {
-                    _fileAndDirectoryService.CreateDirectory(_directoryPath);
-                    _logger.Log(MsgWritingTextFile,
-                                _fileName);
-                    _fileAndDirectoryService.WriteTextFile(_filePath, textLines);
+                    FileAndDirectoryService.CreateDirectory(_directoryPath);
+                    Logger.Log(MsgWritingTextFile,
+                               _fileName);
+                    FileAndDirectoryService.WriteTextFile(_filePath, textLines);
                     isValid = true;
                 }
             }
             catch (Exception ex)
             {
-                _logger.Log(MsgUnableToWriteFile,
-                            ex.Message);
+                Logger.Log(MsgUnableToWriteFile,
+                           ex.Message);
             }
 
             return isValid;
@@ -111,14 +114,14 @@
         {
             if (textLines is null)
             {
-                _logger.Log(MsgGeneratedTextIsNull);
+                Logger.Log(MsgGeneratedTextIsNull);
                 return false;
             }
 
             if (textLines.Any() is false)
             {
-                _logger.Log(MsgGeneratedTextIsEmpty,
-                            _fileName);
+                Logger.Log(MsgGeneratedTextIsEmpty,
+                           _fileName);
                 return false;
             }
 
@@ -127,9 +130,9 @@
 
         private void ValidateOutputFilePath(string filePath)
         {
-            _filePath = _pathValidater.ValidateFullPath(filePath, true);
-            _directoryPath = _fileAndDirectoryService.GetDirectoryName(_filePath);
-            _fileName = _fileAndDirectoryService.GetFileName(_filePath);
+            _filePath = PathValidater.ValidateFullPath(filePath, true);
+            _directoryPath = FileAndDirectoryService.GetDirectoryName(_filePath);
+            _fileName = FileAndDirectoryService.GetFileName(_filePath);
         }
     }
 }

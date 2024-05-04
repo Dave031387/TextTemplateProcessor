@@ -9,9 +9,6 @@
     /// </summary>
     internal class TextReader : ITextReader
     {
-        private readonly IFileAndDirectoryService _fileAndDirectoryService;
-        private readonly ILogger _logger;
-        private readonly IPathValidater _pathValidater;
         private bool _isFilePathSet = false;
 
         /// <summary>
@@ -96,9 +93,9 @@
                                         ServiceNames.PathValidaterService,
                                         ServiceParameterNames.PathValidaterParameter);
 
-            _logger = logger;
-            _fileAndDirectoryService = fileAndDirectoryService;
-            _pathValidater = pathValidater;
+            Logger = logger;
+            FileAndDirectoryService = fileAndDirectoryService;
+            PathValidater = pathValidater;
             InitializeProperties();
         }
 
@@ -117,6 +114,12 @@
         /// </summary>
         public string FullFilePath { get; private set; } = string.Empty;
 
+        private IFileAndDirectoryService FileAndDirectoryService { get; init; }
+
+        private ILogger Logger { get; init; }
+
+        private IPathValidater PathValidater { get; init; }
+
         /// <summary>
         /// Reads the text file referenced by the <see cref="FullFilePath" /> property.
         /// </summary>
@@ -130,21 +133,21 @@
 
             if (_isFilePathSet is false)
             {
-                _logger.Log(MsgTemplateFilePathNotSet);
+                Logger.Log(MsgTemplateFilePathNotSet);
                 return textLines;
             }
 
             try
             {
-                _logger.Log(MsgAttemptingToReadFile,
-                            FullFilePath);
-                textLines = _fileAndDirectoryService.ReadTextFile(FullFilePath).ToList();
-                _logger.Log(MsgFileSuccessfullyRead);
+                Logger.Log(MsgAttemptingToReadFile,
+                           FullFilePath);
+                textLines = FileAndDirectoryService.ReadTextFile(FullFilePath).ToList();
+                Logger.Log(MsgFileSuccessfullyRead);
             }
             catch (Exception ex)
             {
-                _logger.Log(MsgErrorWhileReadingTemplateFile,
-                            ex.Message);
+                Logger.Log(MsgErrorWhileReadingTemplateFile,
+                           ex.Message);
             }
 
             return textLines;
@@ -160,16 +163,16 @@
         {
             try
             {
-                FullFilePath = _pathValidater.ValidateFullPath(filePath, true, true);
-                DirectoryPath = _fileAndDirectoryService.GetDirectoryName(FullFilePath);
-                FileName = _fileAndDirectoryService.GetFileName(FullFilePath);
+                FullFilePath = PathValidater.ValidateFullPath(filePath, true, true);
+                DirectoryPath = FileAndDirectoryService.GetDirectoryName(FullFilePath);
+                FileName = FileAndDirectoryService.GetFileName(FullFilePath);
                 _isFilePathSet = true;
             }
             catch (Exception ex)
             {
                 InitializeProperties();
-                _logger.Log(MsgUnableToSetTemplateFilePath,
-                            ex.Message);
+                Logger.Log(MsgUnableToSetTemplateFilePath,
+                           ex.Message);
             }
         }
 
