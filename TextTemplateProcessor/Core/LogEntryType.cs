@@ -37,6 +37,11 @@
         /// <summary>
         /// Log entry type assigned to log messages pertaining to reset operations.
         /// </summary>
-        Reset
+        Reset,
+
+        /// <summary>
+        /// Log entry type assigned to log messages pertaining to user interactions.
+        /// </summary>
+        User
     }
 }

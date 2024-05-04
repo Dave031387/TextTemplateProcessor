@@ -109,7 +109,8 @@
                 new(LogEntryType.Parsing, SegmentName, LineNumber, _expectedMessage),
                 new(LogEntryType.Reset, string.Empty, 0, _expectedMessage),
                 new(LogEntryType.Loading, string.Empty, 0, _expectedMessage),
-                new(LogEntryType.Setup, string.Empty, 0, _expectedMessage)
+                new(LogEntryType.Setup, string.Empty, 0, _expectedMessage),
+                new(LogEntryType.User, string.Empty, 0, _expectedMessage)
             };
 
             // Act
@@ -130,6 +131,7 @@
         [InlineData(LogEntryType.Writing, "Writing Message")]
         [InlineData(LogEntryType.Loading, "Loading Message")]
         [InlineData(LogEntryType.Reset, "Reset Message")]
+        [InlineData(LogEntryType.User, "User Message")]
         internal void Log_NoLocationAndNoFormatItems_LogsCorrectMessage(LogEntryType logEntryType, string message)
         {
             // Arrange
@@ -155,6 +157,7 @@
         [InlineData(LogEntryType.Writing)]
         [InlineData(LogEntryType.Loading)]
         [InlineData(LogEntryType.Reset)]
+        [InlineData(LogEntryType.User)]
         internal void Log_NoLocationAndOneFormatItem_LogsCorrectMessage(LogEntryType logEntryType)
         {
             // Arrange
@@ -183,6 +186,7 @@
         [InlineData(LogEntryType.Writing)]
         [InlineData(LogEntryType.Loading)]
         [InlineData(LogEntryType.Reset)]
+        [InlineData(LogEntryType.User)]
         internal void Log_NoLocationAndTwoFormatItems_LogsCorrectMessage(LogEntryType logEntryType)
         {
             // Arrange
@@ -318,7 +322,8 @@
                 $"<{LogEntryType.Parsing}> {SegmentName}[{LineNumber}] : {_expectedMessage}",
                 $"<{LogEntryType.Reset}> {_expectedMessage}",
                 $"<{LogEntryType.Loading}> {_expectedMessage}",
-                $"<{LogEntryType.Setup}> {_expectedMessage}"
+                $"<{LogEntryType.Setup}> {_expectedMessage}",
+                $"<{LogEntryType.User}> {_expectedMessage}"
             };
             List<string> writeBuffer = new();
 
@@ -398,6 +403,7 @@
             Log(logger, LogEntryType.Reset, _formatStringOneArg, _formatItem1);
             Log(logger, LogEntryType.Loading, _formatStringTwoArgs, _formatItem1, _formatItem2);
             Log(logger, LogEntryType.Setup, _formatStringTwoArgs, _formatItem1, _formatItem2);
+            Log(logger, LogEntryType.User, _formatStringNoArgs);
         }
     }
 }

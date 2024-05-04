@@ -90,6 +90,7 @@
                 case LogEntryType.Loading:
                 case LogEntryType.Writing:
                 case LogEntryType.Reset:
+                case LogEntryType.User:
                     _logEntries.Add(new(_currentLogEntryType, string.Empty, 0, formattedMessage));
                     break;
 

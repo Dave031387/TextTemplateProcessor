@@ -285,13 +285,13 @@
         /// </remarks>
         public void ClearOutputDirectory()
         {
-            Logger.SetLogEntryType(LogEntryType.Reset);
-
             if (string.IsNullOrWhiteSpace(OutputDirectory) is false)
             {
                 MessageWriter.WriteLine(MsgClearTheOutputDirectory, OutputDirectory);
                 string response = ShowContinuationPrompt(MsgYesNoPrompt);
 
+                // The following lines assume that the log entry type has already been set to "User"
+                // by the ShowContinuationPrompt method.
                 if (response.ToUpper() == "Y")
                 {
                     try
@@ -379,7 +379,7 @@
         public string ShowContinuationPrompt(string message = MsgContinuationPrompt)
         {
             Logger.WriteLogEntries();
-            Logger.SetLogEntryType(LogEntryType.Setup);
+            Logger.SetLogEntryType(LogEntryType.User);
             MessageWriter.WriteLine("\n" + message + "\n");
             string userResponse = string.Empty;
 
