@@ -539,17 +539,13 @@ namespace TextTemplateProcessor
             InitializeMocks();
             _textReader
                 .Setup(x => x.FileName)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_GetFileName))
                 .Returns(string.Empty)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_GetFileName,
-                                                       null,
-                                                       true))
                 .Verifiable(Times.AtLeastOnce);
             _textReader
                 .Setup(x => x.FullFilePath)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_GetFullFilePath))
                 .Returns(string.Empty)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_GetFullFilePath,
-                                                       null,
-                                                       true))
                 .Verifiable(Times.AtLeastOnce);
             _textReader
                 .Setup(x => x.SetFilePath(filePath))
@@ -598,19 +594,17 @@ namespace TextTemplateProcessor
             SetupResetAll();
             _textReader
                 .Setup(x => x.FileName)
-                .Returns(() => returnedFileName)
                 .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_GetFileName,
-                                                       null,
-                                                       true,
-                                                       () => returnedFileName = fileName))
+                                                       () => returnedFileName = fileName,
+                                                       () => returnedFileName = lastFileName))
+                .Returns(() => returnedFileName)
                 .Verifiable(Times.AtLeast(2));
             _textReader
                 .Setup(x => x.FullFilePath)
-                .Returns(() => returnedFilePath)
                 .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_GetFullFilePath,
-                                                       null,
-                                                       true,
-                                                       () => returnedFilePath = filePath))
+                                                       () => returnedFilePath = filePath,
+                                                       () => returnedFilePath = lastFilePath))
+                .Returns(() => returnedFilePath)
                 .Verifiable(Times.AtLeast(2));
             _textReader
                 .Setup(x => x.SetFilePath(filePath))
@@ -618,8 +612,8 @@ namespace TextTemplateProcessor
                 .Verifiable(Times.Once);
             _textReader
                 .Setup(x => x.ReadTextFile())
-                .Returns(templateLines)
                 .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_ReadTextFile))
+                .Returns(templateLines)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(x => x.SetLogEntryType(LogEntryType.Loading))
@@ -689,19 +683,17 @@ namespace TextTemplateProcessor
             SetupResetAll();
             _textReader
                 .Setup(x => x.FileName)
-                .Returns(() => returnedFileName)
                 .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_GetFileName,
-                                                       null,
-                                                       true,
-                                                       () => returnedFileName = fileName))
+                                                       () => returnedFileName = fileName,
+                                                       () => returnedFileName = lastFileName))
+                .Returns(() => returnedFileName)
                 .Verifiable(Times.AtLeast(2));
             _textReader
                 .Setup(x => x.FullFilePath)
-                .Returns(() => returnedFilePath)
                 .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_GetFullFilePath,
-                                                       null,
-                                                       true,
-                                                       () => returnedFilePath = filePath))
+                                                       () => returnedFilePath = filePath,
+                                                       () => returnedFilePath = lastFilePath))
+                .Returns(() => returnedFilePath)
                 .Verifiable(Times.AtLeast(2));
             _textReader
                 .Setup(x => x.SetFilePath(filePath))
@@ -709,8 +701,8 @@ namespace TextTemplateProcessor
                 .Verifiable(Times.Once);
             _textReader
                 .Setup(x => x.ReadTextFile())
-                .Returns(templateLines)
                 .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_ReadTextFile))
+                .Returns(templateLines)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(x => x.SetLogEntryType(LogEntryType.Loading))
@@ -770,13 +762,13 @@ namespace TextTemplateProcessor
             InitializeMocks();
             _textReader
                 .Setup(x => x.FileName)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_GetFileName))
                 .Returns(fileName)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_GetFileName, null, true))
                 .Verifiable(Times.AtLeastOnce);
             _textReader
                 .Setup(x => x.FullFilePath)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_GetFullFilePath))
                 .Returns(filePath)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_GetFullFilePath, null, true))
                 .Verifiable(Times.AtLeastOnce);
             _textReader
                 .Setup(x => x.SetFilePath(filePath))
@@ -828,19 +820,17 @@ namespace TextTemplateProcessor
             SetupResetAll();
             _textReader
                 .Setup(x => x.FileName)
-                .Returns(() => returnedFileName)
                 .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_GetFileName,
-                                                       null,
-                                                       true,
-                                                       () => returnedFileName = fileName))
+                                                       () => returnedFileName = fileName,
+                                                       () => returnedFileName = string.Empty))
+                .Returns(() => returnedFileName)
                 .Verifiable(Times.AtLeastOnce);
             _textReader
                 .Setup(x => x.FullFilePath)
-                .Returns(() => returnedFilePath)
                 .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_GetFullFilePath,
-                                                       null,
-                                                       true,
-                                                       () => returnedFilePath = filePath))
+                                                       () => returnedFilePath = filePath,
+                                                       () => returnedFilePath = string.Empty))
+                .Returns(() => returnedFilePath)
                 .Verifiable(Times.AtLeast(2));
             _textReader
                 .Setup(x => x.SetFilePath(filePath))
@@ -848,8 +838,8 @@ namespace TextTemplateProcessor
                 .Verifiable(Times.Once);
             _textReader
                 .Setup(x => x.ReadTextFile())
-                .Returns(Array.Empty<string>())
                 .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_ReadTextFile))
+                .Returns(Array.Empty<string>())
                 .Verifiable(Times.Once);
             _logger
                 .Setup(x => x.SetLogEntryType(LogEntryType.Loading))
@@ -901,8 +891,8 @@ namespace TextTemplateProcessor
             InitializeMocks();
             _textReader
                 .Setup(x => x.FullFilePath)
-                .Returns(string.Empty)
                 .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_GetFullFilePath))
+                .Returns(string.Empty)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(x => x.SetLogEntryType(LogEntryType.Loading))
@@ -943,13 +933,13 @@ namespace TextTemplateProcessor
             SetupResetAll();
             _textReader
                 .Setup(x => x.FullFilePath)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_GetFullFilePath))
                 .Returns(filePath)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_GetFullFilePath, null, true))
                 .Verifiable(Times.AtLeastOnce);
             _textReader
                 .Setup(x => x.ReadTextFile())
-                .Returns(templateLines)
                 .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_ReadTextFile))
+                .Returns(templateLines)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(x => x.SetLogEntryType(LogEntryType.Loading))
@@ -1000,18 +990,18 @@ namespace TextTemplateProcessor
             SetupResetAll();
             _textReader
                 .Setup(x => x.FullFilePath)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_GetFullFilePath))
                 .Returns(filePath)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_GetFullFilePath, null, true))
                 .Verifiable(Times.AtLeastOnce);
             _textReader
                 .Setup(x => x.FileName)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_GetFileName))
                 .Returns(fileName)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_GetFileName, null, true))
                 .Verifiable(Times.AtLeastOnce);
             _textReader
                 .Setup(x => x.ReadTextFile())
-                .Returns(templateLines)
                 .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_ReadTextFile))
+                .Returns(templateLines)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(x => x.SetLogEntryType(LogEntryType.Loading))
@@ -1067,8 +1057,8 @@ namespace TextTemplateProcessor
             InitializeMocks();
             _textReader
                 .Setup(x => x.FileName)
-                .Returns(fileName)
                 .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_GetFileName))
+                .Returns(fileName)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(x => x.SetLogEntryType(LogEntryType.Loading))
@@ -1161,8 +1151,8 @@ namespace TextTemplateProcessor
                 .Verifiable(Times.Once);
             _textReader
                 .Setup(x => x.FileName)
-                .Returns(fileName)
                 .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_GetFileName))
+                .Returns(fileName)
                 .Verifiable(Times.Once);
             _verifier.DefineExpectedCallOrder(MethodCall.Locater_Reset, MethodCall.Logger_SetLogEntryType_Reset);
             _verifier.DefineExpectedCallOrder(MethodCall.DefaultSegmentNameGenerator_Reset, MethodCall.Logger_SetLogEntryType_Reset);
@@ -1324,8 +1314,8 @@ namespace TextTemplateProcessor
                 .Verifiable(Times.Once);
             _textReader
                 .Setup(x => x.FileName)
-                .Returns(fileName)
                 .Callback(_verifier.GetCallOrderAction(MethodCall.TextReader_GetFileName))
+                .Returns(fileName)
                 .Verifiable(Times.Once);
             _verifier.DefineExpectedCallOrder(MethodCall.Logger_SetLogEntryType_Reset, MethodCall.Locater_Reset);
             _verifier.DefineExpectedCallOrder(MethodCall.Logger_SetLogEntryType_Reset, MethodCall.IndentProcessor_Reset);
@@ -1387,8 +1377,8 @@ namespace TextTemplateProcessor
                 .Verifiable(Times.Once);
             _locater
                 .Setup(x => x.CurrentSegment)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter))
                 .Returns(segmentName)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter, null, true))
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(x => x.SetLogEntryType(LogEntryType.Reset))
@@ -1457,8 +1447,8 @@ namespace TextTemplateProcessor
                 .Verifiable(Times.Once);
             _locater
                 .Setup(x => x.CurrentSegment)
+                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter))
                 .Returns(segmentName1)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter, null, true))
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(x => x.SetLogEntryType(LogEntryType.Reset))
@@ -1553,8 +1543,8 @@ namespace TextTemplateProcessor
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(x => x.SetTokenDelimiters(tokenStart, tokenEnd, escapeChar))
-                .Returns(expected)
                 .Callback(_verifier.GetCallOrderAction(MethodCall.TokenProcessor_SetTokenDelimiters))
+                .Returns(expected)
                 .Verifiable(Times.Once);
             _verifier.DefineExpectedCallOrder(MethodCall.Logger_SetLogEntryType_Setup, MethodCall.TokenProcessor_SetTokenDelimiters);
             TextTemplateProcessor processor = GetTextTemplateProcessor();
@@ -2041,8 +2031,8 @@ namespace TextTemplateProcessor
                 .Verifiable(Times.Once);
             _textWriter
                 .Setup(x => x.WriteTextFile(filePath, generatedText))
-                .Returns(true)
                 .Callback(_verifier.GetCallOrderAction(MethodCall.TextWriter_WriteTextFile))
+                .Returns(true)
                 .Verifiable(Times.Once);
             _verifier.DefineExpectedCallOrder(MethodCall.Logger_SetLogEntryType_Writing, MethodCall.TextWriter_WriteTextFile);
             TextTemplateProcessor processor = GetTextTemplateProcessor();
@@ -2115,8 +2105,8 @@ namespace TextTemplateProcessor
                 .Verifiable(Times.Once);
             _textWriter
                 .Setup(x => x.WriteTextFile(filePath, generatedText))
-                .Returns(true)
                 .Callback(_verifier.GetCallOrderAction(MethodCall.TextWriter_WriteTextFile))
+                .Returns(true)
                 .Verifiable(Times.Once);
             _verifier.DefineExpectedCallOrder(MethodCall.Logger_SetLogEntryType_Writing, MethodCall.TextWriter_WriteTextFile);
             _verifier.DefineExpectedCallOrder(MethodCall.TextWriter_WriteTextFile, MethodCall.Logger_SetLogEntryType_Reset);
@@ -2157,8 +2147,8 @@ namespace TextTemplateProcessor
                 .Verifiable(Times.Once);
             _textWriter
                 .Setup(x => x.WriteTextFile(filePath, generatedText))
-                .Returns(false)
                 .Callback(_verifier.GetCallOrderAction(MethodCall.TextWriter_WriteTextFile))
+                .Returns(false)
                 .Verifiable(Times.Once);
             _verifier.DefineExpectedCallOrder(MethodCall.Logger_SetLogEntryType_Writing, MethodCall.TextWriter_WriteTextFile);
             TextTemplateProcessor processor = GetTextTemplateProcessor();

@@ -133,18 +133,18 @@
             string filePath = $"{directoryPath}{Sep}{fileName}";
             _pathValidater
                 .Setup(x => x.ValidateFullPath(filePath, true, false))
-                .Returns(filePath)
                 .Callback(_verifier.GetCallOrderAction(MethodCall.PathValidater_ValidateFullPath))
+                .Returns(filePath)
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(x => x.GetDirectoryName(filePath))
-                .Returns(directoryPath)
                 .Callback(_verifier.GetCallOrderAction(MethodCall.FileAndDirectoryService_GetDirectoryName))
+                .Returns(directoryPath)
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(x => x.GetFileName(filePath))
-                .Returns(fileName)
                 .Callback(_verifier.GetCallOrderAction(MethodCall.FileAndDirectoryService_GetFileName))
+                .Returns(fileName)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(x => x.Log(MsgGeneratedTextIsEmpty, fileName, null))
@@ -176,18 +176,18 @@
             string filePath = $"{directoryPath}{Sep}{fileName}";
             _pathValidater
                 .Setup(x => x.ValidateFullPath(filePath, true, false))
-                .Returns(filePath)
                 .Callback(_verifier.GetCallOrderAction(MethodCall.PathValidater_ValidateFullPath))
+                .Returns(filePath)
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(x => x.GetDirectoryName(filePath))
-                .Returns(directoryPath)
                 .Callback(_verifier.GetCallOrderAction(MethodCall.FileAndDirectoryService_GetDirectoryName))
+                .Returns(directoryPath)
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(x => x.GetFileName(filePath))
-                .Returns(fileName)
                 .Callback(_verifier.GetCallOrderAction(MethodCall.FileAndDirectoryService_GetFileName))
+                .Returns(fileName)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(x => x.Log(MsgGeneratedTextIsNull, null, null))
@@ -228,18 +228,18 @@
                 .Verifiable(Times.Once);
             _pathValidater
                 .Setup(x => x.ValidateFullPath(filePath, true, false))
-                .Returns(filePath)
                 .Callback(_verifier.GetCallOrderAction(MethodCall.PathValidater_ValidateFullPath))
+                .Returns(filePath)
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(x => x.GetDirectoryName(filePath))
-                .Returns(directoryPath)
                 .Callback(_verifier.GetCallOrderAction(MethodCall.FileAndDirectoryService_GetDirectoryName))
+                .Returns(directoryPath)
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(x => x.GetFileName(filePath))
-                .Returns(fileName)
                 .Callback(_verifier.GetCallOrderAction(MethodCall.FileAndDirectoryService_GetFileName))
+                .Returns(fileName)
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(x => x.CreateDirectory(directoryPath))

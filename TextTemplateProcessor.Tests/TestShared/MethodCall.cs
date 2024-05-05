@@ -2,8 +2,10 @@
 {
     public enum MethodCall
     {
+        ConsoleReader_ReadLine,
         DefaultSegmentNameGenerator_Next,
         DefaultSegmentNameGenerator_Reset,
+        FileAndDirectoryService_ClearDirectory,
         FileAndDirectoryService_CreateDirectory,
         FileAndDirectoryService_GetDirectoryName,
         FileAndDirectoryService_GetFileName,
@@ -30,8 +32,12 @@
         Logger_SetLogEntryType_Loading,
         Logger_SetLogEntryType_Reset,
         Logger_SetLogEntryType_Setup,
+        Logger_SetLogEntryType_User,
         Logger_SetLogEntryType_Writing,
         Logger_WriteLogEntries,
+        MessageWriter_WriteLine,
+        MessageWriter_WriteLine_First,
+        MessageWriter_WriteLine_Second,
         NameValidater_IsValidName,
         NameValidater_IsValidName_FirstName,
         NameValidater_IsValidName_SecondName,

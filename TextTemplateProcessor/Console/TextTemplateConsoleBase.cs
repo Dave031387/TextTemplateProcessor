@@ -292,7 +292,7 @@
 
                 // The following lines assume that the log entry type has already been set to "User"
                 // by the ShowContinuationPrompt method.
-                if (response.ToUpper() == "Y")
+                if (response.ToUpper() is "Y" or "YES")
                 {
                     try
                     {

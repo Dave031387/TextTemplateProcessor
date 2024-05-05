@@ -5,45 +5,34 @@
 
     public class MethodCallOrderVerifier
     {
-        public record MethodCallOrder(MethodCall Call, int Order);
         public record MethodCallExpectedOrder(MethodCall FirstCall, MethodCall SecondCall);
-        public List<MethodCallOrder> ActualOrderList { get; } = new();
-        public int CallOrder { get; set; } = 0;
+        public List<MethodCall> CallOrderList { get; } = new();
         public List<MethodCallExpectedOrder> ExpectedOrderList { get; } = new();
-        public List<MethodCall> FirstTimeList { get; } = new();
 
         public void DefineExpectedCallOrder(MethodCall firstCall, MethodCall secondCall)
             => ExpectedOrderList.Add(new(firstCall, secondCall));
 
-        public Action GetCallOrderAction(MethodCall methodCall, Action? callerAction = null, bool onFirstTimeOnly = false, Action? firstTimeAction = null)
+        public Action GetCallOrderAction(MethodCall methodCall, Action? callerAction = null, Action? firstTimeAction = null)
         {
-            return onFirstTimeOnly
-                ? (() =>
+            return () =>
                 {
-                    if (FirstTimeList.Contains(methodCall))
+                    if (CallOrderList.Contains(methodCall) || firstTimeAction is null)
                     {
                         callerAction?.Invoke();
                     }
                     else
                     {
-                        FirstTimeList.Add(methodCall);
-                        ActualOrderList.Add(new(methodCall, ++CallOrder));
                         firstTimeAction?.Invoke();
                     }
-                })
-                : (() =>
-                {
-                    ActualOrderList.Add(new(methodCall, ++CallOrder));
-                    callerAction?.Invoke();
-                });
+
+                    CallOrderList.Add(methodCall);
+                };
         }
 
         public void Reset()
         {
-            ActualOrderList.Clear();
+            CallOrderList.Clear();
             ExpectedOrderList.Clear();
-            FirstTimeList.Clear();
-            CallOrder = 0;
         }
 
         public void Verify()
@@ -55,15 +44,20 @@
                 string secondCallName = Enum.GetName(typeof(MethodCall), expectedOrder.SecondCall)!;
                 int secondCallOrder = 0;
 
-                foreach (MethodCallOrder actualOrder in ActualOrderList)
+                for (int i = 0; i < CallOrderList.Count; i++)
                 {
-                    if (actualOrder.Call == expectedOrder.FirstCall)
+                    if (CallOrderList[i] == expectedOrder.FirstCall)
                     {
-                        firstCallOrder = actualOrder.Order;
+                        firstCallOrder = i + 1;
                     }
-                    else if (actualOrder.Call == expectedOrder.SecondCall)
+                    else if (CallOrderList[i] == expectedOrder.SecondCall)
                     {
-                        secondCallOrder = actualOrder.Order;
+                        secondCallOrder = i + 1;
+
+                        if (firstCallOrder > 0)
+                        {
+                            break;
+                        }
                     }
                 }
 

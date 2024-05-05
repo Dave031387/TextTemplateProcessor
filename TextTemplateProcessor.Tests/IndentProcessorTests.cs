@@ -1133,8 +1133,8 @@
             {
                 _locater
                     .Setup(x => x.CurrentSegment)
-                    .Returns(SegmentName)
                     .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter))
+                    .Returns(SegmentName)
                     .Verifiable(Times.Once);
                 _logger
                     .Setup(x => x.Log(message, SegmentName, null))
@@ -1175,8 +1175,8 @@
             {
                 _locater
                     .Setup(x => x.CurrentSegment)
-                    .Returns(SegmentName)
                     .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter))
+                    .Returns(SegmentName)
                     .Verifiable(Times.Once);
                 _logger
                     .Setup(x => x.Log(message, SegmentName, null))
