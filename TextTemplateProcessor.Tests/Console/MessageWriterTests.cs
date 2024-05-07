@@ -43,7 +43,7 @@
             InitializeMocks();
             string expectedMessage = "This is a test";
             _consoleWriter
-                .Setup(x => x.WriteLine(expectedMessage))
+                .Setup(consoleWriter => consoleWriter.WriteLine(expectedMessage))
                 .Verifiable(Times.Once);
             MessageWriter messageWriter = GetMessageWriter();
 
@@ -63,7 +63,7 @@
             string formatItem = "is a";
             string expectedMessage = "This is a test";
             _consoleWriter
-                .Setup(x => x.WriteLine(expectedMessage))
+                .Setup(consoleWriter => consoleWriter.WriteLine(expectedMessage))
                 .Verifiable(Times.Once);
             MessageWriter messageWriter = new(_consoleWriter.Object);
 
@@ -84,7 +84,7 @@
             string formatItem2 = "test";
             string expectedMessage = "This is a test";
             _consoleWriter
-                .Setup(x => x.WriteLine(expectedMessage))
+                .Setup(consoleWriter => consoleWriter.WriteLine(expectedMessage))
                 .Verifiable(Times.Once);
             MessageWriter messageWriter = new(_consoleWriter.Object);
 

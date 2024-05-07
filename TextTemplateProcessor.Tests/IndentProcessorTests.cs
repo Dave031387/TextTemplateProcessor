@@ -792,7 +792,7 @@
             // Arrange
             InitializeMocks();
             _logger
-                .Setup(x => x.Log(MsgIndentValueMustBeValidNumber, numberString, null))
+                .Setup(logger => logger.Log(MsgIndentValueMustBeValidNumber, numberString, null))
                 .Verifiable(Times.Once);
             IndentProcessor processor = GetIndentProcessor();
 
@@ -848,7 +848,7 @@
             // Arrange
             InitializeMocks();
             _logger
-                .Setup(x => x.Log(MsgIndentValueOutOfRange, numberString, null))
+                .Setup(logger => logger.Log(MsgIndentValueOutOfRange, numberString, null))
                 .Verifiable(Times.Once);
             IndentProcessor processor = GetIndentProcessor();
 
@@ -875,7 +875,7 @@
             // Arrange
             InitializeMocks();
             _logger
-                .Setup(x => x.Log(MsgTabSizeValueMustBeValidNumber, numberString, null))
+                .Setup(logger => logger.Log(MsgTabSizeValueMustBeValidNumber, numberString, null))
                 .Verifiable(Times.Once);
             IndentProcessor processor = GetIndentProcessor();
 
@@ -930,7 +930,7 @@
             // Arrange
             InitializeMocks();
             _logger
-                .Setup(x => x.Log(MsgTabSizeValueOutOfRange, numberString, null))
+                .Setup(logger => logger.Log(MsgTabSizeValueOutOfRange, numberString, null))
                 .Verifiable(Times.Once);
             IndentProcessor processor = GetIndentProcessor();
 
@@ -1032,7 +1032,7 @@
             InitializeMocks();
             int expectedTabSize = 1;
             _logger
-                .Setup(x => x.Log(MsgTabSizeTooSmall, expectedTabSize.ToString(), null))
+                .Setup(logger => logger.Log(MsgTabSizeTooSmall, expectedTabSize.ToString(), null))
                 .Verifiable(Times.Once);
             IndentProcessor processor = GetIndentProcessor();
 
@@ -1056,7 +1056,7 @@
             InitializeMocks();
             int expectedTabSize = 9;
             _logger
-                .Setup(x => x.Log(MsgTabSizeTooLarge, expectedTabSize.ToString(), null))
+                .Setup(logger => logger.Log(MsgTabSizeTooLarge, expectedTabSize.ToString(), null))
                 .Verifiable(Times.Once);
             IndentProcessor processor = GetIndentProcessor();
 
@@ -1132,12 +1132,12 @@
             if (message is not null)
             {
                 _locater
-                    .Setup(x => x.CurrentSegment)
+                    .Setup(locater => locater.CurrentSegment)
                     .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter))
                     .Returns(SegmentName)
                     .Verifiable(Times.Once);
                 _logger
-                    .Setup(x => x.Log(message, SegmentName, null))
+                    .Setup(logger => logger.Log(message, SegmentName, null))
                     .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_Message))
                     .Verifiable(Times.Once);
                 _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Getter, MethodCall.Logger_Log_Message);
@@ -1174,12 +1174,12 @@
             if (message is not null)
             {
                 _locater
-                    .Setup(x => x.CurrentSegment)
+                    .Setup(locater => locater.CurrentSegment)
                     .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter))
                     .Returns(SegmentName)
                     .Verifiable(Times.Once);
                 _logger
-                    .Setup(x => x.Log(message, SegmentName, null))
+                    .Setup(logger => logger.Log(message, SegmentName, null))
                     .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_Message))
                     .Verifiable(Times.Once);
                 _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Getter, MethodCall.Logger_Log_Message);

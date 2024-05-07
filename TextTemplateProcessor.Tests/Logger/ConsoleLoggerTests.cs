@@ -19,10 +19,10 @@
             // Arrange
             InitializeMocks();
             _locater
-                .Setup(x => x.CurrentSegment)
+                .Setup(locater => locater.CurrentSegment)
                 .Returns(SegmentName);
             _locater
-                .Setup(x => x.LineNumber)
+                .Setup(locater => locater.LineNumber)
                 .Returns(LineNumber);
             ConsoleLogger consoleLogger = GetConsoleLogger();
             WriteLogEntries(consoleLogger);
@@ -94,11 +94,11 @@
             // Arrange
             InitializeMocks();
             _locater
-                .Setup(x => x.CurrentSegment)
+                .Setup(locater => locater.CurrentSegment)
                 .Returns(SegmentName)
                 .Verifiable(Times.Exactly(2));
             _locater
-                .Setup(x => x.LineNumber)
+                .Setup(locater => locater.LineNumber)
                 .Returns(LineNumber)
                 .Verifiable(Times.Exactly(2));
             ConsoleLogger consoleLogger = GetConsoleLogger();
@@ -219,11 +219,11 @@
             // Arrange
             InitializeMocks();
             _locater
-                .Setup(x => x.CurrentSegment)
+                .Setup(locater => locater.CurrentSegment)
                 .Returns(SegmentName)
                 .Verifiable(Times.Once);
             _locater
-                .Setup(x => x.LineNumber)
+                .Setup(locater => locater.LineNumber)
                 .Returns(LineNumber)
                 .Verifiable(Times.Once);
             ConsoleLogger consoleLogger = GetConsoleLogger();
@@ -250,11 +250,11 @@
             // Arrange
             InitializeMocks();
             _locater
-                .Setup(x => x.CurrentSegment)
+                .Setup(locater => locater.CurrentSegment)
                 .Returns(SegmentName)
                 .Verifiable(Times.Once);
             _locater
-                .Setup(x => x.LineNumber)
+                .Setup(locater => locater.LineNumber)
                 .Returns(LineNumber)
                 .Verifiable(Times.Once);
             ConsoleLogger consoleLogger = GetConsoleLogger();
@@ -284,11 +284,11 @@
             // Arrange
             InitializeMocks();
             _locater
-                .Setup(x => x.CurrentSegment)
+                .Setup(locater => locater.CurrentSegment)
                 .Returns(SegmentName)
                 .Verifiable(Times.Once);
             _locater
-                .Setup(x => x.LineNumber)
+                .Setup(locater => locater.LineNumber)
                 .Returns(LineNumber)
                 .Verifiable(Times.Once);
             ConsoleLogger consoleLogger = GetConsoleLogger();
@@ -328,10 +328,10 @@
             List<string> writeBuffer = new();
 
             _locater
-                .Setup(x => x.CurrentSegment)
+                .Setup(locater => locater.CurrentSegment)
                 .Returns(SegmentName);
             _locater
-                .Setup(x => x.LineNumber)
+                .Setup(locater => locater.LineNumber)
                 .Returns(LineNumber);
             ConsoleLogger consoleLogger = GetConsoleLogger();
             WriteLogEntries(consoleLogger);
@@ -341,7 +341,7 @@
             foreach (string message in expectedMessages)
             {
                 _messageWriter
-                    .Setup(x => x.WriteLine(message))
+                    .Setup(messageWriter => messageWriter.WriteLine(message))
                     .Callback(callback)
                     .Verifiable(Times.Once);
             }

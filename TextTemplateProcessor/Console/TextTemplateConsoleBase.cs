@@ -12,6 +12,10 @@
     /// </summary>
     public abstract class TextTemplateConsoleBase : TextTemplateProcessor
     {
+        private readonly string _defaultFileNamePrefix = "File_";
+        private readonly string _defaultFileNameSuffix = ".txt";
+        private int _outputFileNumber = 0;
+
         /// <summary>
         /// Default constructor that creates an instance of the
         /// <see cref="TextTemplateConsoleBase" /> class.
@@ -259,7 +263,7 @@
         /// <remarks>
         /// An empty string will be returned if no directory has been set.
         /// </remarks>
-        public string OutputDirectory { get; private set; } = string.Empty;
+        public string OutputDirectory { get; internal set; } = string.Empty;
 
         /// <summary>
         /// Gets the directory where the solution file is located for the current code project that
@@ -272,6 +276,8 @@
         private IFileAndDirectoryService FileAndDirectoryService { get; init; }
 
         private IMessageWriter MessageWriter { get; init; }
+
+        private string NextDefaultFileName => $"{_defaultFileNamePrefix}{++_outputFileNumber:D4}{_defaultFileNameSuffix}";
 
         private IPathValidater PathValidater { get; init; }
 
@@ -288,7 +294,7 @@
             if (string.IsNullOrWhiteSpace(OutputDirectory) is false)
             {
                 MessageWriter.WriteLine(MsgClearTheOutputDirectory, OutputDirectory);
-                string response = ShowContinuationPrompt(MsgYesNoPrompt);
+                string response = PromptUserForInput(MsgYesNoPrompt);
 
                 // The following lines assume that the log entry type has already been set to "User"
                 // by the ShowContinuationPrompt method.
@@ -337,6 +343,43 @@
         }
 
         /// <summary>
+        /// Displays a prompt on the <see cref="Console" /> and returns the user's response.
+        /// </summary>
+        /// <param name="message">
+        /// An optional message to be displayed on the <see cref="Console" />.
+        /// <para>
+        /// "Press [ENTER] to continue..." will be displayed if the parameter is omitted.
+        /// </para>
+        /// </param>
+        /// <returns>
+        /// The text string, if any, that the user types in the <see cref="Console" /> before
+        /// hitting the ENTER key.
+        /// <para>
+        /// An empty string will be returned if the user doesn't type anything or if an error occurs
+        /// while reading the user's response.
+        /// </para>
+        /// </returns>
+        public string PromptUserForInput(string message = MsgContinuationPrompt)
+        {
+            Logger.WriteLogEntries();
+            Logger.SetLogEntryType(LogEntryType.User);
+            MessageWriter.WriteLine("\n" + message + "\n");
+            string userResponse = string.Empty;
+
+            try
+            {
+                userResponse = ConsoleReader.ReadLine();
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(MsgErrorWhileReadingUserResponse,
+                           ex.Message);
+            }
+
+            return userResponse ?? string.Empty;
+        }
+
+        /// <summary>
         /// Sets the output directory path to the given value.
         /// </summary>
         /// <param name="directoryPath">
@@ -363,40 +406,6 @@
         }
 
         /// <summary>
-        /// Displays a continuation prompt on the <see cref="Console" />.
-        /// </summary>
-        /// <param name="message">
-        /// An optional message to be displayed on the <see cref="Console" />.
-        /// <para>
-        /// "Press [ENTER] to continue..." will be displayed if the parameter is omitted.
-        /// </para>
-        /// </param>
-        /// <returns>
-        /// The text string, if any, that the user types in the <see cref="Console" /> before
-        /// hitting the ENTER key.
-        /// <para> An empty string will be returned if the user doesn't type anything. </para>
-        /// </returns>
-        public string ShowContinuationPrompt(string message = MsgContinuationPrompt)
-        {
-            Logger.WriteLogEntries();
-            Logger.SetLogEntryType(LogEntryType.User);
-            MessageWriter.WriteLine("\n" + message + "\n");
-            string userResponse = string.Empty;
-
-            try
-            {
-                userResponse = ConsoleReader.ReadLine();
-            }
-            catch (Exception ex)
-            {
-                Logger.Log(MsgErrorWhileReadingUserResponse,
-                           ex.Message);
-            }
-
-            return userResponse ?? string.Empty;
-        }
-
-        /// <summary>
         /// Writes the contents of the generated text buffer to the given output file.
         /// </summary>
         /// <param name="fileName">
@@ -419,7 +428,11 @@
             else
             {
                 filePath = GetOutputFilePath(fileName);
-                base.WriteGeneratedTextToFile(filePath, resetGeneratedText);
+
+                if (string.IsNullOrEmpty(filePath) is false)
+                {
+                    base.WriteGeneratedTextToFile(filePath, resetGeneratedText);
+                }
             }
 
             Logger.WriteLogEntries();
@@ -429,9 +442,10 @@
         {
             try
             {
-                return string.IsNullOrWhiteSpace(fileName)
-                    ? OutputDirectory
-                    : FileAndDirectoryService.CombineDirectoryAndFileName(OutputDirectory, fileName);
+                string outputFileName = string.IsNullOrWhiteSpace(fileName)
+                    ? NextDefaultFileName
+                    : fileName;
+                return FileAndDirectoryService.CombineDirectoryAndFileName(OutputDirectory, outputFileName);
             }
             catch (Exception ex)
             {

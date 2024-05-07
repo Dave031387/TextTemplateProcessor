@@ -647,8 +647,6 @@
             {
                 Logger.Log(MsgTemplateFileIsEmpty,
                            TemplateFilePath);
-                IsTemplateLoaded = false;
-                IsOutputFileWritten = false;
             }
             else
             {
@@ -656,7 +654,6 @@
                            TemplateFileName);
                 TemplateLoader.LoadTemplate(templateLines, _segmentDictionary, _controlDictionary);
                 IsTemplateLoaded = true;
-                IsOutputFileWritten = false;
             }
         }
 

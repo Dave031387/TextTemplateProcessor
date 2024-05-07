@@ -442,14 +442,14 @@
             string commentLine = $"{Comment} Comment line {++_lineCounter}";
             _templateLines.Add(commentLine);
             _locater
-                .SetupSet(x => x.LineNumber = _lineCounter)
+                .SetupSet(locater => locater.LineNumber = _lineCounter)
                 .Verifiable(Times.Once);
             _textLineParser
-                .Setup(x => x.IsValidPrefix(commentLine))
+                .Setup(textLineParser => textLineParser.IsValidPrefix(commentLine))
                 .Returns(true)
                 .Verifiable(Times.Once);
             _textLineParser
-                .Setup(x => x.IsCommentLine(commentLine))
+                .Setup(textLineParser => textLineParser.IsCommentLine(commentLine))
                 .Returns(true)
                 .Verifiable(Times.Once);
         }
@@ -488,7 +488,7 @@
 
             _templateLines.Add(textLine);
             _locater
-                .SetupSet(x => x.LineNumber = _lineCounter)
+                .SetupSet(locater => locater.LineNumber = _lineCounter)
                 .Verifiable(Times.Once);
 
             TextLine_CheckForMissingSegmentHeader(isMissingSegmentHeader);
@@ -511,16 +511,16 @@
             _lineCounter = 0;
             _defaultSegmentNameCounter = 0;
             _defaultSegmentNameGenerator
-                .SetupSequence(x => x.Next)
+                .SetupSequence(defaultSegmentNameGenerator => defaultSegmentNameGenerator.Next)
                 .Returns($"{DefaultSegmentNamePrefix}1")
                 .Returns($"{DefaultSegmentNamePrefix}2")
                 .Returns($"{DefaultSegmentNamePrefix}3")
                 .Returns($"{DefaultSegmentNamePrefix}4")
                 .Throws<ArgumentException>();
             _locater
-                .SetupProperty(x => x.CurrentSegment);
+                .SetupProperty(locater => locater.CurrentSegment);
             _logger
-                .Setup(x => x.SetLogEntryType(LogEntryType.Parsing))
+                .Setup(logger => logger.SetLogEntryType(LogEntryType.Parsing))
                 .Verifiable(Times.Once);
         }
 
@@ -553,7 +553,7 @@
                 string defaultSegmentName = $"{DefaultSegmentNamePrefix}{++_defaultSegmentNameCounter}";
                 _currentSegmentName = defaultSegmentName;
                 _logger
-                    .Setup(x => x.Log(MsgFoundDuplicateSegmentName, segmentName, _currentSegmentName))
+                    .Setup(logger => logger.Log(MsgFoundDuplicateSegmentName, segmentName, _currentSegmentName))
                     .Verifiable(Times.Once);
             }
             else
@@ -575,7 +575,7 @@
             else
             {
                 _logger
-                    .Setup(x => x.Log(MsgNoTextLinesFollowingSegmentHeader, _currentSegmentName, null))
+                    .Setup(logger => logger.Log(MsgNoTextLinesFollowingSegmentHeader, _currentSegmentName, null))
                     .Verifiable(Times.Once);
             }
         }
@@ -595,19 +595,19 @@
                 if (isUnknownPadSegment)
                 {
                     _logger
-                        .Setup(x => x.Log(MsgPadSegmentMustBeDefinedEarlier, segmentName, padSegment))
+                        .Setup(logger => logger.Log(MsgPadSegmentMustBeDefinedEarlier, segmentName, padSegment))
                         .Verifiable(Times.Once);
                 }
                 else if (padSegment == segmentName)
                 {
                     _logger
-                        .Setup(x => x.Log(MsgPadSegmentNameSameAsSegmentHeaderName, segmentName, null))
+                        .Setup(logger => logger.Log(MsgPadSegmentNameSameAsSegmentHeaderName, segmentName, null))
                         .Verifiable(Times.Once);
                 }
                 else if (isMultiplePadLevels)
                 {
                     _logger
-                        .Setup(x => x.Log(MsgMultipleLevelsOfPadSegments, segmentName, padSegment))
+                        .Setup(logger => logger.Log(MsgMultipleLevelsOfPadSegments, segmentName, padSegment))
                         .Verifiable(Times.Once);
                 }
                 else
@@ -622,18 +622,18 @@
         private void SegmentHeader_SetupCommonMocks(string segmentHeaderLine, int callCount)
         {
             _locater
-                .SetupSet(x => x.LineNumber = _lineCounter)
+                .SetupSet(locater => locater.LineNumber = _lineCounter)
                 .Verifiable(Times.Once);
             _textLineParser
-                .Setup(x => x.IsValidPrefix(segmentHeaderLine))
+                .Setup(textLineParser => textLineParser.IsValidPrefix(segmentHeaderLine))
                 .Returns(true)
                 .Verifiable(Times.Exactly(callCount));
             _textLineParser
-                .Setup(x => x.IsCommentLine(segmentHeaderLine))
+                .Setup(textLineParser => textLineParser.IsCommentLine(segmentHeaderLine))
                 .Returns(false)
                 .Verifiable(Times.Exactly(callCount));
             _textLineParser
-                .Setup(x => x.IsSegmentHeader(segmentHeaderLine))
+                .Setup(textLineParser => textLineParser.IsSegmentHeader(segmentHeaderLine))
                 .Returns(true)
                 .Verifiable(Times.Exactly(callCount));
         }
@@ -646,11 +646,11 @@
             };
 
             _segmentHeaderParser
-                .Setup(x => x.ParseSegmentHeader(segmentHeaderLine))
+                .Setup(segmentHeaderParser => segmentHeaderParser.ParseSegmentHeader(segmentHeaderLine))
                 .Returns(returnedControlItem)
                 .Verifiable(Times.Exactly(callCount));
             _logger
-                .Setup(x => x.Log(MsgSegmentHasBeenAdded, _currentSegmentName, null))
+                .Setup(logger => logger.Log(MsgSegmentHasBeenAdded, _currentSegmentName, null))
                 .Verifiable(Times.Once);
         }
 
@@ -666,7 +666,7 @@
             }
 
             _textLineParser
-                .Setup(x => x.ParseTextLine(textLine))
+                .Setup(textLineParser => textLineParser.ParseTextLine(textLine))
                 .Returns(textItem)
                 .Verifiable(Times.Once);
         }
@@ -678,7 +678,7 @@
                 string defaultSegmentName = $"{DefaultSegmentNamePrefix}{++_defaultSegmentNameCounter}";
                 _currentSegmentName = defaultSegmentName;
                 _logger
-                    .Setup(x => x.Log(MsgMissingInitialSegmentHeader, _currentSegmentName, null))
+                    .Setup(logger => logger.Log(MsgMissingInitialSegmentHeader, _currentSegmentName, null))
                     .Verifiable(Times.Once);
                 _expectedControlDictionary[_currentSegmentName] = new();
             }
@@ -689,15 +689,15 @@
             if (isValidTextLine)
             {
                 _textLineParser
-                    .Setup(x => x.IsValidPrefix(textLine))
+                    .Setup(textLineParser => textLineParser.IsValidPrefix(textLine))
                     .Returns(true)
                     .Verifiable(Times.Once);
                 _textLineParser
-                    .Setup(x => x.IsCommentLine(textLine))
+                    .Setup(textLineParser => textLineParser.IsCommentLine(textLine))
                     .Returns(false)
                     .Verifiable(Times.Once);
                 _textLineParser
-                    .Setup(x => x.IsSegmentHeader(textLine))
+                    .Setup(textLineParser => textLineParser.IsSegmentHeader(textLine))
                     .Returns(false)
                 .Verifiable(Times.Once);
 
@@ -708,7 +708,7 @@
             else
             {
                 _textLineParser
-                    .Setup(x => x.IsValidPrefix(textLine))
+                    .Setup(textLineParser => textLineParser.IsValidPrefix(textLine))
                     .Returns(false)
                     .Verifiable(Times.Once);
             }
@@ -767,7 +767,8 @@
         {
             if (_defaultSegmentNameCounter > 0)
             {
-                _defaultSegmentNameGenerator.Verify(x => x.Next, Times.Exactly(_defaultSegmentNameCounter));
+                _defaultSegmentNameGenerator
+                    .Verify(defaultSegmentNameGenerator => defaultSegmentNameGenerator.Next, Times.Exactly(_defaultSegmentNameCounter));
             }
 
             if (_locater.Setups.Any())

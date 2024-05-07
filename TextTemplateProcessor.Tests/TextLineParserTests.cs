@@ -171,7 +171,7 @@
             InitializeMocks();
             string text = $"{SegmentHeaderCode}#Segment1";
             _logger
-                .Setup(x => x.Log(MsgFourthCharacterMustBeBlank, text, null))
+                .Setup(logger => logger.Log(MsgFourthCharacterMustBeBlank, text, null))
                 .Verifiable(Times.Once);
             TextLineParser parser = GetTextLineParser();
 
@@ -192,7 +192,7 @@
             InitializeMocks();
             string text = GenerateTextLine("@.1", "Text");
             _logger
-                .Setup(x => x.Log(MsgInvalidControlCode, text, null))
+                .Setup(logger => logger.Log(MsgInvalidControlCode, text, null))
                 .Verifiable(Times.Once);
             TextLineParser parser = GetTextLineParser();
 
@@ -215,7 +215,7 @@
             // Arrange
             InitializeMocks();
             _logger
-                .Setup(x => x.Log(MsgMinimumLineLengthInTemplateFileIs3, null, null))
+                .Setup(logger => logger.Log(MsgMinimumLineLengthInTemplateFileIs3, null, null))
                 .Verifiable(Times.Once);
             TextLineParser parser = GetTextLineParser();
 
@@ -275,7 +275,7 @@
             string textLine = GenerateTextLine(controlCode, expectedText);
             string actualText = string.Empty;
             _tokenProcessor
-                .Setup(x => x.ExtractTokens(ref It.Ref<string>.IsAny))
+                .Setup(tokenProcessor => tokenProcessor.ExtractTokens(ref It.Ref<string>.IsAny))
                 .Callback((ref string passedText) =>
                 {
                     actualText = passedText;
