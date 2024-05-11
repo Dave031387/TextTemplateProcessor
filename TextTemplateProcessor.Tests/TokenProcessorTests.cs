@@ -27,15 +27,24 @@
             MocksVerifyNoOtherCalls();
         }
 
-        [Fact]
-        public void ExtractTokens_LineContainsDuplicateTokens_ExtractsTokenOnlyOnce()
+        [Theory]
+        [InlineData("")]
+        [InlineData("+")]
+        [InlineData("-")]
+        [InlineData("=")]
+        [InlineData(" ")]
+        [InlineData("+ ")]
+        [InlineData("- ")]
+        [InlineData("= ")]
+        public void ExtractTokens_LineContainsDuplicateTokens_ExtractsTokenOnlyOnce(string prefix)
         {
             // Arrange
             InitializeMocks();
             string tokenName = "token1";
-            string token = GenerateToken(tokenName);
-            string text = $"text {token} text {token} text";
-            string expected = $"text {token} text {token} text";
+            string tokenA = GenerateToken(tokenName);
+            string tokenB = GenerateToken(prefix + tokenName);
+            string text = $"text {tokenA} text {tokenB} text";
+            string expected = $"text {tokenA} text {tokenB} text";
             _nameValidater
                 .Setup(nameValidater => nameValidater.IsValidName(tokenName))
                 .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName))
@@ -103,7 +112,7 @@
             string tokenName1 = "token1";
             string token1 = GenerateToken(tokenName1);
             string tokenName2 = "token2";
-            string token2 = GenerateToken(tokenName2);
+            string token2 = GenerateToken("- " + tokenName2);
             int expectedTokenCount = 2;
             string text = $"{text1}{token1}{text2}{token2}{text3}";
             string expectedText = $"{text1}{token1}{text2}{token2}{text3}";
@@ -140,16 +149,20 @@
         }
 
         [Theory]
-        [InlineData("text", "text")]
-        [InlineData("text", "")]
-        [InlineData("", "text")]
-        [InlineData("", "")]
-        public void ExtractTokens_LineContainsOneValidToken_ExtractsToken(string text1, string text2)
+        [InlineData("text", "text", "")]
+        [InlineData("text", "", "")]
+        [InlineData("", "text", "")]
+        [InlineData("", "", "")]
+        [InlineData("text", "text", "+")]
+        [InlineData("text", "", "-")]
+        [InlineData("", "text", "=")]
+        [InlineData("", "", "+")]
+        public void ExtractTokens_LineContainsOneValidToken_ExtractsToken(string text1, string text2, string prefix)
         {
             // Arrange
             InitializeMocks();
             string tokenName = "token1";
-            string token = GenerateToken(tokenName);
+            string token = GenerateToken(prefix + tokenName);
             string text = $"{text1}{token}{text2}";
             string expected = $"{text1}{token}{text2}";
             _nameValidater
@@ -223,15 +236,18 @@
         }
 
         [Theory]
-        [InlineData("  ", "  ")]
-        [InlineData("  ", "")]
-        [InlineData("", "  ")]
-        public void ExtractTokens_TokenContainsEmbeddedSpaces_TrimsSpacesAndExtractsTokenName(string text1, string text2)
+        [InlineData("  ", "  ", "")]
+        [InlineData("  ", "", "")]
+        [InlineData("", "  ", "")]
+        [InlineData("  ", "  ", "+")]
+        [InlineData("  ", "", "-")]
+        [InlineData("", "  ", "=")]
+        public void ExtractTokens_TokenContainsEmbeddedSpaces_TrimsSpacesAndExtractsTokenName(string text1, string text2, string prefix)
         {
             // Arrange
             InitializeMocks();
             string tokenName = "token1";
-            string paddedName = $"{text1}{tokenName}{text2}";
+            string paddedName = $"{prefix}{text1}{tokenName}{text2}";
             string token = GenerateToken(paddedName);
             string text = $"text{token}text";
             string expected = $"text{token}text";
@@ -263,7 +279,7 @@
         {
             // Arrange
             InitializeMocks();
-            string tokenName = "1badName";
+            string tokenName = "1 bad Name";
             string token = GenerateToken(tokenName);
             string text = $"text{token}text";
             string expected = $"text{TokenEscapeChar}{token}text";
@@ -373,7 +389,7 @@
         {
             // Arrange
             InitializeMocks();
-            string tokenName = "1badName";
+            string tokenName = "1 bad Name";
             string segmentName = "Segment2";
             _locater
                 .Setup(locater => locater.CurrentSegment)
@@ -569,10 +585,10 @@
             string token1 = GenerateToken(tokenName1);
             string token2 = GenerateToken(tokenName2);
             string token3 = GenerateToken(tokenName3);
-            string token4 = GenerateToken(tokenName4);
+            string token4 = GenerateToken("=" + tokenName4);
             string token5 = GenerateToken(tokenName5);
-            string token6 = GenerateToken(tokenName6);
-            string token7 = $"{TokenStart}{tokenName7}";
+            string token6 = GenerateToken("-" + tokenName6);
+            string token7 = $"{TokenStart}+ {tokenName7}";
             string segmentName = "Segment1";
             _locater
                 .Setup(locater => locater.CurrentSegment)
@@ -685,6 +701,107 @@
                 .Should()
                 .Be(expected);
             MocksVerifyNoOtherCalls();
+        }
+
+        [Theory]
+        [InlineData("t", "t", "est")]
+        [InlineData("T", "t", "est")]
+        [InlineData("t", "t", "1")]
+        [InlineData("T", "t", "1")]
+        [InlineData("t", "t", "")]
+        [InlineData("T", "t", "")]
+        public void ReplaceTokens_TokenContainsLowercaseFlag_TokenValueStartsWithLowercase(string firstIn, string firstOut, string remaining)
+        {
+            // Arrange
+            InitializeMocks();
+            string tokenName = "token";
+            string token = GenerateToken("-" + tokenName);
+            string tokenValue = firstIn + remaining;
+            string expectedValue = firstOut + remaining;
+            _nameValidater
+                .Setup(nameValidater => nameValidater.IsValidName(tokenName))
+                .Returns(true)
+                .Verifiable(Times.Once);
+            TokenProcessor processor = GetTokenProcessor();
+            string text = $"Text line {token} end";
+            string expected = $"Text line {expectedValue} end";
+            processor.TokenDictionary.Add(tokenName, tokenValue);
+
+            // Act
+            string actual = processor.ReplaceTokens(text);
+
+            // Assert
+            actual
+                .Should()
+                .Be(expected);
+            VerifyMocks();
+        }
+
+        [Theory]
+        [InlineData("test")]
+        [InlineData("Test")]
+        [InlineData("t1")]
+        [InlineData("T1")]
+        [InlineData("t")]
+        [InlineData("T")]
+        public void ReplaceTokens_TokenContainsSameCaseFlag_TokenValueIsUnchanged(string tokenValue)
+        {
+            // Arrange
+            InitializeMocks();
+            string tokenName = "token";
+            string token = GenerateToken("=" + tokenName);
+            string expectedValue = tokenValue;
+            _nameValidater
+                .Setup(nameValidater => nameValidater.IsValidName(tokenName))
+                .Returns(true)
+                .Verifiable(Times.Once);
+            TokenProcessor processor = GetTokenProcessor();
+            string text = $"Text line {token} end";
+            string expected = $"Text line {expectedValue} end";
+            processor.TokenDictionary.Add(tokenName, tokenValue);
+
+            // Act
+            string actual = processor.ReplaceTokens(text);
+
+            // Assert
+            actual
+                .Should()
+                .Be(expected);
+            VerifyMocks();
+        }
+
+        [Theory]
+        [InlineData("t", "T", "est")]
+        [InlineData("T", "T", "est")]
+        [InlineData("t", "T", "1")]
+        [InlineData("T", "T", "1")]
+        [InlineData("t", "T", "")]
+        [InlineData("T", "T", "")]
+        public void ReplaceTokens_TokenContainsUppercaseFlag_TokenValueStartsWithUppercase(string firstIn, string firstOut, string remaining)
+        {
+            // Arrange
+            InitializeMocks();
+            string tokenName = "token";
+            string token = GenerateToken("+ " + tokenName);
+            string tokenValue = firstIn + remaining;
+            string expectedValue = firstOut + remaining;
+            _nameValidater
+                .Setup(nameValidater => nameValidater.IsValidName(tokenName))
+                .Returns(true)
+                .Verifiable(Times.Once);
+            TokenProcessor processor = GetTokenProcessor();
+            string text = $"Text line {token} end";
+            string expected = $"Text line {expectedValue} end";
+            processor.TokenDictionary.Add(tokenName, tokenValue);
+
+            // Act
+            string actual = processor.ReplaceTokens(text);
+
+            // Assert
+            actual
+                .Should()
+                .Be(expected);
+            VerifyMocks();
         }
 
         [Fact]
@@ -867,24 +984,24 @@
         {
             char escape = '!';
             string delimiter = escape.ToString();
-            SetTokenDelimiters_Test("<<", delimiter, escape, MsgTokenEndAndTokenEscapeAreSame, delimiter, delimiter);
+            SetTokenDelimiters_Test("<<", delimiter, escape, false, MsgTokenEndAndTokenEscapeAreSame, delimiter, delimiter);
         }
 
         [Theory]
         [InlineData("")]
         [InlineData(Whitespace)]
         public void SetTokenDelimiters_TokenEndIsEmptyOrWhitespace_LogsMessageAndReturnsFalse(string tokenEnd)
-            => SetTokenDelimiters_Test("<<", tokenEnd, '!', MsgTokenEndDelimiterIsEmpty);
+            => SetTokenDelimiters_Test("<<", tokenEnd, '!', false, MsgTokenEndDelimiterIsEmpty);
 
         [Fact]
         public void SetTokenDelimiters_TokenEndIsNull_LogsMessageAndReturnsFalse()
-            => SetTokenDelimiters_Test("<<", null!, '!', MsgTokenEndDelimiterIsNull);
+            => SetTokenDelimiters_Test("<<", null!, '!', false, MsgTokenEndDelimiterIsNull);
 
         [Fact]
         public void SetTokenDelimiters_TokenStartAndTokenEndAreSameValue_LogsMessageAndReturnsFalse()
         {
             string delimiter = "##";
-            SetTokenDelimiters_Test(delimiter, delimiter, '!', MsgTokenStartAndTokenEndAreSame, delimiter, delimiter);
+            SetTokenDelimiters_Test(delimiter, delimiter, '!', false, MsgTokenStartAndTokenEndAreSame, delimiter, delimiter);
         }
 
         [Fact]
@@ -892,18 +1009,27 @@
         {
             char escape = '!';
             string delimiter = escape.ToString();
-            SetTokenDelimiters_Test(delimiter, ">>", escape, MsgTokenStartAndTokenEscapeAreSame, delimiter, delimiter);
+            SetTokenDelimiters_Test(delimiter, ">>", escape, false, MsgTokenStartAndTokenEscapeAreSame, delimiter, delimiter);
+        }
+
+        [Theory]
+        [InlineData("=")]
+        [InlineData("+")]
+        [InlineData("-")]
+        public void SetTokenDelimiters_TokenStartDelimiterEndsInCaseFlagCharacter_LogsMessageAndSetsDelimitersAndReturnsTrue(string caseFlag)
+        {
+            SetTokenDelimiters_Test($"<<{caseFlag}", ">>", '!', true, MsgTokenStartDelimiterWarning);
         }
 
         [Theory]
         [InlineData("")]
         [InlineData(Whitespace)]
         public void SetTokenDelimiters_TokenStartIsEmptyOrWhitespace_LogsMessageAndReturnsFalse(string tokenStart)
-            => SetTokenDelimiters_Test(tokenStart, ">>", '!', MsgTokenStartDelimiterIsEmpty);
+            => SetTokenDelimiters_Test(tokenStart, ">>", '!', false, MsgTokenStartDelimiterIsEmpty);
 
         [Fact]
         public void SetTokenDelimiters_TokenStartIsNull_LogsMessageAndReturnsFalse()
-            => SetTokenDelimiters_Test(null!, ">>", '!', MsgTokenStartDelimiterIsNull);
+            => SetTokenDelimiters_Test(null!, ">>", '!', false, MsgTokenStartDelimiterIsNull);
 
         [Fact]
         public void SetTokenDelimiters_ValidDelimiters_SetsDelimiterValuesAndReturnsTrue()
@@ -1030,20 +1156,19 @@
         private void SetTokenDelimiters_Test(string tokenStart,
                                              string tokenEnd,
                                              char tokenEscapeChar,
+                                             bool isValid = true,
                                              string? message = null,
                                              string? arg1 = null,
                                              string? arg2 = null)
         {
             // Arrange
             InitializeMocks();
-            bool expected = true;
 
             if (message is not null)
             {
                 _logger
                     .Setup(logger => logger.Log(message, arg1, arg2))
                     .Verifiable(Times.Once);
-                expected = false;
             }
 
             TokenProcessor processor = GetTokenProcessor();
@@ -1054,9 +1179,9 @@
             // Assert
             actual
                 .Should()
-                .Be(expected);
+                .Be(isValid);
 
-            if (message is null)
+            if (isValid)
             {
                 processor.TokenStart
                     .Should()

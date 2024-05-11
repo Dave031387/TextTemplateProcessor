@@ -89,6 +89,7 @@
         internal const string MsgTokenStartAndTokenEscapeAreSame = "The token start delimiter \"{0}\" must not be the same as the same as the token escape character \"{1}\".";
         internal const string MsgTokenStartDelimiterIsEmpty = "The token start delimiter must not be empty or whitespace.";
         internal const string MsgTokenStartDelimiterIsNull = "The token start delimiter must not be null.";
+        internal const string MsgTokenStartDelimiterWarning = "Ending the token start delimiter with '-', '+' or '=' may cause confusion and lead to unexpected errors.";
         internal const string MsgTokenValueIsEmpty = "Found token \"{1}\" with no assigned value while generating segment \"{0}\".";
         internal const string MsgTokenWithEmptyValue = "Token \"{1}\" was passed in with an empty value for segment \"{0}\".";
         internal const string MsgTokenWithNullValue = "Token \"{1}\" was passed in with a null value for segment \"{0}\".";

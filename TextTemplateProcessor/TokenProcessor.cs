@@ -11,6 +11,12 @@
     /// </summary>
     internal class TokenProcessor : ITokenProcessor
     {
+        private const char LowercaseFlag = '-';
+        private const char SameCaseFlag = '=';
+        private const char UppercaseFlag = '+';
+        private record TokenInfo(string TokenString, string TokenName, char Case);
+        private record TokenSearchResult(bool IsValid, int IndexValue);
+
         /// <summary>
         /// The default constructor that creates an instance of the <see cref="TokenProcessor" />
         /// class.
@@ -64,7 +70,7 @@
         internal Dictionary<string, string> TokenDictionary { get; } = new();
         internal string TokenEnd { get; private set; } = "#>";
         internal char TokenEscapeChar { get; private set; } = '\\';
-        internal string TokenStart { get; private set; } = "<#=";
+        internal string TokenStart { get; private set; } = "<#";
 
         private ILocater Locater { get; init; }
 
@@ -95,16 +101,16 @@
 
             while (startIndex < text.Length - 1)
             {
-                (string token, string tokenName) = FindToken(ref startIndex, ref text);
+                TokenInfo tokenInfo = FindToken(ref startIndex, ref text);
 
-                if (string.IsNullOrEmpty(token))
+                if (string.IsNullOrEmpty(tokenInfo.TokenString))
                 {
                     continue;
                 }
 
-                if (TokenDictionary.ContainsKey(tokenName) is false)
+                if (TokenDictionary.ContainsKey(tokenInfo.TokenName) is false)
                 {
-                    TokenDictionary.Add(tokenName, string.Empty);
+                    TokenDictionary.Add(tokenInfo.TokenName, string.Empty);
                 }
             }
         }
@@ -168,29 +174,25 @@
 
             while (startIndex < text.Length)
             {
-                (string token, string tokenName) = FindToken(ref startIndex, ref text);
+                TokenInfo tokenInfo = FindToken(ref startIndex, ref text);
 
-                if (string.IsNullOrEmpty(tokenName))
+                if (string.IsNullOrEmpty(tokenInfo.TokenName))
                 {
                     break;
                 }
 
-                if (TokenDictionary.ContainsKey(tokenName))
+                if (TokenDictionary.ContainsKey(tokenInfo.TokenName))
                 {
-                    if (string.IsNullOrEmpty(TokenDictionary[tokenName]))
-                    {
-                        Logger.Log(MsgTokenValueIsEmpty,
-                                   Locater.CurrentSegment,
-                                   tokenName);
-                    }
+                    string tokenValue = TokenDictionary[tokenInfo.TokenName];
+                    string replacementValue = GetReplacementValue(tokenInfo, tokenValue);
 
-                    _ = builder.Replace(token, TokenDictionary[tokenName]);
+                    _ = builder.Replace(tokenInfo.TokenString, replacementValue);
                 }
                 else
                 {
                     Logger.Log(MsgTokenNameNotFound,
                                Locater.CurrentSegment,
-                               tokenName);
+                               tokenInfo.TokenName);
                 }
             }
 
@@ -265,20 +267,34 @@
                 return false;
             }
 
+            if (tokenStart[^1] is LowercaseFlag or UppercaseFlag or SameCaseFlag)
+            {
+                Logger.Log(MsgTokenStartDelimiterWarning);
+            }
+
             TokenStart = tokenStart;
             TokenEnd = tokenEnd;
             TokenEscapeChar = tokenEscapeChar;
             return true;
         }
 
-        private (string token, string tokenName) ExtractToken(int tokenStart, ref int tokenEnd, ref string text)
+        private TokenInfo ExtractToken(int tokenStart, int tokenEnd, ref string text)
         {
             int tokenNameStart = tokenStart + TokenStart.Length;
             int tokenNameEnd = tokenEnd;
             tokenEnd += TokenEnd.Length;
-            string token = text[tokenStart..tokenEnd];
-            string tokenName = text[tokenNameStart..tokenNameEnd].Trim();
+            string tokenString = text[tokenStart..tokenEnd];
+            string tokenName;
             bool isValidToken = true;
+            char initCase = SameCaseFlag;
+
+            if (text[tokenNameStart] is LowercaseFlag or UppercaseFlag or SameCaseFlag)
+            {
+                initCase = text[tokenNameStart];
+                tokenNameStart++;
+            }
+
+            tokenName = text[tokenNameStart..tokenNameEnd].Trim();
 
             if (string.IsNullOrWhiteSpace(tokenName))
             {
@@ -295,17 +311,16 @@
             if (isValidToken is false)
             {
                 text = InsertEscapeCharacter(tokenStart, text);
-                tokenEnd++;
-                token = string.Empty;
+                tokenString = string.Empty;
                 tokenName = string.Empty;
             }
 
-            return (token, tokenName);
+            return new(tokenString, tokenName, initCase);
         }
 
-        private (string token, string tokenName) FindToken(ref int startIndex, ref string text)
+        private TokenInfo FindToken(ref int startIndex, ref string text)
         {
-            (string token, string tokenName) result = (string.Empty, string.Empty);
+            TokenInfo result = new(string.Empty, string.Empty, SameCaseFlag);
 
             if (startIndex < 0)
             {
@@ -313,34 +328,61 @@
             }
 
             while (startIndex < text.Length
-                && string.IsNullOrEmpty(result.token))
+                && string.IsNullOrEmpty(result.TokenString))
             {
-                (bool isValidTokenStart, int tokenStart) = LocateTokenStartDelimiter(startIndex, text);
+                TokenSearchResult tokenStart = LocateTokenStartDelimiter(startIndex, text);
 
-                if (isValidTokenStart is false)
+                if (tokenStart.IsValid is false)
                 {
-                    startIndex = tokenStart;
+                    startIndex = tokenStart.IndexValue;
                     continue;
                 }
 
-                (bool isValidTokenEnd, int tokenEnd) = LocateTokenEndDelimiter(tokenStart, ref text);
+                TokenSearchResult tokenEnd = LocateTokenEndDelimiter(tokenStart.IndexValue, ref text);
 
-                if (isValidTokenEnd is false)
+                if (tokenEnd.IsValid is false)
                 {
-                    startIndex = tokenEnd;
+                    startIndex = tokenEnd.IndexValue;
                     break;
                 }
 
-                result = ExtractToken(tokenStart, ref tokenEnd, ref text);
-                startIndex = tokenEnd;
+                result = ExtractToken(tokenStart.IndexValue, tokenEnd.IndexValue, ref text);
+                startIndex = tokenEnd.IndexValue;
             }
 
             return result;
         }
 
+        private string GetReplacementValue(TokenInfo tokenInfo, string tokenValue)
+        {
+            string replacementValue = string.Empty;
+
+            if (string.IsNullOrEmpty(tokenValue))
+            {
+                Logger.Log(MsgTokenValueIsEmpty,
+                           Locater.CurrentSegment,
+                           tokenInfo.TokenName);
+            }
+            else
+            {
+                string firstChar = tokenValue[0..1];
+                string remaining = tokenValue.Length > 1
+                    ? tokenValue[1..]
+                    : string.Empty;
+
+                replacementValue = tokenInfo.Case == LowercaseFlag
+                    ? firstChar.ToLowerInvariant() + remaining
+                        : tokenInfo.Case == UppercaseFlag
+                        ? firstChar.ToUpperInvariant() + remaining
+                        : tokenValue;
+            }
+
+            return replacementValue;
+        }
+
         private string InsertEscapeCharacter(int tokenStart, string text) => text.Insert(tokenStart, TokenEscapeChar.ToString());
 
-        private (bool isValidTokenEnd, int tokenEnd) LocateTokenEndDelimiter(int tokenStart, ref string text)
+        private TokenSearchResult LocateTokenEndDelimiter(int tokenStart, ref string text)
         {
             int tokenEnd = text.IndexOf(TokenEnd, tokenStart, StringComparison.Ordinal);
 
@@ -348,21 +390,21 @@
             {
                 Logger.Log(MsgTokenMissingEndDelimiter);
                 text = InsertEscapeCharacter(tokenStart, text);
-                return (false, text.Length);
+                return new(false, text.Length);
             }
 
-            return (true, tokenEnd);
+            return new(true, tokenEnd);
         }
 
-        private (bool isValidTokenStart, int newIndexValue) LocateTokenStartDelimiter(int startIndex, string text)
+        private TokenSearchResult LocateTokenStartDelimiter(int startIndex, string text)
         {
             int tokenStart = text.IndexOf(TokenStart, startIndex, StringComparison.Ordinal);
 
             return tokenStart < 0
-                ? (false, text.Length)
+                ? new(false, text.Length)
                 : tokenStart > 0 && text[tokenStart - 1] == TokenEscapeChar
-                ? (false, tokenStart + TokenStart.Length)
-                : (true, tokenStart);
+                ? new(false, tokenStart + TokenStart.Length)
+                : new(true, tokenStart);
         }
 
         private void UpdateTokenDictionary(KeyValuePair<string, string> keyValuePair)

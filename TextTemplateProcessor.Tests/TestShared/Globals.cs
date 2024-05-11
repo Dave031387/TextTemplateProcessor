@@ -25,7 +25,7 @@ namespace TextTemplateProcessor.TestShared
         public const string TabSizeOption = "TAB";
         public const string TokenEnd = "#>";
         public const char TokenEscapeChar = '\\';
-        public const string TokenStart = "<#=";
+        public const string TokenStart = "<#";
         public const string Whitespace = "\t\n\v\f\r \u0085\u00a0\u2002\u2003\u2028\u2029";
         private static int _counter = 0;
 
