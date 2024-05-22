@@ -125,7 +125,7 @@
             if (headerLine[4] == ' ')
             {
                 Locater.CurrentSegment = DefaultSegmentNameGenerator.Next;
-                Logger.Log(MsgSegmentNameMustStartInColumn5,
+                Logger.Log(MsgSegmentNameIsMissing,
                            Locater.CurrentSegment,
                            headerLine);
                 headerLine = headerLine.Insert(4, Locater.CurrentSegment);

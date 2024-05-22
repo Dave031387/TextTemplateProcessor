@@ -20,19 +20,19 @@
             InitializeMocks();
             _logger
                 .Setup(logger => logger.Log(MsgAttemptingToReadFile, filePath, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_FirstMessage))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message, 1))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgErrorWhileReadingTemplateFile, It.IsAny<string>(), null))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_SecondMessage))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message, 2))
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.ReadTextFile(filePath))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.FileAndDirectoryService_ReadTextFile))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_ReadTextFile))
                 .Throws<ArgumentException>()
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCall.Logger_Log_FirstMessage, MethodCall.FileAndDirectoryService_ReadTextFile);
-            _verifier.DefineExpectedCallOrder(MethodCall.FileAndDirectoryService_ReadTextFile, MethodCall.Logger_Log_SecondMessage);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.FileAndDirectoryService_ReadTextFile, 1);
+            _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_ReadTextFile, MethodCallID.Logger_Log_Message, 0, 2);
 
             // Act
             List<string> actual = reader.ReadTextFile().ToList();
@@ -62,19 +62,19 @@
             };
             _logger
                 .Setup(logger => logger.Log(MsgAttemptingToReadFile, filePath, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_FirstMessage))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message, 1))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgFileSuccessfullyRead, null, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_SecondMessage))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message, 2))
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.ReadTextFile(filePath))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.FileAndDirectoryService_ReadTextFile))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_ReadTextFile))
                 .Returns(expected)
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCall.Logger_Log_FirstMessage, MethodCall.FileAndDirectoryService_ReadTextFile);
-            _verifier.DefineExpectedCallOrder(MethodCall.FileAndDirectoryService_ReadTextFile, MethodCall.Logger_Log_SecondMessage);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.FileAndDirectoryService_ReadTextFile, 1);
+            _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_ReadTextFile, MethodCallID.Logger_Log_Message, 0, 2);
 
             // Act
             List<string> actual = reader.ReadTextFile().ToList();
@@ -121,14 +121,14 @@
             string invalidFilePath = $@"{VolumeRoot}{Sep}invalid;path{Sep}file?";
             _pathValidater
                 .Setup(pathValidater => pathValidater.ValidateFullPath(invalidFilePath, true, true))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.PathValidater_ValidateFullPath))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.PathValidater_ValidateFullPath))
                 .Throws<ArgumentException>()
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgUnableToSetTemplateFilePath, It.IsAny<string>(), null))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCall.PathValidater_ValidateFullPath, MethodCall.Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidateFullPath, MethodCallID.Logger_Log_Message);
 
             // Act
             reader.SetFilePath(invalidFilePath);
@@ -156,22 +156,22 @@
             string filePath = $"{directoryPath}{Sep}{fileName}";
             _pathValidater
                 .Setup(pathValidater => pathValidater.ValidateFullPath(filePath, true, true))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.PathValidater_ValidateFullPath))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.PathValidater_ValidateFullPath))
                 .Returns(filePath)
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.GetDirectoryName(filePath))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.FileAndDirectoryService_GetDirectoryName))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetDirectoryName))
                 .Returns(directoryPath)
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.GetFileName(filePath))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.FileAndDirectoryService_GetFileName))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetFileName))
                 .Returns(fileName)
                 .Verifiable(Times.Once);
             TextReader reader = GetTextReader();
-            _verifier.DefineExpectedCallOrder(MethodCall.PathValidater_ValidateFullPath, MethodCall.FileAndDirectoryService_GetDirectoryName);
-            _verifier.DefineExpectedCallOrder(MethodCall.PathValidater_ValidateFullPath, MethodCall.FileAndDirectoryService_GetFileName);
+            _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidateFullPath, MethodCallID.FileAndDirectoryService_GetDirectoryName);
+            _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidateFullPath, MethodCallID.FileAndDirectoryService_GetFileName);
 
             // Act
             reader.SetFilePath(filePath);
@@ -411,34 +411,34 @@
             {
                 _pathValidater
                     .Setup(pathValidater => pathValidater.ValidateFullPath(filePath, true, true))
-                    .Callback(_verifier.GetCallOrderAction(MethodCall.PathValidater_ValidateFullPath))
+                    .Callback(_verifier.GetCallOrderAction(MethodCallID.PathValidater_ValidateFullPath))
                     .Throws<ArgumentException>()
                     .Verifiable(Times.Once);
                 _logger
                     .Setup(logger => logger.Log(MsgUnableToSetTemplateFilePath, It.IsAny<string>(), null))
-                    .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_Message))
+                    .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
                     .Verifiable(Times.Once);
-                _verifier.DefineExpectedCallOrder(MethodCall.PathValidater_ValidateFullPath, MethodCall.Logger_Log_Message);
+                _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidateFullPath, MethodCallID.Logger_Log_Message);
             }
             else
             {
                 _pathValidater
                     .Setup(pathValidater => pathValidater.ValidateFullPath(filePath, true, true))
-                    .Callback(_verifier.GetCallOrderAction(MethodCall.PathValidater_ValidateFullPath))
+                    .Callback(_verifier.GetCallOrderAction(MethodCallID.PathValidater_ValidateFullPath))
                     .Returns(filePath)
                     .Verifiable(Times.Once);
                 _fileService
                     .Setup(fileAndDirectoryService => fileAndDirectoryService.GetDirectoryName(filePath))
-                    .Callback(_verifier.GetCallOrderAction(MethodCall.FileAndDirectoryService_GetDirectoryName))
+                    .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetDirectoryName))
                     .Returns(directoryPath)
                     .Verifiable(Times.Once);
                 _fileService
                     .Setup(fileAndDirectoryService => fileAndDirectoryService.GetFileName(filePath))
-                    .Callback(_verifier.GetCallOrderAction(MethodCall.FileAndDirectoryService_GetFileName))
+                    .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetFileName))
                     .Returns(fileName)
                     .Verifiable(Times.Once);
-                _verifier.DefineExpectedCallOrder(MethodCall.PathValidater_ValidateFullPath, MethodCall.FileAndDirectoryService_GetDirectoryName);
-                _verifier.DefineExpectedCallOrder(MethodCall.PathValidater_ValidateFullPath, MethodCall.FileAndDirectoryService_GetFileName);
+                _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidateFullPath, MethodCallID.FileAndDirectoryService_GetDirectoryName);
+                _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidateFullPath, MethodCallID.FileAndDirectoryService_GetFileName);
             }
 
             return new(filePath,

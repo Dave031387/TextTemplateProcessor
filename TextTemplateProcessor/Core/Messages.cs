@@ -67,6 +67,7 @@
         internal const string MsgSegmentHasBeenAdded = "Segment \"{0}\" has been added to the control dictionary.";
         internal const string MsgSegmentHasBeenReset = "Segment \"{0}\" has been reset.";
         internal const string MsgSegmentHasNoTextLines = "Tried to generate segment \"{0}\" but the segment has no text lines.";
+        internal const string MsgSegmentNameIsMissing = "The segment name is missing on the segment header. The default name \"{0}\" will be used instead.\nSegment header: {1}\n                    ^";
         internal const string MsgSegmentNameIsNullOrWhitespace = "The segment name passed into the GenerateSegment method was null, empty or whitespace.";
         internal const string MsgSegmentNameMustStartInColumn5 = "The segment name must start in column 5 of the segment header line. The default name \"{0}\" will be used instead.\n{1}\n    ^";
         internal const string MsgTabSizeTooLarge = "The requested tab size is too large. The maximum value \"{0}\" will be used.";

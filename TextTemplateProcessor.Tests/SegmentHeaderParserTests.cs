@@ -24,32 +24,32 @@
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName} {FirstTimeIndentOption}={optionValue}";
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.IsValidIndentValue(optionValue, out indentValue))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.IndentProcessor_IsValidIndentValue))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_IsValidIndentValue))
                 .Returns(false)
                 .Verifiable(Times.Once);
             _locater
                 .SetupSet(locater => locater.CurrentSegment = SegmentName)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Setter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Setter))
                 .Verifiable(Times.Once);
             _locater
                 .Setup(locater => locater.CurrentSegment)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Getter))
                 .Returns(SegmentName)
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.Log(MsgFirstTimeIndentIsInvalid, SegmentName, optionValue))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
                 .Verifiable(Times.Once);
             _nameValidater
                 .Setup(nameValidater => nameValidater.IsValidName(SegmentName))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.NameValidater_IsValidName))
                 .Returns(true)
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName, MethodCall.Locater_CurrentSegment_Setter);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Setter, MethodCall.IndentProcessor_IsValidIndentValue);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Setter, MethodCall.Locater_CurrentSegment_Getter);
-            _verifier.DefineExpectedCallOrder(MethodCall.IndentProcessor_IsValidIndentValue, MethodCall.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Getter, MethodCall.Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(MethodCallID.NameValidater_IsValidName, MethodCallID.Locater_CurrentSegment_Setter);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.IndentProcessor_IsValidIndentValue);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.Locater_CurrentSegment_Getter);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_IsValidIndentValue, MethodCallID.Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Getter, MethodCallID.Logger_Log_Message);
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new();
 
@@ -77,20 +77,20 @@
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName} {FirstTimeIndentOption}={optionValue}";
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.IsValidIndentValue(optionValue, out indentValue))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.IndentProcessor_IsValidIndentValue))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_IsValidIndentValue))
                 .Returns(true)
                 .Verifiable(Times.Once);
             _locater
                 .SetupSet(locater => locater.CurrentSegment = SegmentName)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Setter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Setter))
                 .Verifiable(Times.Once);
             _nameValidater
                 .Setup(nameValidater => nameValidater.IsValidName(SegmentName))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.NameValidater_IsValidName))
                 .Returns(true)
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName, MethodCall.Locater_CurrentSegment_Setter);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Setter, MethodCall.IndentProcessor_IsValidIndentValue);
+            _verifier.DefineExpectedCallOrder(MethodCallID.NameValidater_IsValidName, MethodCallID.Locater_CurrentSegment_Setter);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.IndentProcessor_IsValidIndentValue);
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new()
             {
@@ -117,32 +117,32 @@
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName} {FirstTimeIndentOption}={optionValue}";
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.IsValidIndentValue(optionValue, out indentValue))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.IndentProcessor_IsValidIndentValue))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_IsValidIndentValue))
                 .Returns(true)
                 .Verifiable(Times.Once);
             _locater
                 .SetupSet(locater => locater.CurrentSegment = SegmentName)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Setter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Setter))
                 .Verifiable(Times.Once);
             _locater
                 .Setup(locater => locater.CurrentSegment)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Getter))
                 .Returns(SegmentName)
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.Log(MsgFirstTimeIndentSetToZero, SegmentName, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
                 .Verifiable(Times.Once);
             _nameValidater
                 .Setup(nameValidater => nameValidater.IsValidName(SegmentName))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.NameValidater_IsValidName))
                 .Returns(true)
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName, MethodCall.Locater_CurrentSegment_Setter);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Setter, MethodCall.IndentProcessor_IsValidIndentValue);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Setter, MethodCall.Locater_CurrentSegment_Getter);
-            _verifier.DefineExpectedCallOrder(MethodCall.IndentProcessor_IsValidIndentValue, MethodCall.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Getter, MethodCall.Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(MethodCallID.NameValidater_IsValidName, MethodCallID.Locater_CurrentSegment_Setter);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.IndentProcessor_IsValidIndentValue);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.Locater_CurrentSegment_Getter);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_IsValidIndentValue, MethodCallID.Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Getter, MethodCallID.Logger_Log_Message);
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new();
 
@@ -176,44 +176,44 @@
                 + $"{optionName}={optionValue}";
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.IsValidIndentValue(indentStringValue, out indentIntegerValue))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.IndentProcessor_IsValidIndentValue))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_IsValidIndentValue))
                 .Returns(true)
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.IsValidTabSizeValue(tabSizeStringValue, out tabSizeIntegerValue))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.IndentProcessor_IsValidTabSizeValue))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_IsValidTabSizeValue))
                 .Returns(true)
                 .Verifiable(Times.Once);
             _nameValidater
                 .Setup(nameValidater => nameValidater.IsValidName(SegmentName))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName_FirstName))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.NameValidater_IsValidName, 1))
                 .Returns(true)
                 .Verifiable(Times.Once);
             _nameValidater
                 .Setup(nameValidater => nameValidater.IsValidName(padSegmentValue))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName_SecondName))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.NameValidater_IsValidName, 2))
                 .Returns(true)
                 .Verifiable(Times.Once);
             _locater
                 .SetupSet(locater => locater.CurrentSegment = SegmentName)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Setter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Setter))
                 .Verifiable(Times.Once);
             _locater
                 .Setup(locater => locater.CurrentSegment)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Getter))
                 .Returns(SegmentName)
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.Log(MsgFoundDuplicateOptionNameOnHeaderLine, SegmentName, optionName))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName_FirstName, MethodCall.Locater_CurrentSegment_Setter);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Setter, MethodCall.Locater_CurrentSegment_Getter);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Setter, MethodCall.NameValidater_IsValidName_SecondName);
-            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName_SecondName, MethodCall.IndentProcessor_IsValidIndentValue);
-            _verifier.DefineExpectedCallOrder(MethodCall.IndentProcessor_IsValidIndentValue, MethodCall.IndentProcessor_IsValidTabSizeValue);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Getter, MethodCall.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCall.IndentProcessor_IsValidTabSizeValue, MethodCall.Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(MethodCallID.NameValidater_IsValidName, MethodCallID.Locater_CurrentSegment_Setter, 1);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.Locater_CurrentSegment_Getter);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.NameValidater_IsValidName, 0, 2);
+            _verifier.DefineExpectedCallOrder(MethodCallID.NameValidater_IsValidName, MethodCallID.IndentProcessor_IsValidIndentValue, 2);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_IsValidIndentValue, MethodCallID.IndentProcessor_IsValidTabSizeValue);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Getter, MethodCallID.Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_IsValidTabSizeValue, MethodCallID.Logger_Log_Message);
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new()
             {
@@ -256,32 +256,32 @@
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName} {option1}={value1}, {option2}={value2}, {option3}={value3}";
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.IsValidIndentValue(indentStringValue, out firstTimeIndent))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.IndentProcessor_IsValidIndentValue))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_IsValidIndentValue))
                 .Returns(true)
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.IsValidTabSizeValue(tabSizeStringValue, out tabSizeValue))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.IndentProcessor_IsValidTabSizeValue))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_IsValidTabSizeValue))
                 .Returns(true)
                 .Verifiable(Times.Once);
             _nameValidater
                 .Setup(nameValidater => nameValidater.IsValidName(SegmentName))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName_FirstName))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.NameValidater_IsValidName, 1))
                 .Returns(true)
                 .Verifiable(Times.Once);
             _nameValidater
                 .Setup(nameValidater => nameValidater.IsValidName(padSegment))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName_SecondName))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.NameValidater_IsValidName, 2))
                 .Returns(true)
                 .Verifiable(Times.Once);
             _locater
                 .SetupSet(locater => locater.CurrentSegment = SegmentName)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Setter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Setter))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName_FirstName, MethodCall.Locater_CurrentSegment_Setter);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Setter, MethodCall.IndentProcessor_IsValidIndentValue);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Setter, MethodCall.IndentProcessor_IsValidTabSizeValue);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Setter, MethodCall.NameValidater_IsValidName_SecondName);
+            _verifier.DefineExpectedCallOrder(MethodCallID.NameValidater_IsValidName, MethodCallID.Locater_CurrentSegment_Setter, 1);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.IndentProcessor_IsValidIndentValue);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.IndentProcessor_IsValidTabSizeValue);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.NameValidater_IsValidName, 0, 2);
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new()
             {
@@ -309,25 +309,25 @@
             string segmentName = $"{DefaultSegmentNamePrefix}1";
             _defaultSegmentNameGenerator
                 .Setup(defaultSegmentNameGenerator => defaultSegmentNameGenerator.Next)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.DefaultSegmentNameGenerator_Next))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.DefaultSegmentNameGenerator_Next))
                 .Returns(segmentName)
                 .Verifiable(Times.Once);
             _locater
                 .SetupSet(locater => locater.CurrentSegment = segmentName)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Setter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Setter))
                 .Verifiable(Times.Once);
             _locater
                 .Setup(locater => locater.CurrentSegment)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Getter))
                 .Returns(segmentName)
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.Log(MsgSegmentNameMustStartInColumn5, segmentName, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCall.DefaultSegmentNameGenerator_Next, MethodCall.Locater_CurrentSegment_Setter);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Setter, MethodCall.Locater_CurrentSegment_Getter);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Getter, MethodCall.Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(MethodCallID.DefaultSegmentNameGenerator_Next, MethodCallID.Locater_CurrentSegment_Setter);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.Locater_CurrentSegment_Getter);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Getter, MethodCallID.Logger_Log_Message);
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new();
 
@@ -350,25 +350,25 @@
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName} {optionString}";
             _locater
                 .SetupSet(locater => locater.CurrentSegment = SegmentName)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Setter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Setter))
                 .Verifiable(Times.Once);
             _locater
                 .Setup(locater => locater.CurrentSegment)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Getter))
                 .Returns(SegmentName)
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.Log(MsgUnknownSegmentOptionFound, SegmentName, optionString))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
                 .Verifiable(Times.Once);
             _nameValidater
                 .Setup(nameValidater => nameValidater.IsValidName(SegmentName))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.NameValidater_IsValidName))
                 .Returns(true)
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName, MethodCall.Locater_CurrentSegment_Setter);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Setter, MethodCall.Locater_CurrentSegment_Getter);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Getter, MethodCall.Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(MethodCallID.NameValidater_IsValidName, MethodCallID.Locater_CurrentSegment_Setter);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.Locater_CurrentSegment_Getter);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Getter, MethodCallID.Logger_Log_Message);
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new();
 
@@ -391,25 +391,25 @@
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName} {optionString}";
             _locater
                 .SetupSet(locater => locater.CurrentSegment = SegmentName)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Setter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Setter))
                 .Verifiable(Times.Once);
             _locater
                 .Setup(locater => locater.CurrentSegment)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Getter))
                 .Returns(SegmentName)
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.Log(MsgOptionNameMustPrecedeEqualsSign, SegmentName, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
                 .Verifiable(Times.Once);
             _nameValidater
                 .Setup(nameValidater => nameValidater.IsValidName(SegmentName))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.NameValidater_IsValidName))
                 .Returns(true)
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName, MethodCall.Locater_CurrentSegment_Setter);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Setter, MethodCall.Locater_CurrentSegment_Getter);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Getter, MethodCall.Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(MethodCallID.NameValidater_IsValidName, MethodCallID.Locater_CurrentSegment_Setter);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.Locater_CurrentSegment_Getter);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Getter, MethodCallID.Logger_Log_Message);
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new();
 
@@ -432,25 +432,25 @@
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName} {optionName}";
             _locater
                 .SetupSet(locater => locater.CurrentSegment = SegmentName)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Setter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Setter))
                 .Verifiable(Times.Once);
             _locater
                 .Setup(locater => locater.CurrentSegment)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Getter))
                 .Returns(SegmentName)
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.Log(MsgInvalidFormOfOption, SegmentName, optionName))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
                 .Verifiable(Times.Once);
             _nameValidater
                 .Setup(nameValidater => nameValidater.IsValidName(SegmentName))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.NameValidater_IsValidName))
                 .Returns(true)
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName, MethodCall.Locater_CurrentSegment_Setter);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Setter, MethodCall.Locater_CurrentSegment_Getter);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Getter, MethodCall.Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(MethodCallID.NameValidater_IsValidName, MethodCallID.Locater_CurrentSegment_Setter);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.Locater_CurrentSegment_Getter);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Getter, MethodCallID.Logger_Log_Message);
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new();
 
@@ -485,32 +485,32 @@
                 + $"{padSegmentOption}={padSegmentValue}";
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.IsValidIndentValue(indentStringValue, out indentIntegerValue))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.IndentProcessor_IsValidIndentValue))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_IsValidIndentValue))
                 .Returns(true)
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.IsValidTabSizeValue(tabSizeStringValue, out tabSizeIntegerValue))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.IndentProcessor_IsValidTabSizeValue))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_IsValidTabSizeValue))
                 .Returns(true)
                 .Verifiable(Times.Once);
             _locater
                 .SetupSet(locater => locater.CurrentSegment = SegmentName)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Setter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Setter))
                 .Verifiable(Times.Once);
             _nameValidater
                 .Setup(nameValidater => nameValidater.IsValidName(SegmentName))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName_FirstName))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.NameValidater_IsValidName, 1))
                 .Returns(true)
                 .Verifiable(Times.Once);
             _nameValidater
                 .Setup(nameValidater => nameValidater.IsValidName(padSegmentValue))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName_SecondName))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.NameValidater_IsValidName, 2))
                 .Returns(true)
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName_FirstName, MethodCall.Locater_CurrentSegment_Setter);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Setter, MethodCall.IndentProcessor_IsValidIndentValue);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Setter, MethodCall.IndentProcessor_IsValidTabSizeValue);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Setter, MethodCall.NameValidater_IsValidName_SecondName);
+            _verifier.DefineExpectedCallOrder(MethodCallID.NameValidater_IsValidName, MethodCallID.Locater_CurrentSegment_Setter, 1);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.IndentProcessor_IsValidIndentValue);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.IndentProcessor_IsValidTabSizeValue);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.NameValidater_IsValidName, 0, 2);
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new()
             {
@@ -537,25 +537,25 @@
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName} {PadSegmentNameOption}=";
             _locater
                 .SetupSet(locater => locater.CurrentSegment = SegmentName)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Setter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Setter))
                 .Verifiable(Times.Once);
             _locater
                 .Setup(locater => locater.CurrentSegment)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Getter))
                 .Returns(SegmentName)
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.Log(MsgOptionValueMustFollowEqualsSign, SegmentName, PadSegmentNameOption))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
                 .Verifiable(Times.Once);
             _nameValidater
                 .Setup(nameValidater => nameValidater.IsValidName(SegmentName))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.NameValidater_IsValidName))
                 .Returns(true)
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName, MethodCall.Locater_CurrentSegment_Setter);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Setter, MethodCall.Locater_CurrentSegment_Getter);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Getter, MethodCall.Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(MethodCallID.NameValidater_IsValidName, MethodCallID.Locater_CurrentSegment_Setter);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.Locater_CurrentSegment_Getter);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Getter, MethodCallID.Logger_Log_Message);
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new();
 
@@ -578,32 +578,32 @@
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName} {PadSegmentNameOption}={optionValue}";
             _locater
                 .SetupSet(locater => locater.CurrentSegment = SegmentName)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Setter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Setter))
                 .Verifiable(Times.Once);
             _locater
                 .Setup(locater => locater.CurrentSegment)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Getter))
                 .Returns(SegmentName)
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.Log(MsgInvalidPadSegmentName, SegmentName, optionValue))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
                 .Verifiable(Times.Once);
             _nameValidater
                 .Setup(nameValidater => nameValidater.IsValidName(SegmentName))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName_FirstName))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.NameValidater_IsValidName, 1))
                 .Returns(true)
                 .Verifiable(Times.Once);
             _nameValidater
                 .Setup(nameValidater => nameValidater.IsValidName(optionValue))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName_SecondName))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.NameValidater_IsValidName, 2))
                 .Returns(false)
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName_FirstName, MethodCall.Locater_CurrentSegment_Setter);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Setter, MethodCall.Locater_CurrentSegment_Getter);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Setter, MethodCall.NameValidater_IsValidName_SecondName);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Getter, MethodCall.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName_SecondName, MethodCall.Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(MethodCallID.NameValidater_IsValidName, MethodCallID.Locater_CurrentSegment_Setter, 1);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.Locater_CurrentSegment_Getter);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.NameValidater_IsValidName, 0, 2);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Getter, MethodCallID.Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(MethodCallID.NameValidater_IsValidName, MethodCallID.Logger_Log_Message, 2);
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new();
 
@@ -625,20 +625,20 @@
             string optionValue = "validName";
             _locater
                 .SetupSet(locater => locater.CurrentSegment = SegmentName)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Setter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Setter))
                 .Verifiable(Times.Once);
             _nameValidater
                 .Setup(nameValidater => nameValidater.IsValidName(SegmentName))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName_FirstName))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.NameValidater_IsValidName, 1))
                 .Returns(true)
                 .Verifiable(Times.Once);
             _nameValidater
                 .Setup(nameValidater => nameValidater.IsValidName(optionValue))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName_SecondName))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.NameValidater_IsValidName, 2))
                 .Returns(true)
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName_FirstName, MethodCall.Locater_CurrentSegment_Setter);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Setter, MethodCall.NameValidater_IsValidName_SecondName);
+            _verifier.DefineExpectedCallOrder(MethodCallID.NameValidater_IsValidName, MethodCallID.Locater_CurrentSegment_Setter, 1);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.NameValidater_IsValidName, 0, 2);
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName} {PadSegmentNameOption}={optionValue}";
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new()
@@ -666,31 +666,31 @@
             string segmentHeader = $"{SegmentHeaderCode} {invalidSegmentName}";
             _defaultSegmentNameGenerator
                 .Setup(defaultSegmentNameGenerator => defaultSegmentNameGenerator.Next)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.DefaultSegmentNameGenerator_Next))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.DefaultSegmentNameGenerator_Next))
                 .Returns(defaultSegmentName)
                 .Verifiable(Times.Once);
             _locater
                 .SetupSet(locater => locater.CurrentSegment = defaultSegmentName)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Setter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Setter))
                 .Verifiable(Times.Once);
             _locater
                 .Setup(locater => locater.CurrentSegment)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Getter))
                 .Returns(defaultSegmentName)
                 .Verifiable(Times.AtLeastOnce);
             _nameValidater
                 .Setup(nameValidater => nameValidater.IsValidName(invalidSegmentName))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.NameValidater_IsValidName))
                 .Returns(false)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgInvalidSegmentName, invalidSegmentName, defaultSegmentName))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName, MethodCall.DefaultSegmentNameGenerator_Next);
-            _verifier.DefineExpectedCallOrder(MethodCall.DefaultSegmentNameGenerator_Next, MethodCall.Locater_CurrentSegment_Setter);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Setter, MethodCall.Locater_CurrentSegment_Getter);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Getter, MethodCall.Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(MethodCallID.NameValidater_IsValidName, MethodCallID.DefaultSegmentNameGenerator_Next);
+            _verifier.DefineExpectedCallOrder(MethodCallID.DefaultSegmentNameGenerator_Next, MethodCallID.Locater_CurrentSegment_Setter);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.Locater_CurrentSegment_Getter);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Getter, MethodCallID.Logger_Log_Message);
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new();
 
@@ -713,25 +713,25 @@
             string segmentName = $"{DefaultSegmentNamePrefix}1";
             _defaultSegmentNameGenerator
                 .Setup(defaultSegmentNameGenerator => defaultSegmentNameGenerator.Next)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.DefaultSegmentNameGenerator_Next))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.DefaultSegmentNameGenerator_Next))
                 .Returns(segmentName)
                 .Verifiable(Times.Once);
             _locater
                 .SetupSet(locater => locater.CurrentSegment = segmentName)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Setter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Setter))
                 .Verifiable(Times.Once);
             _locater
                 .Setup(locater => locater.CurrentSegment)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Getter))
                 .Returns(segmentName)
                 .Verifiable(Times.AtLeastOnce);
             _logger
-                .Setup(logger => logger.Log(MsgSegmentNameMustStartInColumn5, segmentName, segmentHeader))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_Message))
+                .Setup(logger => logger.Log(MsgSegmentNameIsMissing, segmentName, segmentHeader))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCall.DefaultSegmentNameGenerator_Next, MethodCall.Locater_CurrentSegment_Setter);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Setter, MethodCall.Locater_CurrentSegment_Getter);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Getter, MethodCall.Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(MethodCallID.DefaultSegmentNameGenerator_Next, MethodCallID.Locater_CurrentSegment_Setter);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.Locater_CurrentSegment_Getter);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Getter, MethodCallID.Logger_Log_Message);
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new();
 
@@ -759,32 +759,32 @@
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName} {TabSizeOption}={optionValue}";
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.IsValidTabSizeValue(optionValue, out tabSizeValue))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.IndentProcessor_IsValidTabSizeValue))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_IsValidTabSizeValue))
                 .Returns(false)
                 .Verifiable(Times.Once);
             _locater
                 .SetupSet(locater => locater.CurrentSegment = SegmentName)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Setter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Setter))
                 .Verifiable(Times.Once);
             _locater
                 .Setup(locater => locater.CurrentSegment)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Getter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Getter))
                 .Returns(SegmentName)
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.Log(MsgInvalidTabSizeOption, SegmentName, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
                 .Verifiable(Times.Once);
             _nameValidater
                 .Setup(nameValidater => nameValidater.IsValidName(SegmentName))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.NameValidater_IsValidName))
                 .Returns(true)
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName, MethodCall.Locater_CurrentSegment_Setter);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Setter, MethodCall.Locater_CurrentSegment_Getter);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Setter, MethodCall.IndentProcessor_IsValidTabSizeValue);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Getter, MethodCall.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCall.IndentProcessor_IsValidTabSizeValue, MethodCall.Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(MethodCallID.NameValidater_IsValidName, MethodCallID.Locater_CurrentSegment_Setter);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.Locater_CurrentSegment_Getter);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.IndentProcessor_IsValidTabSizeValue);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Getter, MethodCallID.Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_IsValidTabSizeValue, MethodCallID.Logger_Log_Message);
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new();
 
@@ -809,20 +809,20 @@
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName} {TabSizeOption}={optionValue}";
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.IsValidTabSizeValue(optionValue, out tabSizeValue))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.IndentProcessor_IsValidTabSizeValue))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_IsValidTabSizeValue))
                 .Returns(true)
                 .Verifiable(Times.Once);
             _locater
                 .SetupSet(locater => locater.CurrentSegment = SegmentName)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Setter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Setter))
                 .Verifiable(Times.Once);
             _nameValidater
                 .Setup(nameValidater => nameValidater.IsValidName(SegmentName))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.NameValidater_IsValidName))
                 .Returns(true)
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName, MethodCall.Locater_CurrentSegment_Setter);
-            _verifier.DefineExpectedCallOrder(MethodCall.Locater_CurrentSegment_Setter, MethodCall.IndentProcessor_IsValidTabSizeValue);
+            _verifier.DefineExpectedCallOrder(MethodCallID.NameValidater_IsValidName, MethodCallID.Locater_CurrentSegment_Setter);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.IndentProcessor_IsValidTabSizeValue);
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new()
             {
@@ -847,14 +847,14 @@
             string segmentHeader = $"{SegmentHeaderCode} {SegmentName}";
             _locater
                 .SetupSet(locater => locater.CurrentSegment = SegmentName)
-                .Callback(_verifier.GetCallOrderAction(MethodCall.Locater_CurrentSegment_Setter))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Setter))
                 .Verifiable(Times.Once);
             _nameValidater
                 .Setup(nameValidater => nameValidater.IsValidName(SegmentName))
-                .Callback(_verifier.GetCallOrderAction(MethodCall.NameValidater_IsValidName))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.NameValidater_IsValidName))
                 .Returns(true)
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCall.NameValidater_IsValidName, MethodCall.Locater_CurrentSegment_Setter);
+            _verifier.DefineExpectedCallOrder(MethodCallID.NameValidater_IsValidName, MethodCallID.Locater_CurrentSegment_Setter);
             SegmentHeaderParser parser = GetSegmentHeaderParser();
             ControlItem expected = new();
 

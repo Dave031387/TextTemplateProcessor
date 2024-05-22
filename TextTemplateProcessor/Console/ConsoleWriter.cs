@@ -21,9 +21,6 @@
         /// </summary>
         /// <param name="text">
         /// </param>
-        public void WriteLine(string text)
-        {
-            Console.WriteLine(text);
-        }
+        public void WriteLine(string text) => Console.WriteLine(text);
     }
 }

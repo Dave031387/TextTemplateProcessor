@@ -45,10 +45,7 @@
         /// <param name="message">
         /// The message to be written the <see cref="Console" />.
         /// </param>
-        public void WriteLine(string message)
-        {
-            ConsoleWriter.WriteLine(message);
-        }
+        public void WriteLine(string message) => ConsoleWriter.WriteLine(message);
 
         /// <summary>
         /// Writes a string message containing a single <see langword="string" /> format item to the
