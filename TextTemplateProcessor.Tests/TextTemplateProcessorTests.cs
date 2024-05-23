@@ -1,6 +1,7 @@
 namespace TextTemplateProcessor
 {
     using global::TextTemplateProcessor.Core;
+    using global::TextTemplateProcessor.TestShared;
 
     public class TextTemplateProcessorTests
     {
@@ -16,9 +17,6 @@ namespace TextTemplateProcessor
         private readonly Mock<ITextWriter> _textWriter = new();
         private readonly Mock<ITokenProcessor> _tokenProcessor = new();
         private readonly MethodCallOrderVerifier _verifier = new();
-        private int _currentIndent;
-        private int _currentTabSize;
-        private int _textLineCounter;
 
         [Fact]
         public void CurrentIndent_WhenCalled_CallsIndentProcessorCurrentIndent()
@@ -186,6 +184,9 @@ namespace TextTemplateProcessor
             processor.IsOutputFileWritten
                 .Should()
                 .BeFalse();
+            processor._controlDictionary[segmentName].IsFirstTime
+                .Should()
+                .BeFalse();
             _locater.Object.CurrentSegment
                 .Should()
                 .Be(segmentName);
@@ -222,13 +223,13 @@ namespace TextTemplateProcessor
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
-            _logger
-                .Setup(logger => logger.Log(MsgProcessingSegment, segmentName, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
-                .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.LoadTokenValues(tokenValues))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_LoadTokenValues))
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(logger => logger.Log(MsgProcessingSegment, segmentName, null))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetFirstTimeIndent(0, textItem1))
@@ -260,9 +261,9 @@ namespace TextTemplateProcessor
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 3))
                 .Returns(textLine3)
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Generating, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.TokenProcessor_LoadTokenValues);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_LoadTokenValues, MethodCallID.IndentProcessor_GetFirstTimeIndent);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Generating, MethodCallID.TokenProcessor_LoadTokenValues);
+            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_LoadTokenValues, MethodCallID.Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.IndentProcessor_GetFirstTimeIndent);
             _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetFirstTimeIndent, MethodCallID.TokenProcessor_ReplaceTokens, 0, 1);
             _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 1, 1);
             _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 1, 2);
@@ -293,6 +294,9 @@ namespace TextTemplateProcessor
                 .Should()
                 .ContainInConsecutiveOrder(expected);
             processor.IsOutputFileWritten
+                .Should()
+                .BeFalse();
+            processor._controlDictionary[segmentName].IsFirstTime
                 .Should()
                 .BeFalse();
             _locater.Object.CurrentSegment
@@ -423,7 +427,7 @@ namespace TextTemplateProcessor
         }
 
         [Fact]
-        public void GenerateSegment_SegmentHasMultipleOptions_GeneratesTextAndHandlesOptionsCorrectly()
+        public void GenerateSegment_SegmentHasMultipleOptionsAndIsFirstTime_GeneratesTextAndHandlesOptionsCorrectly()
         {
             // Arrange
             InitializeMocks();
@@ -431,35 +435,103 @@ namespace TextTemplateProcessor
             string segmentName = "Segment1";
             int firstTimeIndent = 1;
             int tabSize = 2;
+            string textLine1 = "Line 1";
+            string textLine2 = "Line 2";
+            string textLine3 = "Line 3";
+            string padLine = "Pad";
+            TextItem textItem1 = new(0, true, false, textLine1);
+            TextItem textItem2 = new(1, true, false, textLine2);
+            TextItem textItem3 = new(-1, true, false, textLine3);
+            TextItem padTextItem = new(1, true, false, padLine);
+            _locater
+                .SetupProperty(locater => locater.CurrentSegment, "OtherSegment");
+            _locater
+                .SetupProperty(locater => locater.LineNumber, 5);
+            _logger
+                .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Verifiable(Times.Exactly(2));
+            _logger
+                .Setup(logger => logger.Log(MsgProcessingSegment, segmentName, null))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(logger => logger.SetLogEntryType(LogEntryType.Setup))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Setup))
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.SetTabSize(2))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_SetTabSize))
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.GetFirstTimeIndent(1, textItem1))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetFirstTimeIndent))
+                .Returns(2)
+                .Verifiable(Times.Once);
+            _tokenProcessor
+                .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(textLine1))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 1))
+                .Returns(textLine1)
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.GetIndent(textItem2))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 1))
+                .Returns(4)
+                .Verifiable(Times.Once);
+            _tokenProcessor
+                .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(textLine2))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 2))
+                .Returns(textLine2)
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.GetIndent(textItem3))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 2))
+                .Returns(2)
+                .Verifiable(Times.Once);
+            _tokenProcessor
+                .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(textLine3))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 3))
+                .Returns(textLine3)
+                .Verifiable(Times.Once);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Generating, MethodCallID.Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_SetLogEntryType_Setup);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Setup, MethodCallID.IndentProcessor_SetTabSize);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_SetTabSize, MethodCallID.Logger_SetLogEntryType_Generating);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_SetTabSize, MethodCallID.IndentProcessor_GetFirstTimeIndent);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Generating, MethodCallID.IndentProcessor_GetFirstTimeIndent);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetFirstTimeIndent, MethodCallID.TokenProcessor_ReplaceTokens, 0, 1);
+            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 1, 1);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 1, 2);
+            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 2, 2);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 2, 3);
+            TextTemplateProcessor processor = GetTextTemplateProcessor();
             ControlItem controlItem1 = new();
             ControlItem controlItem2 = new()
             {
                 FirstTimeIndent = firstTimeIndent,
                 PadSegment = padSegment,
-                TabSize = tabSize,
-                IsFirstTime = false
+                TabSize = tabSize
             };
-            SetupGenerateSegment(padSegment);
-            SetupGenerateSegment(segmentName, padSegment, null, tabSize);
-            TextTemplateProcessor processor = GetTextTemplateProcessor();
             processor._controlDictionary[padSegment] = controlItem1;
             processor._controlDictionary[segmentName] = controlItem2;
-            List<string> expected = new()
+            processor._segmentDictionary[padSegment] = new()
             {
-                SetupGenerateTextLine(processor, padSegment, 1),
-                SetupGenerateTextLine(processor, padSegment, 0),
-                SetupGenerateTextLine(processor, padSegment, 1)
+                padTextItem
             };
-            _currentIndent = 0;
-            expected.AddRange(new[]
+            processor._segmentDictionary[segmentName] = new()
             {
-                SetupGenerateTextLine(processor, segmentName, 0, firstTimeIndent, false),
-                SetupGenerateTextLine(processor, segmentName, 1),
-                SetupGenerateTextLine(processor, segmentName, -1),
-                SetupGenerateTextLine(processor, segmentName, 0)
-            });
+                textItem1,
+                textItem2,
+                textItem3
+            };
             processor.IsTemplateLoaded = true;
             processor.IsOutputFileWritten = false;
+            List<string> expected = new()
+            {
+                $"  {textLine1}",
+                $"    {textLine2}",
+                $"  {textLine3}"
+            };
 
             // Act
             processor.GenerateSegment(segmentName);
@@ -469,6 +541,167 @@ namespace TextTemplateProcessor
                 .Should()
                 .ContainInConsecutiveOrder(expected);
             processor.IsOutputFileWritten
+                .Should()
+                .BeFalse();
+            processor._controlDictionary[segmentName].IsFirstTime
+                .Should()
+                .BeFalse();
+            _locater.Object.CurrentSegment
+                .Should()
+                .Be(segmentName);
+            _locater.Object.LineNumber
+                .Should()
+                .Be(processor._segmentDictionary[segmentName].Count);
+            VerifyMocks();
+        }
+
+        [Fact]
+        public void GenerateSegment_SegmentHasMultipleOptionsAndIsNotFirstTime_GeneratesTextAndHandlesOptionsCorrectly()
+        {
+            // Arrange
+            InitializeMocks();
+            string padSegment = "PadSegment";
+            string segmentName = "Segment1";
+            int firstTimeIndent = 1;
+            int tabSize = 2;
+            string textLine1 = "Line 1";
+            string textLine2 = "Line 2";
+            string textLine3 = "Line 3";
+            string padLine = "Pad";
+            TextItem textItem1 = new(0, true, false, textLine1);
+            TextItem textItem2 = new(1, true, false, textLine2);
+            TextItem textItem3 = new(-1, true, false, textLine3);
+            TextItem padTextItem = new(1, true, false, padLine);
+            _locater
+                .SetupProperty(locater => locater.CurrentSegment, "OtherSegment");
+            _locater
+                .SetupProperty(locater => locater.LineNumber, 5);
+            _logger
+                .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Verifiable(Times.Exactly(3));
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.SaveCurrentState())
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_SaveCurrentState))
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(logger => logger.Log(MsgProcessingSegment, padSegment, null))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message, 1))
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.GetFirstTimeIndent(0, padTextItem))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetFirstTimeIndent, 1))
+                .Returns(4)
+                .Verifiable(Times.Once);
+            _tokenProcessor
+                .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(padLine))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 1))
+                .Returns(padLine)
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.RestoreCurrentState())
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_RestoreCurrentState))
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(logger => logger.Log(MsgProcessingSegment, segmentName, null))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message, 2))
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(logger => logger.SetLogEntryType(LogEntryType.Setup))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Setup))
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.SetTabSize(2))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_SetTabSize))
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.GetIndent(textItem1))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 1))
+                .Returns(0)
+                .Verifiable(Times.Once);
+            _tokenProcessor
+                .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(textLine1))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 2))
+                .Returns(textLine1)
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.GetIndent(textItem2))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 2))
+                .Returns(2)
+                .Verifiable(Times.Once);
+            _tokenProcessor
+                .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(textLine2))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 3))
+                .Returns(textLine2)
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.GetIndent(textItem3))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 3))
+                .Returns(0)
+                .Verifiable(Times.Once);
+            _tokenProcessor
+                .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(textLine3))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 4))
+                .Returns(textLine3)
+                .Verifiable(Times.Once);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Generating, MethodCallID.IndentProcessor_SaveCurrentState);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_SaveCurrentState, MethodCallID.Logger_SetLogEntryType_Generating);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_SaveCurrentState, MethodCallID.Logger_Log_Message, 0, 1);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.IndentProcessor_GetFirstTimeIndent, 1, 1);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetFirstTimeIndent, MethodCallID.TokenProcessor_ReplaceTokens, 1, 1);
+            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_RestoreCurrentState, 1);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_RestoreCurrentState, MethodCallID.Logger_Log_Message, 0, 2);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_SetLogEntryType_Setup, 2);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Setup, MethodCallID.IndentProcessor_SetTabSize);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_SetTabSize, MethodCallID.Logger_SetLogEntryType_Generating);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_SetTabSize, MethodCallID.IndentProcessor_GetIndent, 0, 1);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 1, 2);
+            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 2, 2);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 2, 3);
+            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 3, 3);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 3, 4);
+            TextTemplateProcessor processor = GetTextTemplateProcessor();
+            ControlItem controlItem1 = new();
+            ControlItem controlItem2 = new()
+            {
+                FirstTimeIndent = firstTimeIndent,
+                PadSegment = padSegment,
+                TabSize = tabSize,
+                IsFirstTime = false
+            };
+            processor._controlDictionary[padSegment] = controlItem1;
+            processor._controlDictionary[segmentName] = controlItem2;
+            processor._segmentDictionary[padSegment] = new()
+            {
+                padTextItem
+            };
+            processor._segmentDictionary[segmentName] = new()
+            {
+                textItem1,
+                textItem2,
+                textItem3
+            };
+            processor.IsTemplateLoaded = true;
+            processor.IsOutputFileWritten = false;
+            List<string> expected = new()
+            {
+                $"    {padLine}",
+                textLine1,
+                $"  {textLine2}",
+                textLine3
+            };
+
+            // Act
+            processor.GenerateSegment(segmentName);
+
+            // Assert
+            processor.GeneratedText
+                .Should()
+                .ContainInConsecutiveOrder(expected);
+            processor.IsOutputFileWritten
+                .Should()
+                .BeFalse();
+            processor._controlDictionary[segmentName].IsFirstTime
                 .Should()
                 .BeFalse();
             _locater.Object.CurrentSegment
@@ -492,10 +725,13 @@ namespace TextTemplateProcessor
                 .SetupProperty(locater => locater.LineNumber);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgSegmentHasNoTextLines, segmentName, null))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
                 .Verifiable(Times.Once);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Generating, MethodCallID.Logger_Log_Message);
             TextTemplateProcessor processor = GetTextTemplateProcessor();
             processor.IsTemplateLoaded = true;
             processor._controlDictionary[segmentName] = new();
@@ -517,25 +753,86 @@ namespace TextTemplateProcessor
             InitializeMocks();
             string padSegment = "PadSegment";
             string segmentName = "Segment1";
-            ControlItem controlItem1 = new();
-            ControlItem controlItem2 = new() { PadSegment = padSegment, IsFirstTime = true };
-            SetupGenerateSegment(segmentName);
+            string textLine1 = "Line 1";
+            string textLine2 = "Line 2";
+            string textLine3 = "Line 3";
+            string padLine = "Padding";
+            TextItem textItem1 = new(1, true, false, textLine1);
+            TextItem textItem2 = new(1, true, false, textLine2);
+            TextItem textItem3 = new(-2, true, false, textLine3);
+            TextItem padTextItem = new(2, true, false, padLine);
+            _locater
+                .SetupProperty(locater => locater.CurrentSegment, "OtherSegment");
+            _locater
+                .SetupProperty(locater => locater.LineNumber, 5);
+            _logger
+                .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(logger => logger.Log(MsgProcessingSegment, segmentName, null))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.GetFirstTimeIndent(0, textItem1))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetFirstTimeIndent))
+                .Returns(4)
+                .Verifiable(Times.Once);
+            _tokenProcessor
+                .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(textLine1))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 1))
+                .Returns(textLine1)
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.GetIndent(textItem2))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 1))
+                .Returns(8)
+                .Verifiable(Times.Once);
+            _tokenProcessor
+                .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(textLine2))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 2))
+                .Returns(textLine2)
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.GetIndent(textItem3))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 2))
+                .Returns(0)
+                .Verifiable(Times.Once);
+            _tokenProcessor
+                .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(textLine3))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 3))
+                .Returns(textLine3)
+                .Verifiable(Times.Once);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Generating, MethodCallID.Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.IndentProcessor_GetFirstTimeIndent);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetFirstTimeIndent, MethodCallID.TokenProcessor_ReplaceTokens, 0, 1);
+            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 1, 1);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 1, 2);
+            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 2, 2);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 2, 3);
             TextTemplateProcessor processor = GetTextTemplateProcessor();
+            ControlItem controlItem1 = new();
+            ControlItem controlItem2 = new() { PadSegment = padSegment };
             processor._controlDictionary[padSegment] = controlItem1;
             processor._controlDictionary[segmentName] = controlItem2;
             processor._segmentDictionary[padSegment] = new()
             {
-                new(2, true, false, "Padding")
+                padTextItem
             };
-            List<string> expected = new()
+            processor._segmentDictionary[segmentName] = new()
             {
-                SetupGenerateTextLine(processor, segmentName, 1),
-                SetupGenerateTextLine(processor, segmentName, 1),
-                SetupGenerateTextLine(processor, segmentName, -2),
-                SetupGenerateTextLine(processor, segmentName, 0)
+                textItem1,
+                textItem2,
+                textItem3
             };
             processor.IsTemplateLoaded = true;
             processor.IsOutputFileWritten = false;
+            List<string> expected = new()
+            {
+                $"    {textLine1}",
+                $"        {textLine2}",
+                textLine3
+            };
 
             // Act
             processor.GenerateSegment(segmentName);
@@ -545,6 +842,9 @@ namespace TextTemplateProcessor
                 .Should()
                 .ContainInConsecutiveOrder(expected);
             processor.IsOutputFileWritten
+                .Should()
+                .BeFalse();
+            processor._controlDictionary[segmentName].IsFirstTime
                 .Should()
                 .BeFalse();
             _locater.Object.CurrentSegment
@@ -563,28 +863,114 @@ namespace TextTemplateProcessor
             InitializeMocks();
             string padSegment = "PadSegment";
             string segmentName = "Segment1";
+            string textLine1 = "Line 1";
+            string textLine2 = "Line 2";
+            string textLine3 = "Line 3";
+            string padLine = "Padding";
+            TextItem textItem1 = new(1, true, false, textLine1);
+            TextItem textItem2 = new(1, true, false, textLine2);
+            TextItem textItem3 = new(-2, true, false, textLine3);
+            TextItem padTextItem = new(2, true, false, padLine);
+            _locater
+                .SetupProperty(locater => locater.CurrentSegment, "OtherSegment");
+            _locater
+                .SetupProperty(locater => locater.LineNumber, 5);
+            _logger
+                .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Verifiable(Times.Exactly(2));
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.SaveCurrentState())
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_SaveCurrentState))
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(logger => logger.Log(MsgProcessingSegment, padSegment, null))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message, 1))
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.GetFirstTimeIndent(0, padTextItem))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetFirstTimeIndent))
+                .Returns(8)
+                .Verifiable(Times.Once);
+            _tokenProcessor
+                .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(padLine))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 1))
+                .Returns(padLine)
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.RestoreCurrentState())
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_RestoreCurrentState))
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(logger => logger.Log(MsgProcessingSegment, segmentName, null))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message, 2))
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.GetIndent(textItem1))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 1))
+                .Returns(4)
+                .Verifiable(Times.Once);
+            _tokenProcessor
+                .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(textLine1))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 2))
+                .Returns(textLine1)
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.GetIndent(textItem2))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 2))
+                .Returns(8)
+                .Verifiable(Times.Once);
+            _tokenProcessor
+                .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(textLine2))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 3))
+                .Returns(textLine2)
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.GetIndent(textItem3))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 3))
+                .Returns(0)
+                .Verifiable(Times.Once);
+            _tokenProcessor
+                .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(textLine3))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 4))
+                .Returns(textLine3)
+                .Verifiable(Times.Once);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Generating, MethodCallID.IndentProcessor_SaveCurrentState);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_SaveCurrentState, MethodCallID.Logger_Log_Message, 0, 1);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.IndentProcessor_GetFirstTimeIndent, 1);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetFirstTimeIndent, MethodCallID.TokenProcessor_ReplaceTokens, 0, 1);
+            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_RestoreCurrentState, 1);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_RestoreCurrentState, MethodCallID.Logger_Log_Message, 0, 2);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.IndentProcessor_GetIndent, 2, 1);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 1, 2);
+            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 2, 2);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 2, 3);
+            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 3, 3);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 3, 4);
+            TextTemplateProcessor processor = GetTextTemplateProcessor();
             ControlItem controlItem1 = new();
             ControlItem controlItem2 = new() { PadSegment = padSegment, IsFirstTime = false };
-            SetupGenerateSegment(segmentName, padSegment);
-            TextTemplateProcessor processor = GetTextTemplateProcessor();
             processor._controlDictionary[padSegment] = controlItem1;
             processor._controlDictionary[segmentName] = controlItem2;
-            List<string> expected = new()
+            processor._segmentDictionary[padSegment] = new()
             {
-                SetupGenerateTextLine(processor, padSegment, 2),
-                SetupGenerateTextLine(processor, padSegment, 0),
-                SetupGenerateTextLine(processor, padSegment, 0)
+                padTextItem
             };
-            _currentIndent = 0;
-            expected.AddRange(new[]
+            processor._segmentDictionary[segmentName] = new()
             {
-                SetupGenerateTextLine(processor, segmentName, 1, 0, false),
-                SetupGenerateTextLine(processor, segmentName, 1),
-                SetupGenerateTextLine(processor, segmentName, -2),
-                SetupGenerateTextLine(processor, segmentName, 0)
-            });
+                textItem1,
+                textItem2,
+                textItem3
+            };
             processor.IsTemplateLoaded = true;
             processor.IsOutputFileWritten = false;
+            List<string> expected = new()
+            {
+                $"        {padLine}",
+                $"    {textLine1}",
+                $"        {textLine2}",
+                textLine3
+            };
 
             // Act
             processor.GenerateSegment(segmentName);
@@ -594,6 +980,9 @@ namespace TextTemplateProcessor
                 .Should()
                 .ContainInConsecutiveOrder(expected);
             processor.IsOutputFileWritten
+                .Should()
+                .BeFalse();
+            processor._controlDictionary[segmentName].IsFirstTime
                 .Should()
                 .BeFalse();
             _locater.Object.CurrentSegment
@@ -611,20 +1000,90 @@ namespace TextTemplateProcessor
             // Arrange
             InitializeMocks();
             string segmentName = "Segment1";
+            string textLine1 = "Line 1";
+            string textLine2 = "Line 2";
+            string textLine3 = "Line 3";
+            TextItem textItem1 = new(1, true, false, textLine1);
+            TextItem textItem2 = new(1, true, false, textLine2);
+            TextItem textItem3 = new(-2, true, false, textLine3);
             int tabSize = 2;
-            ControlItem controlItem = new() { TabSize = tabSize };
-            SetupGenerateSegment(segmentName, null, null, tabSize);
+            _locater
+                .SetupProperty(locater => locater.CurrentSegment, "OtherSegment");
+            _locater
+                .SetupProperty(locater => locater.LineNumber, 5);
+            _logger
+                .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Verifiable(Times.Exactly(2));
+            _logger
+                .Setup(logger => logger.Log(MsgProcessingSegment, segmentName, null))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(logger => logger.SetLogEntryType(LogEntryType.Setup))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Setup))
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.SetTabSize(2))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_SetTabSize))
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.GetFirstTimeIndent(0, textItem1))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetFirstTimeIndent))
+                .Returns(2)
+                .Verifiable(Times.Once);
+            _tokenProcessor
+                .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(textLine1))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 1))
+                .Returns(textLine1)
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.GetIndent(textItem2))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 1))
+                .Returns(4)
+                .Verifiable(Times.Once);
+            _tokenProcessor
+                .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(textLine2))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 2))
+                .Returns(textLine2)
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.GetIndent(textItem3))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 2))
+                .Returns(0)
+                .Verifiable(Times.Once);
+            _tokenProcessor
+                .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(textLine3))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 3))
+                .Returns(textLine3)
+                .Verifiable(Times.Once);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Generating, MethodCallID.Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_SetLogEntryType_Setup);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Setup, MethodCallID.IndentProcessor_SetTabSize);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_SetTabSize, MethodCallID.Logger_SetLogEntryType_Generating);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_SetTabSize, MethodCallID.IndentProcessor_GetFirstTimeIndent);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetFirstTimeIndent, MethodCallID.TokenProcessor_ReplaceTokens, 0, 1);
+            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 1, 1);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 1, 2);
+            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 2, 2);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 2, 3);
             TextTemplateProcessor processor = GetTextTemplateProcessor();
+            ControlItem controlItem = new() { TabSize = tabSize };
             processor._controlDictionary[segmentName] = controlItem;
-            List<string> expected = new()
+            processor._segmentDictionary[segmentName] = new()
             {
-                SetupGenerateTextLine(processor, segmentName, 1),
-                SetupGenerateTextLine(processor, segmentName, 1),
-                SetupGenerateTextLine(processor, segmentName, -2),
-                SetupGenerateTextLine(processor, segmentName, 0)
+                textItem1,
+                textItem2,
+                textItem3
             };
             processor.IsTemplateLoaded = true;
             processor.IsOutputFileWritten = false;
+            List<string> expected = new()
+            {
+                $"  {textLine1}",
+                $"    {textLine2}",
+                textLine3
+            };
 
             // Act
             processor.GenerateSegment(segmentName);
@@ -634,6 +1093,9 @@ namespace TextTemplateProcessor
                 .Should()
                 .ContainInConsecutiveOrder(expected);
             processor.IsOutputFileWritten
+                .Should()
+                .BeFalse();
+            processor._controlDictionary[segmentName].IsFirstTime
                 .Should()
                 .BeFalse();
             _locater.Object.CurrentSegment
@@ -651,19 +1113,94 @@ namespace TextTemplateProcessor
             // Arrange
             InitializeMocks();
             string segmentName = "Segment1";
-            ControlItem controlItem = new();
-            SetupGenerateSegment(segmentName);
+            string textLine1 = "Line 1";
+            string textLine2 = "Line 2";
+            string textLine3 = "Line 3";
+            string textLine4 = "Line 4";
+            TextItem textItem1 = new(2, true, false, textLine1);
+            TextItem textItem2 = new(0, true, false, textLine2);
+            TextItem textItem3 = new(-1, true, false, textLine3);
+            TextItem textItem4 = new(2, true, false, textLine4);
+            _locater
+                .SetupProperty(locater => locater.CurrentSegment, "OtherSegment");
+            _locater
+                .SetupProperty(locater => locater.LineNumber, 5);
+            _logger
+                .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(logger => logger.Log(MsgProcessingSegment, segmentName, null))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.GetFirstTimeIndent(0, textItem1))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetFirstTimeIndent))
+                .Returns(8)
+                .Verifiable(Times.Once);
+            _tokenProcessor
+                .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(textLine1))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 1))
+                .Returns(textLine1)
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.GetIndent(textItem2))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 1))
+                .Returns(8)
+                .Verifiable(Times.Once);
+            _tokenProcessor
+                .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(textLine2))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 2))
+                .Returns(textLine2)
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.GetIndent(textItem3))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 2))
+                .Returns(4)
+                .Verifiable(Times.Once);
+            _tokenProcessor
+                .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(textLine3))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 3))
+                .Returns(textLine3)
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.GetIndent(textItem4))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 3))
+                .Returns(12)
+                .Verifiable(Times.Once);
+            _tokenProcessor
+                .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(textLine4))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 4))
+                .Returns(textLine4)
+                .Verifiable(Times.Once);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Generating, MethodCallID.Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.IndentProcessor_GetFirstTimeIndent);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetFirstTimeIndent, MethodCallID.TokenProcessor_ReplaceTokens, 0, 1);
+            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 1, 1);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 1, 2);
+            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 2, 2);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 2, 3);
+            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 3, 3);
+            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 3, 4);
             TextTemplateProcessor processor = GetTextTemplateProcessor();
+            ControlItem controlItem = new();
             processor._controlDictionary[segmentName] = controlItem;
-            List<string> expected = new()
+            processor._segmentDictionary[segmentName] = new()
             {
-                SetupGenerateTextLine(processor, segmentName, 2),
-                SetupGenerateTextLine(processor, segmentName, 0),
-                SetupGenerateTextLine(processor, segmentName, -1),
-                SetupGenerateTextLine(processor, segmentName, 2)
+                textItem1,
+                textItem2,
+                textItem3,
+                textItem4
             };
             processor.IsTemplateLoaded = true;
             processor.IsOutputFileWritten = false;
+            List<string> expected = new()
+            {
+                $"        {textLine1}",
+                $"        {textLine2}",
+                $"    {textLine3}",
+                $"            {textLine4}"
+            };
 
             // Act
             processor.GenerateSegment(segmentName);
@@ -675,12 +1212,53 @@ namespace TextTemplateProcessor
             processor.IsOutputFileWritten
                 .Should()
                 .BeFalse();
+            processor._controlDictionary[segmentName].IsFirstTime
+                .Should()
+                .BeFalse();
             _locater.Object.CurrentSegment
                 .Should()
                 .Be(segmentName);
             _locater.Object.LineNumber
                 .Should()
                 .Be(expected.Count);
+            VerifyMocks();
+        }
+
+        [Theory]
+        [InlineData(Whitespace)]
+        [InlineData(null)]
+        public void GenerateSegment_SegmentNameIsNullOrWhitespace_LogsMessage(string? segmentName)
+        {
+            // Arrange
+            InitializeMocks();
+            _locater
+                .SetupProperty(locater => locater.LineNumber);
+            _locater
+                .SetupProperty(locater => locater.CurrentSegment);
+            _logger
+                .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(logger => logger.Log(MsgSegmentNameIsNullOrWhitespace, null, null))
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Verifiable(Times.Once);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Generating, MethodCallID.Logger_Log_Message);
+            TextTemplateProcessor processor = GetTextTemplateProcessor();
+
+            // Act
+            processor.GenerateSegment(segmentName!);
+
+            // Assert
+            processor.GeneratedText
+                .Should()
+                .BeEmpty();
+            _locater.Object.CurrentSegment
+                .Should()
+                .BeEmpty();
+            _locater.Object.LineNumber
+                .Should()
+                .Be(0);
             VerifyMocks();
         }
 
@@ -704,7 +1282,6 @@ namespace TextTemplateProcessor
                 .Verifiable(Times.Once);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Generating, MethodCallID.Logger_Log_Message);
             TextTemplateProcessor processor = GetTextTemplateProcessor();
-            processor.IsTemplateLoaded = false;
 
             // Act
             processor.GenerateSegment(segmentName);
@@ -2454,9 +3031,6 @@ namespace TextTemplateProcessor
             _textReader.Reset();
             _textWriter.Reset();
             _tokenProcessor.Reset();
-            _currentIndent = 0;
-            _currentTabSize = DefaultTabSize;
-            _textLineCounter = 0;
             _verifier.Reset();
         }
 
@@ -2470,119 +3044,6 @@ namespace TextTemplateProcessor
             _textReader.VerifyNoOtherCalls();
             _textWriter.VerifyNoOtherCalls();
             _tokenProcessor.VerifyNoOtherCalls();
-        }
-
-        private void SetupGenerateSegment(string segmentName,
-                                          string? padSegment = null,
-                                          Dictionary<string, string>? tokenValues = null,
-                                          int tabSize = 0)
-        {
-            int expectedGeneratingCount = 1;
-
-            if (_locater.Setups.Any() is false)
-            {
-                _locater
-                    .SetupProperty(locater => locater.LineNumber);
-                _locater
-                    .SetupProperty(locater => locater.CurrentSegment);
-            }
-
-            _logger
-                .Setup(logger => logger.Log(MsgProcessingSegment, segmentName, null))
-                .Verifiable(Times.Once);
-
-            if (tokenValues is not null)
-            {
-                _tokenProcessor
-                    .Setup(tokenProcessor => tokenProcessor.LoadTokenValues(tokenValues))
-                    .Verifiable(Times.Once);
-            }
-
-            if (padSegment is not null)
-            {
-                _logger
-                    .Setup(logger => logger.Log(MsgProcessingSegment, padSegment, null))
-                    .Verifiable(Times.Once);
-                _indentProcessor
-                    .Setup(indentProcessor => indentProcessor.SaveCurrentState())
-                    .Verifiable(Times.Once);
-                _indentProcessor
-                    .Setup(indentProcessor => indentProcessor.RestoreCurrentState())
-                    .Verifiable(Times.Once);
-                expectedGeneratingCount++;
-            }
-
-            if (tabSize > 0)
-            {
-                _logger
-                    .Setup(logger => logger.SetLogEntryType(LogEntryType.Setup))
-                    .Verifiable(Times.Once);
-                _indentProcessor
-                    .Setup(indentProcessor => indentProcessor.SetTabSize(tabSize))
-                    .Verifiable(Times.Once);
-                expectedGeneratingCount++;
-                _currentTabSize = tabSize;
-            }
-
-            _logger
-                .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                    .Verifiable(Times.Exactly(expectedGeneratingCount));
-        }
-
-        private string SetupGenerateTextLine(TextTemplateProcessor processor,
-                                             string segmentName,
-                                             int indent,
-                                             int firstTimeIndent = 0,
-                                             bool isFirstTime = true)
-        {
-            string text = $"Line {++_textLineCounter}";
-            TextItem textItem = new(indent, true, false, text);
-
-            if (processor._segmentDictionary.ContainsKey(segmentName))
-            {
-                processor._segmentDictionary[segmentName].Add(textItem);
-                _currentIndent += indent * _currentTabSize;
-                _indentProcessor
-                    .Setup(indentProcessor => indentProcessor.GetIndent(textItem))
-                    .Returns(_currentIndent)
-                    .Verifiable(Times.Once);
-            }
-            else
-            {
-                processor._segmentDictionary[segmentName] = new() { textItem };
-
-                if (firstTimeIndent > 0 && isFirstTime)
-                {
-                    _currentIndent += firstTimeIndent * _currentTabSize;
-                }
-                else
-                {
-                    _currentIndent += indent * _currentTabSize;
-                }
-
-                if (isFirstTime)
-                {
-                    _indentProcessor
-                        .Setup(indentProcessor => indentProcessor.GetFirstTimeIndent(firstTimeIndent, textItem))
-                        .Returns(_currentIndent)
-                        .Verifiable(Times.Once);
-                }
-                else
-                {
-                    _indentProcessor
-                        .Setup(indentProcessor => indentProcessor.GetIndent(textItem))
-                        .Returns(_currentIndent)
-                        .Verifiable(Times.Once);
-                }
-            }
-
-            _tokenProcessor
-                .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(text))
-                .Returns(text)
-                .Verifiable(Times.Once);
-
-            string pad = new(' ', _currentIndent);
-            return pad + text;
         }
 
         private void SetupResetAll()

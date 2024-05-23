@@ -311,14 +311,11 @@
         public void GenerateSegment(string segmentName, Dictionary<string, string>? tokenValues = null)
         {
             Logger.SetLogEntryType(LogEntryType.Generating);
-            CurrentSegment = segmentName is null ? string.Empty : segmentName;
+            CurrentSegment = string.IsNullOrWhiteSpace(segmentName) ? string.Empty : segmentName;
             LineNumber = 0;
 
             if (SegmentCanBeGenerated(CurrentSegment))
             {
-                Logger.Log(MsgProcessingSegment,
-                           CurrentSegment);
-
                 ControlItem controlItem = _controlDictionary[CurrentSegment];
 
                 if (tokenValues is not null)
@@ -335,6 +332,9 @@
                     CurrentSegment = saveSegmentName;
                     LineNumber = 0;
                 }
+
+                Logger.Log(MsgProcessingSegment,
+                           CurrentSegment);
 
                 if (controlItem.TabSize > 0)
                 {

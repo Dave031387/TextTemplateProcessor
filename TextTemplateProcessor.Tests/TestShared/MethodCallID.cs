@@ -19,6 +19,8 @@
         IndentProcessor_IsValidIndentValue,
         IndentProcessor_IsValidTabSizeValue,
         IndentProcessor_Reset,
+        IndentProcessor_RestoreCurrentState,
+        IndentProcessor_SaveCurrentState,
         IndentProcessor_SetTabSize,
         Locater_CurrentSegment_Getter,
         Locater_CurrentSegment_Setter,
