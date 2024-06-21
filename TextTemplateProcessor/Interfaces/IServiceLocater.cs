@@ -2,6 +2,6 @@
 {
     internal interface IServiceLocater
     {
-        T Get<T>();
+        T Get<T>(string? key = null) where T : class;
     }
 }

@@ -60,6 +60,11 @@
         string ReplaceTokens(string text);
 
         /// <summary>
+        /// Resets the token delimiters and token escape character to their default values.
+        /// </summary>
+        void ResetTokenDelimiters();
+
+        /// <summary>
         /// Sets the token start and token end delimiters and the token escape character to the
         /// specified values.
         /// </summary>

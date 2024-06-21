@@ -143,6 +143,12 @@
         void ResetSegment(string segmentName);
 
         /// <summary>
+        /// Resets the token start and token end delimiters and the token escape character to their
+        /// default values.
+        /// </summary>
+        void ResetTokenDelimiters();
+
+        /// <summary>
         /// Sets the tab size to be used when generating text lines.
         /// </summary>
         /// <param name="tabSize">

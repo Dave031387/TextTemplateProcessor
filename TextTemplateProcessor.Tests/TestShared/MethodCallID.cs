@@ -49,7 +49,8 @@
         TextWriter_WriteTextFile,
         TokenProcessor_ClearTokens,
         TokenProcessor_LoadTokenValues,
+        TokenProcessor_ReplaceTokens,
+        TokenProcessor_ResetTokenDelimiters,
         TokenProcessor_SetTokenDelimiters,
-        TokenProcessor_ReplaceTokens
     }
 }

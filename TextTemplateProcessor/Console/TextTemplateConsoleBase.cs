@@ -12,8 +12,8 @@
     /// </summary>
     public abstract class TextTemplateConsoleBase : TextTemplateProcessor
     {
-        private readonly string _defaultFileNamePrefix = "File_";
-        private readonly string _defaultFileNameSuffix = ".txt";
+        private const string DefaultFileNamePrefix = "File_";
+        private const string DefaultFileNameSuffix = ".txt";
         private int _outputFileNumber = 0;
 
         /// <summary>
@@ -277,7 +277,7 @@
 
         private IMessageWriter MessageWriter { get; init; }
 
-        private string NextDefaultFileName => $"{_defaultFileNamePrefix}{++_outputFileNumber:D4}{_defaultFileNameSuffix}";
+        private string NextDefaultFileName => $"{DefaultFileNamePrefix}{++_outputFileNumber:D4}{DefaultFileNameSuffix}";
 
         private IPathValidater PathValidater { get; init; }
 

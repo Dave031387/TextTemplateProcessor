@@ -282,6 +282,10 @@
                 .Setup(tokenProcessor => tokenProcessor.ClearTokens())
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ClearTokens))
                 .Verifiable(Times.Once);
+            _tokenProcessor
+                .Setup(tokenProcessor => tokenProcessor.ResetTokenDelimiters())
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ResetTokenDelimiters))
+                .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Reset))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Reset))
@@ -305,10 +309,12 @@
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.DefaultSegmentNameGenerator_Reset, 1);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.IndentProcessor_Reset, 1);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.TokenProcessor_ClearTokens, 1);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.TokenProcessor_ResetTokenDelimiters, 1);
             _verifier.DefineExpectedCallOrder(MethodCallID.Locater_Reset, MethodCallID.Logger_SetLogEntryType_Reset);
             _verifier.DefineExpectedCallOrder(MethodCallID.DefaultSegmentNameGenerator_Reset, MethodCallID.Logger_SetLogEntryType_Reset);
             _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_Reset, MethodCallID.Logger_SetLogEntryType_Reset);
             _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ClearTokens, MethodCallID.Logger_SetLogEntryType_Reset);
+            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ResetTokenDelimiters, MethodCallID.Logger_SetLogEntryType_Reset);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.TextReader_FileName);
             _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_FileName, MethodCallID.Logger_Log_Message, 0, 2);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_WriteLogEntries, 2);
@@ -382,6 +388,10 @@
                 .Setup(tokenProcessor => tokenProcessor.ClearTokens())
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ClearTokens))
                 .Verifiable(Times.Once);
+            _tokenProcessor
+                .Setup(tokenProcessor => tokenProcessor.ResetTokenDelimiters())
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ResetTokenDelimiters))
+                .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Reset))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Reset))
@@ -406,10 +416,12 @@
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.DefaultSegmentNameGenerator_Reset, 1);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.IndentProcessor_Reset, 1);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.TokenProcessor_ClearTokens, 1);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.TokenProcessor_ResetTokenDelimiters, 1);
             _verifier.DefineExpectedCallOrder(MethodCallID.Locater_Reset, MethodCallID.Logger_SetLogEntryType_Reset);
             _verifier.DefineExpectedCallOrder(MethodCallID.DefaultSegmentNameGenerator_Reset, MethodCallID.Logger_SetLogEntryType_Reset);
             _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_Reset, MethodCallID.Logger_SetLogEntryType_Reset);
             _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ClearTokens, MethodCallID.Logger_SetLogEntryType_Reset);
+            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ResetTokenDelimiters, MethodCallID.Logger_SetLogEntryType_Reset);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.TextReader_FileName);
             _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_FileName, MethodCallID.Logger_Log_Message, 0, 2);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_WriteLogEntries, 2);
@@ -501,6 +513,10 @@
                 .Setup(tokenProcessor => tokenProcessor.ClearTokens())
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ClearTokens))
                 .Verifiable(Times.Once);
+            _tokenProcessor
+                .Setup(tokenProcessor => tokenProcessor.ResetTokenDelimiters())
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ResetTokenDelimiters))
+                .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgLoadingTemplateFile, _templateFileName, null))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
@@ -524,10 +540,12 @@
             _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_ReadTextFile, MethodCallID.DefaultSegmentNameGenerator_Reset);
             _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_ReadTextFile, MethodCallID.IndentProcessor_Reset);
             _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_ReadTextFile, MethodCallID.TokenProcessor_ClearTokens);
+            _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_ReadTextFile, MethodCallID.TokenProcessor_ResetTokenDelimiters);
             _verifier.DefineExpectedCallOrder(MethodCallID.Locater_Reset, MethodCallID.TextReader_FileName);
             _verifier.DefineExpectedCallOrder(MethodCallID.DefaultSegmentNameGenerator_Reset, MethodCallID.TextReader_FileName);
             _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_Reset, MethodCallID.TextReader_FileName);
             _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ClearTokens, MethodCallID.TextReader_FileName);
+            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ResetTokenDelimiters, MethodCallID.TextReader_FileName);
             _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_FileName, MethodCallID.Logger_Log_Message);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.TemplateLoader_LoadTemplate);
             _verifier.DefineExpectedCallOrder(MethodCallID.TemplateLoader_LoadTemplate, MethodCallID.Logger_WriteLogEntries);
@@ -834,6 +852,10 @@
                     .Setup(tokenProcessor => tokenProcessor.ClearTokens())
                     .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ClearTokens))
                     .Verifiable(Times.Once);
+                _tokenProcessor
+                    .Setup(tokenProcessor => tokenProcessor.ResetTokenDelimiters())
+                    .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ResetTokenDelimiters))
+                    .Verifiable(Times.Once);
                 _logger
                     .Setup(logger => logger.SetLogEntryType(LogEntryType.Reset))
                     .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Reset))
@@ -858,10 +880,12 @@
                 _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.DefaultSegmentNameGenerator_Reset, 1);
                 _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.IndentProcessor_Reset, 1);
                 _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.TokenProcessor_ClearTokens, 1);
+                _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.TokenProcessor_ResetTokenDelimiters, 1);
                 _verifier.DefineExpectedCallOrder(MethodCallID.Locater_Reset, MethodCallID.Logger_SetLogEntryType_Reset);
                 _verifier.DefineExpectedCallOrder(MethodCallID.DefaultSegmentNameGenerator_Reset, MethodCallID.Logger_SetLogEntryType_Reset);
                 _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_Reset, MethodCallID.Logger_SetLogEntryType_Reset);
                 _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ClearTokens, MethodCallID.Logger_SetLogEntryType_Reset);
+                _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ResetTokenDelimiters, MethodCallID.Logger_SetLogEntryType_Reset);
                 _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.TextReader_FileName);
                 _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_FileName, MethodCallID.Logger_Log_Message, 0, 2);
                 _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_WriteLogEntries, 2);
@@ -982,6 +1006,10 @@
                     .Setup(tokenProcessor => tokenProcessor.ClearTokens())
                     .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ClearTokens))
                     .Verifiable(Times.Once);
+                _tokenProcessor
+                    .Setup(tokenProcessor => tokenProcessor.ResetTokenDelimiters())
+                    .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ResetTokenDelimiters))
+                    .Verifiable(Times.Once);
                 _logger
                     .Setup(logger => logger.Log(MsgLoadingTemplateFile, _templateFileName, null))
                     .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message, 2))
@@ -1006,10 +1034,12 @@
                 _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_ReadTextFile, MethodCallID.DefaultSegmentNameGenerator_Reset);
                 _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_ReadTextFile, MethodCallID.IndentProcessor_Reset);
                 _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_ReadTextFile, MethodCallID.TokenProcessor_ClearTokens);
+                _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_ReadTextFile, MethodCallID.TokenProcessor_ResetTokenDelimiters);
                 _verifier.DefineExpectedCallOrder(MethodCallID.Locater_Reset, MethodCallID.Logger_Log_Message, 0, 2);
                 _verifier.DefineExpectedCallOrder(MethodCallID.DefaultSegmentNameGenerator_Reset, MethodCallID.Logger_Log_Message, 0, 2);
                 _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_Reset, MethodCallID.Logger_Log_Message, 0, 2);
                 _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ClearTokens, MethodCallID.Logger_Log_Message, 0, 2);
+                _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ResetTokenDelimiters, MethodCallID.Logger_Log_Message, 0, 2);
                 _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.TemplateLoader_LoadTemplate, 2);
                 _verifier.DefineExpectedCallOrder(MethodCallID.TemplateLoader_LoadTemplate, MethodCallID.Logger_WriteLogEntries);
             }
@@ -1102,6 +1132,10 @@
                     .Setup(tokenProcessor => tokenProcessor.ClearTokens())
                     .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ClearTokens))
                     .Verifiable(Times.Once);
+                _tokenProcessor
+                    .Setup(tokenProcessor => tokenProcessor.ResetTokenDelimiters())
+                    .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ResetTokenDelimiters))
+                    .Verifiable(Times.Once);
                 _logger
                     .Setup(logger => logger.SetLogEntryType(LogEntryType.Reset))
                     .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Reset))
@@ -1127,10 +1161,12 @@
                 _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.DefaultSegmentNameGenerator_Reset, 1);
                 _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.IndentProcessor_Reset, 1);
                 _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.TokenProcessor_ClearTokens, 1);
+                _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.TokenProcessor_ResetTokenDelimiters, 1);
                 _verifier.DefineExpectedCallOrder(MethodCallID.Locater_Reset, MethodCallID.Logger_SetLogEntryType_Reset);
                 _verifier.DefineExpectedCallOrder(MethodCallID.DefaultSegmentNameGenerator_Reset, MethodCallID.Logger_SetLogEntryType_Reset);
                 _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_Reset, MethodCallID.Logger_SetLogEntryType_Reset);
                 _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ClearTokens, MethodCallID.Logger_SetLogEntryType_Reset);
+                _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ResetTokenDelimiters, MethodCallID.Logger_SetLogEntryType_Reset);
                 _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.TextReader_FileName);
                 _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_FileName, MethodCallID.Logger_Log_Message, 0, 2);
                 _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_WriteLogEntries, 2);
@@ -1882,6 +1918,10 @@
                     .Setup(tokenProcessor => tokenProcessor.ClearTokens())
                     .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ClearTokens))
                     .Verifiable(Times.Once);
+                _tokenProcessor
+                    .Setup(tokenProcessor => tokenProcessor.ResetTokenDelimiters())
+                    .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ResetTokenDelimiters))
+                    .Verifiable(Times.Once);
                 _logger
                     .Setup(logger => logger.Log(MsgLoadingTemplateFile, _templateFileName, null))
                     .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
@@ -1906,10 +1946,12 @@
                 _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_ReadTextFile, MethodCallID.DefaultSegmentNameGenerator_Reset);
                 _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_ReadTextFile, MethodCallID.IndentProcessor_Reset);
                 _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_ReadTextFile, MethodCallID.TokenProcessor_ClearTokens);
+                _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_ReadTextFile, MethodCallID.TokenProcessor_ResetTokenDelimiters);
                 _verifier.DefineExpectedCallOrder(MethodCallID.Locater_Reset, MethodCallID.Logger_Log_Message);
                 _verifier.DefineExpectedCallOrder(MethodCallID.DefaultSegmentNameGenerator_Reset, MethodCallID.Logger_Log_Message);
                 _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_Reset, MethodCallID.Logger_Log_Message);
                 _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ClearTokens, MethodCallID.Logger_Log_Message);
+                _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ResetTokenDelimiters, MethodCallID.Logger_Log_Message);
                 _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.TemplateLoader_LoadTemplate);
                 _verifier.DefineExpectedCallOrder(MethodCallID.TemplateLoader_LoadTemplate, MethodCallID.Logger_WriteLogEntries);
             }

@@ -5,7 +5,7 @@
 
     internal static class Utility
     {
-        public static void NullDependencyCheck(object dependencyObject,
+        public static void NullDependencyCheck(object? dependencyObject,
                                                string className,
                                                string serviceName,
                                                string parameterName)

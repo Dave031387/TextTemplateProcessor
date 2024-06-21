@@ -1,52 +1,42 @@
 ﻿namespace TextTemplateProcessor.Core
 {
+    using BasicIoC;
     using global::TextTemplateProcessor.Console;
     using global::TextTemplateProcessor.Interfaces;
     using global::TextTemplateProcessor.IO;
     using global::TextTemplateProcessor.Logger;
-    using Ninject;
 
-    internal class ServiceLocater
+    internal class ServiceLocater : IServiceLocater
     {
-        private static readonly IServiceLocater _serviceLocater;
+        private readonly IContainer _container;
 
-        static ServiceLocater() => _serviceLocater = new DefaultServiceLocater();
+        private static readonly Lazy<ServiceLocater> _lazy
+            = new(() => new ServiceLocater());
 
-        public static IServiceLocater Current => _serviceLocater;
-
-        private class DefaultServiceLocater : IServiceLocater, IDisposable
+        private ServiceLocater()
         {
-            private readonly IKernel _kernel;
-
-            public DefaultServiceLocater()
-            {
-                _kernel = new StandardKernel();
-                LoadBindings();
-            }
-
-            public T Get<T>() => _kernel.Get<T>();
-
-            private void LoadBindings()
-            {
-                _kernel.Bind<IConsoleReader>().To<ConsoleReader>().InSingletonScope();
-                _kernel.Bind<IConsoleWriter>().To<ConsoleWriter>().InSingletonScope();
-                _kernel.Bind<IDefaultSegmentNameGenerator>().To<DefaultSegmentNameGenerator>().InSingletonScope();
-                _kernel.Bind<IFileAndDirectoryService>().To<FileAndDirectoryService>().InSingletonScope();
-                _kernel.Bind<IIndentProcessor>().To<IndentProcessor>().InSingletonScope();
-                _kernel.Bind<IMessageWriter>().To<MessageWriter>().InSingletonScope();
-                _kernel.Bind<ILocater>().To<Locater>().InSingletonScope();
-                _kernel.Bind<ILogger>().To<ConsoleLogger>().InSingletonScope();
-                _kernel.Bind<INameValidater>().To<NameValidater>().InSingletonScope();
-                _kernel.Bind<IPathValidater>().To<PathValidater>().InSingletonScope();
-                _kernel.Bind<ISegmentHeaderParser>().To<SegmentHeaderParser>().InSingletonScope();
-                _kernel.Bind<ITemplateLoader>().To<TemplateLoader>().InSingletonScope();
-                _kernel.Bind<ITextLineParser>().To<TextLineParser>().InSingletonScope();
-                _kernel.Bind<ITextReader>().To<TextReader>().InSingletonScope();
-                _kernel.Bind<ITextWriter>().To<TextWriter>().InSingletonScope();
-                _kernel.Bind<ITokenProcessor>().To<TokenProcessor>().InSingletonScope();
-            }
-
-            public void Dispose() => _kernel.Dispose();
+            _container = Container.Instance;
+            _container.RegisterSingleton<IConsoleReader, ConsoleReader>();
+            _container.RegisterSingleton<IConsoleWriter, ConsoleWriter>();
+            _container.RegisterSingleton<IDefaultSegmentNameGenerator, DefaultSegmentNameGenerator>();
+            _container.RegisterSingleton<IFileAndDirectoryService, FileAndDirectoryService>();
+            _container.RegisterSingleton<IIndentProcessor, IndentProcessor>();
+            _container.RegisterSingleton<IMessageWriter, MessageWriter>();
+            _container.RegisterSingleton<ILocater, Locater>();
+            _container.RegisterSingleton<ILogger, ConsoleLogger>();
+            _container.RegisterSingleton<INameValidater, NameValidater>();
+            _container.RegisterSingleton<IPathValidater, PathValidater>();
+            _container.RegisterSingleton<ISegmentHeaderParser, SegmentHeaderParser>();
+            _container.RegisterSingleton<ITemplateLoader, TemplateLoader>();
+            _container.RegisterSingleton<ITextLineParser, TextLineParser>();
+            _container.RegisterSingleton<ITextReader, TextReader>();
+            _container.RegisterSingleton<ITextWriter, TextWriter>();
+            _container.RegisterSingleton<ITokenProcessor, TokenProcessor>();
         }
+
+        public static IServiceLocater Current => _lazy.Value;
+
+        public T Get<T>(string? key = null) where T : class
+            => _container.ResolveDependency<T>(key)!;
     }
 }

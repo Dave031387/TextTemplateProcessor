@@ -18,6 +18,8 @@
     <IncludeSymbols>True</IncludeSymbols>
     <Version>1.0.1</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <RepositoryUrl>https://github.com/Dave031387/TextTemplateProcessor</RepositoryUrl>
   </PropertyGroup>
 
 	<ItemGroup>
@@ -30,7 +32,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Ninject" Version="3.3.6" />
+	  <PackageReference Include="BasicIoC" Version="1.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -980,6 +980,30 @@
         }
 
         [Fact]
+        public void ResetTokenDelimiters_DelimitersHaveBeenChanged_ResetsDelimitersToDefaultValues()
+        {
+            // Arrange
+            InitializeMocks();
+            TokenProcessor processor = GetTokenProcessor();
+            _ = processor.SetTokenDelimiters("{{", "}}", '!');
+
+            // Act
+            processor.ResetTokenDelimiters();
+
+            // Assert
+            processor.TokenStart
+                .Should()
+                .Be(TokenStart);
+            processor.TokenEnd
+                .Should()
+                .Be(TokenEnd);
+            processor.TokenEscapeChar
+                .Should()
+                .Be(TokenEscapeChar);
+            MocksVerifyNoOtherCalls();
+        }
+
+        [Fact]
         public void SetTokenDelimiters_TokenEndAndTokenEscapeAreSameValue_LogsMessageAndReturnsFalse()
         {
             char escape = '!';
@@ -1112,7 +1136,7 @@
         }
 
         [Fact]
-        public void TokenProcessor_ConstructWithValidDependencies_InitializesEmptyTokenDictionary()
+        public void TokenProcessor_ConstructWithValidDependencies_InitializesPropertiesAndTokenDictionary()
         {
             // Arrange/Act
             InitializeMocks();
@@ -1125,6 +1149,15 @@
             processor.TokenDictionary
                 .Should()
                 .BeEmpty();
+            processor.TokenStart
+                .Should()
+                .Be(TokenStart);
+            processor.TokenEnd
+                .Should()
+                .Be(TokenEnd);
+            processor.TokenEscapeChar
+                .Should()
+                .Be(TokenEscapeChar);
             MocksVerifyNoOtherCalls();
         }
 

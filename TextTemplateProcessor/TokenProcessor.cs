@@ -11,6 +11,9 @@
     /// </summary>
     internal class TokenProcessor : ITokenProcessor
     {
+        private const string DefaultEndDelimiter = "#>";
+        private const char DefaultEscapeCharacter = '\\';
+        private const string DefaultStartDelimiter = "<#";
         private const char LowercaseFlag = '-';
         private const char SameCaseFlag = '=';
         private const char UppercaseFlag = '+';
@@ -68,9 +71,12 @@
         }
 
         internal Dictionary<string, string> TokenDictionary { get; } = new();
-        internal string TokenEnd { get; private set; } = "#>";
-        internal char TokenEscapeChar { get; private set; } = '\\';
-        internal string TokenStart { get; private set; } = "<#";
+
+        internal string TokenEnd { get; private set; } = DefaultEndDelimiter;
+
+        internal char TokenEscapeChar { get; private set; } = DefaultEscapeCharacter;
+
+        internal string TokenStart { get; private set; } = DefaultStartDelimiter;
 
         private ILocater Locater { get; init; }
 
@@ -198,6 +204,16 @@
 
             builder = builder.Replace(TokenEscapeChar + TokenStart, TokenStart);
             return builder.ToString();
+        }
+
+        /// <summary>
+        /// Resets the token delimiters and token escape character to their default values.
+        /// </summary>
+        public void ResetTokenDelimiters()
+        {
+            TokenStart = DefaultStartDelimiter;
+            TokenEnd = DefaultEndDelimiter;
+            TokenEscapeChar = DefaultEscapeCharacter;
         }
 
         /// <summary>

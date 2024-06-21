@@ -437,6 +437,7 @@
             DefaultSegmentNameGenerator.Reset();
             IndentProcessor.Reset();
             TokenProcessor.ClearTokens();
+            TokenProcessor.ResetTokenDelimiters();
 
             if (shouldDisplayMessage)
             {
@@ -460,6 +461,7 @@
             _generatedText.Clear();
             Locater.Reset();
             IndentProcessor.Reset();
+            IsOutputFileWritten = false;
 
             foreach (string segmentName in _controlDictionary.Keys)
             {
@@ -500,6 +502,16 @@
                 Logger.Log(MsgUnableToResetSegment,
                            CurrentSegment);
             }
+        }
+
+        /// <summary>
+        /// Resets the token start and token end delimiters and the token escape character to their
+        /// default values.
+        /// </summary>
+        public void ResetTokenDelimiters()
+        {
+            Logger.SetLogEntryType(LogEntryType.Reset);
+            TokenProcessor.ResetTokenDelimiters();
         }
 
         /// <summary>
