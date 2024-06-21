@@ -260,7 +260,7 @@ line. The current indent amount starts at zero with the first text line and is a
 The current indent, text line indent, and new current indent columns are all in terms of the number of spaces. The indent value column is in terms of
 the number of tabs.
 
-
+```
 |             |         |        |             | NEW     |                |
 | TEXT LINE   | CURRENT | INDENT | TEXT LINE   | CURRENT | GENERATED TEXT |
 | 1234567890  | INDENT  | VALUE  | INDENT      | INDENT  | 12345678901234 |
@@ -275,7 +275,7 @@ the number of tabs.
 | @-1 Line 8  |    4    |   -1   | 4-(1x2) = 2 |    2    |   Line 8       |
 | @=2 Line 9  |    2    |   =2   |   (2x2) = 4 |    4    |     Line 9     |
 | O-3 Line 10 |    4    |   -3   | 4-(3*2) ->0 |    4    | Line 10        |
-
+```
 In the above table, notice that only lines having indent control codes beginning with "@" impact the current indent value. Also notice that in the fourth
 line the text line indent and new current indent values get set to zero because the calculated value (2-(3x2)) would have been negative. The text line
 indent on the tenth line is zero for the same reason, although the current indent amount isn't affected since it is a one-time indent control code.
