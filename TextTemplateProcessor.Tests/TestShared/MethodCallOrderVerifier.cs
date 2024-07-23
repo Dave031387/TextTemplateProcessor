@@ -14,19 +14,19 @@
         /// Gets a list of <see cref="MethodCallOrder" /> objects that define the expected order of
         /// method calls.
         /// </summary>
-        public List<MethodCallOrder> ExpectedOrderList { get; } = new();
+        public List<MethodCallOrder> ExpectedOrderList { get; } = [];
 
         /// <summary>
         /// Gets a dictionary whose key is a <see cref="MethodCallID" /> and whose value gives the
         /// number of times that <see cref="MethodCallID" /> has been called during the unit test.
         /// </summary>
-        public Dictionary<MethodCallID, int> MethodCallCounter { get; } = new();
+        public Dictionary<MethodCallID, int> MethodCallCounter { get; } = [];
 
         /// <summary>
         /// Gets a list of <see cref="MethodCall" /> objects. The objects will appear in the list in
         /// the order that each method was called during the unit test.
         /// </summary>
-        public List<MethodCall> MethodCallList { get; } = new();
+        public List<MethodCall> MethodCallList { get; } = [];
 
         /// <summary>
         /// This record defines the order of two method calls within a single unit test.
@@ -106,9 +106,9 @@
         {
             return () =>
             {
-                if (MethodCallCounter.ContainsKey(methodCallID))
+                if (MethodCallCounter.TryGetValue(methodCallID, out int value))
                 {
-                    MethodCallCounter[methodCallID]++;
+                    MethodCallCounter[methodCallID] = ++value;
                     callerAction?.Invoke();
                 }
                 else

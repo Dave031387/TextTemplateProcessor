@@ -350,7 +350,7 @@
                 .Verifiable(Times.Once);
             _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Getter, MethodCallID.Logger_Log_Message);
             TokenProcessor processor = GetTokenProcessor();
-            Dictionary<string, string> tokenValues = new();
+            Dictionary<string, string> tokenValues = [];
 
             // Act
             processor.LoadTokenValues(tokenValues);
@@ -1063,7 +1063,7 @@
             // Arrange
             InitializeMocks();
             TokenProcessor processor = GetTokenProcessor();
-            string[] expectedKeys = new[] { "token1", "token2", "token3" };
+            string[] expectedKeys = ["token1", "token2", "token3"];
             int expectedTokenCount = expectedKeys.Length;
 
             // Act

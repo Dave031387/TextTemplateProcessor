@@ -107,14 +107,9 @@
                 .Verifiable(Times.Once);
             TextWriter writer = GetTextWriter();
             _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidateFullPath, MethodCallID.Logger_Log_Message);
-            string[] textLines = new[]
-            {
-                "Line 1",
-                "Line 2"
-            };
 
             // Act
-            bool actual = writer.WriteTextFile(filePath, textLines);
+            bool actual = writer.WriteTextFile(filePath, SampleText);
 
             // Assert
             actual
@@ -217,11 +212,6 @@
             string directoryPath = NextAbsoluteName;
             string fileName = NextFileName;
             string filePath = $"{directoryPath}{Sep}{fileName}";
-            string[] textLines = new[]
-            {
-                "Line 1",
-                "Line 2"
-            };
             _logger
                 .Setup(logger => logger.Log(MsgWritingTextFile, fileName, null))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
@@ -246,7 +236,7 @@
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_CreateDirectory))
                 .Verifiable(Times.Once);
             _fileService
-                .Setup(fileAndDirectoryService => fileAndDirectoryService.WriteTextFile(filePath, textLines))
+                .Setup(fileAndDirectoryService => fileAndDirectoryService.WriteTextFile(filePath, SampleText))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_WriteTextFile))
                 .Verifiable(Times.Once);
             TextWriter writer = GetTextWriter();
@@ -258,7 +248,7 @@
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.FileAndDirectoryService_WriteTextFile);
 
             // Act
-            bool actual = writer.WriteTextFile(filePath, textLines);
+            bool actual = writer.WriteTextFile(filePath, SampleText);
 
             // Assert
             actual

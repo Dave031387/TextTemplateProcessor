@@ -9,7 +9,7 @@
     /// </summary>
     internal class ConsoleLogger : ILogger
     {
-        private readonly List<LogEntry> _logEntries = new();
+        private readonly List<LogEntry> _logEntries = [];
         private LogEntryType _currentLogEntryType = LogEntryType.Setup;
 
         /// <summary>

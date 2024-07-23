@@ -10,9 +10,9 @@
     /// </summary>
     internal class TemplateLoader : ITemplateLoader
     {
-        private readonly List<string> _segmentsWithPad = new();
-        private Dictionary<string, ControlItem> _controlDictionary = new();
-        private Dictionary<string, List<TextItem>> _segmentDictionary = new();
+        private readonly List<string> _segmentsWithPad = [];
+        private Dictionary<string, ControlItem> _controlDictionary = [];
+        private Dictionary<string, List<TextItem>> _segmentDictionary = [];
         private int _textLineCount = 0;
 
         /// <summary>
@@ -158,13 +158,13 @@
 
         private void AddTextItemToSegmentDictionary(TextItem textItem)
         {
-            if (_segmentDictionary.ContainsKey(Locater.CurrentSegment))
+            if (_segmentDictionary.TryGetValue(Locater.CurrentSegment, out List<TextItem>? value))
             {
-                _segmentDictionary[Locater.CurrentSegment].Add(textItem);
+                value.Add(textItem);
             }
             else
             {
-                _segmentDictionary[Locater.CurrentSegment] = new List<TextItem>() { textItem };
+                _segmentDictionary[Locater.CurrentSegment] = [textItem];
             }
 
             _textLineCount++;

@@ -129,7 +129,7 @@
         /// </returns>
         public IEnumerable<string> ReadTextFile()
         {
-            List<string> textLines = new();
+            List<string> textLines = [];
 
             if (_isFilePathSet is false)
             {
@@ -172,6 +172,7 @@
             {
                 InitializeProperties();
                 Logger.Log(MsgUnableToSetTemplateFilePath,
+                           filePath,
                            ex.Message);
             }
         }

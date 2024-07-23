@@ -10,9 +10,9 @@
     /// </summary>
     public class TextTemplateProcessor : ITextTemplateProcessor
     {
-        internal readonly Dictionary<string, ControlItem> _controlDictionary = new();
-        internal readonly List<string> _generatedText = new();
-        internal readonly Dictionary<string, List<TextItem>> _segmentDictionary = new();
+        internal readonly Dictionary<string, ControlItem> _controlDictionary = [];
+        internal readonly List<string> _generatedText = [];
+        internal readonly Dictionary<string, List<TextItem>> _segmentDictionary = [];
 
         /// <summary>
         /// Default constructor that creates an instance of the <see cref="TextTemplateProcessor" />
@@ -308,7 +308,7 @@
         /// Each text line will indented according to the indent controls and all tokens will be
         /// replaced with their respective substitution values.
         /// </remarks>
-        public void GenerateSegment(string segmentName, Dictionary<string, string>? tokenValues = null)
+        public virtual void GenerateSegment(string segmentName, Dictionary<string, string>? tokenValues = null)
         {
             Logger.SetLogEntryType(LogEntryType.Generating);
             CurrentSegment = string.IsNullOrWhiteSpace(segmentName) ? string.Empty : segmentName;
@@ -353,6 +353,25 @@
         }
 
         /// <summary>
+        /// Gets the list of messages that have been logged.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="IEnumerable{T}" /> of <see langword="string" /> containing the log
+        /// messages.
+        /// </returns>
+        public virtual IEnumerable<string> GetMessages()
+        {
+            List<string> messages = [];
+
+            foreach (LogEntry logEntry in Logger.LogEntries)
+            {
+                messages.Add(logEntry.ToString());
+            }
+
+            return messages;
+        }
+
+        /// <summary>
         /// Loads a text template file into memory to be processed.
         /// </summary>
         /// <remarks>
@@ -360,7 +379,7 @@
         /// constructor that takes a file path as an argument, or via the
         /// <see cref="SetTemplateFilePath(string)" /> method.
         /// </remarks>
-        public void LoadTemplate()
+        public virtual void LoadTemplate()
         {
             Logger.SetLogEntryType(LogEntryType.Loading);
 
@@ -386,7 +405,7 @@
         /// <param name="filePath">
         /// The file path of the text template file that is to be processed.
         /// </param>
-        public void LoadTemplate(string filePath)
+        public virtual void LoadTemplate(string filePath)
         {
             Logger.SetLogEntryType(LogEntryType.Loading);
 
@@ -426,7 +445,7 @@
         /// state has been reset.
         /// <para> The default is <see langword="true" /> (message will be logged). </para>
         /// </param>
-        public void ResetAll(bool shouldDisplayMessage = true)
+        public virtual void ResetAll(bool shouldDisplayMessage = true)
         {
             _generatedText.Clear();
             Locater.Reset();
@@ -455,7 +474,7 @@
         /// buffer has been cleared.
         /// <para> The default is <see langword="true" /> (message will be logged). </para>
         /// </param>
-        public void ResetGeneratedText(bool shouldDisplayMessage = true)
+        public virtual void ResetGeneratedText(bool shouldDisplayMessage = true)
         {
             Logger.SetLogEntryType(LogEntryType.Reset);
             _generatedText.Clear();
@@ -485,21 +504,21 @@
         /// <remarks>
         /// The <see cref="CurrentSegment" /> property will be set to the given segment name.
         /// </remarks>
-        public void ResetSegment(string segmentName)
+        public virtual void ResetSegment(string segmentName)
         {
             Logger.SetLogEntryType(LogEntryType.Reset);
             CurrentSegment = segmentName is null ? string.Empty : segmentName;
             LineNumber = 0;
 
-            if (_controlDictionary.ContainsKey(CurrentSegment))
+            if (_controlDictionary.TryGetValue(CurrentSegment, out ControlItem? value))
             {
-                _controlDictionary[CurrentSegment].IsFirstTime = true;
+                value.IsFirstTime = true;
                 Logger.Log(MsgSegmentHasBeenReset,
                            CurrentSegment);
             }
             else
             {
-                Logger.Log(MsgUnableToResetSegment,
+                Logger.Log(MsgUnableToResetUnknownSegment,
                            CurrentSegment);
             }
         }
@@ -508,7 +527,7 @@
         /// Resets the token start and token end delimiters and the token escape character to their
         /// default values.
         /// </summary>
-        public void ResetTokenDelimiters()
+        public virtual void ResetTokenDelimiters()
         {
             Logger.SetLogEntryType(LogEntryType.Reset);
             TokenProcessor.ResetTokenDelimiters();
@@ -520,7 +539,7 @@
         /// <param name="tabSize">
         /// The new tab size value.
         /// </param>
-        public void SetTabSize(int tabSize)
+        public virtual void SetTabSize(int tabSize)
         {
             Logger.SetLogEntryType(LogEntryType.Setup);
             IndentProcessor.SetTabSize(tabSize);
@@ -532,7 +551,7 @@
         /// <param name="templateFilePath">
         /// The file path of an existing text template file.
         /// </param>
-        public void SetTemplateFilePath(string templateFilePath)
+        public virtual void SetTemplateFilePath(string templateFilePath)
         {
             Logger.SetLogEntryType(LogEntryType.Setup);
             TextReader.SetFilePath(templateFilePath);
@@ -555,7 +574,7 @@
         /// <see langword="true" /> if the delimiter values were successfully changed. Otherwise,
         /// returns <see langword="false" />.
         /// </returns>
-        public bool SetTokenDelimiters(string tokenStart, string tokenEnd, char tokenEscapeChar)
+        public virtual bool SetTokenDelimiters(string tokenStart, string tokenEnd, char tokenEscapeChar)
         {
             Logger.SetLogEntryType(LogEntryType.Setup);
             return TokenProcessor.SetTokenDelimiters(tokenStart, tokenEnd, tokenEscapeChar);
@@ -578,7 +597,7 @@
         /// file will be overwritten. However, nothing will be written if the generated text buffer
         /// is empty.
         /// </remarks>
-        public void WriteGeneratedTextToFile(string filePath, bool resetGeneratedText = true)
+        public virtual void WriteGeneratedTextToFile(string filePath, bool resetGeneratedText = true)
         {
             Logger.SetLogEntryType(LogEntryType.Writing);
 
@@ -621,8 +640,7 @@
 
             if (_controlDictionary.ContainsKey(segmentName))
             {
-                if (_segmentDictionary.ContainsKey(segmentName)
-                    && _segmentDictionary[segmentName].Any())
+                if (_segmentDictionary.TryGetValue(segmentName, out List<TextItem>? value) && value.Count != 0)
                 {
                     result = true;
                 }

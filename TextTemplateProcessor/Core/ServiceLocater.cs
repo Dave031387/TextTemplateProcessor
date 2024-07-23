@@ -8,7 +8,7 @@
 
     internal class ServiceLocater : IServiceLocater
     {
-        private readonly IContainer _container;
+        private readonly Container _container;
 
         private static readonly Lazy<ServiceLocater> _lazy
             = new(() => new ServiceLocater());

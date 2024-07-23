@@ -9,27 +9,14 @@
     /// The <see cref="TextLineParser" /> class is used for parsing and validating text lines from a
     /// text template file.
     /// </summary>
-    internal class TextLineParser : ITextLineParser
+    internal partial class TextLineParser : ITextLineParser
     {
-        private const string AbsoluteIndentCode = "=";
-        private const string CommentCode = "///";
-        private const string IndentCode = $"({IndentCodePart1}{IndentCodePart2}{IndentValue})";
-        private const string IndentCodePart1 = $"({OneTimeIndentCode}|{NormalIndentCode})";
-        private const string IndentCodePart2 = $"({AbsoluteIndentCode}|{RelativeRightIndentCode}|{RelativeLeftIndentCode})";
-        private const string IndentValue = "[0-9]";
-        private const string NoIndentCode = "   ";
-        private const string NormalIndentCode = "@";
-        private const string OneTimeIndentCode = "O";
-        private const string RelativeLeftIndentCode = "-";
-        private const string RelativeRightIndentCode = @"\+";
-        private const string RestOfLine = ".*$";
-        private const string SegmentHeaderCode = "###";
-        private readonly Regex _absoluteIndent = new($"^{IndentCodePart1}{AbsoluteIndentCode}{IndentValue}{RestOfLine}");
-        private readonly Regex _oneTimeIndent = new($"^{OneTimeIndentCode}{IndentCodePart2}{IndentValue}{RestOfLine}");
-        private readonly Regex _validCommentLine = new($"^{CommentCode}{RestOfLine}");
-        private readonly Regex _validSegmentHeaderLine = new($"^{SegmentHeaderCode}{RestOfLine}");
-        private readonly Regex _validTemplateLine = new($"^({NoIndentCode}|{SegmentHeaderCode}|{CommentCode}|{IndentCode}){RestOfLine}");
-        private readonly Regex _validTextLine = new($"^({NoIndentCode}|{IndentCode}){RestOfLine}");
+        private readonly Regex _absoluteIndent = AbsoluteIndentRegex();
+        private readonly Regex _oneTimeIndent = OneTimeIndentRegex();
+        private readonly Regex _validCommentLine = ValidCommentRegex();
+        private readonly Regex _validSegmentHeaderLine = ValidSegmentHeaderRegex();
+        private readonly Regex _validTemplateLine = ValidTemplateLineRegex();
+        private readonly Regex _validTextLine = ValidTextLineRegex();
 
         /// <summary>
         /// Default constructor that creates an instance of the <see cref="TextLineParser" /> class.
@@ -190,5 +177,23 @@
 
             return new(indent, isRelative, isOneTime, text);
         }
+
+        [GeneratedRegex("^(O|@)=[0-9] ")]
+        private static partial Regex AbsoluteIndentRegex();
+
+        [GeneratedRegex(@"^O(=|\+|-)[0-9] ")]
+        private static partial Regex OneTimeIndentRegex();
+
+        [GeneratedRegex("^/// ")]
+        private static partial Regex ValidCommentRegex();
+
+        [GeneratedRegex("^### ")]
+        private static partial Regex ValidSegmentHeaderRegex();
+
+        [GeneratedRegex(@"^(   |###|///|((O|@)(=|\+|-)[0-9])) ")]
+        private static partial Regex ValidTemplateLineRegex();
+
+        [GeneratedRegex(@"^(   |((O|@)(=|\+|-)[0-9])) ")]
+        private static partial Regex ValidTextLineRegex();
     }
 }

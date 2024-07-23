@@ -70,7 +70,7 @@
             NameValidater = nameValidater;
         }
 
-        internal Dictionary<string, string> TokenDictionary { get; } = new();
+        internal Dictionary<string, string> TokenDictionary { get; } = [];
 
         internal string TokenEnd { get; private set; } = DefaultEndDelimiter;
 
@@ -138,7 +138,7 @@
         {
             if (tokenValues is not null)
             {
-                if (tokenValues.Any())
+                if (tokenValues.Count != 0)
                 {
                     foreach (KeyValuePair<string, string> keyValuePair in tokenValues)
                     {
@@ -187,9 +187,9 @@
                     break;
                 }
 
-                if (TokenDictionary.ContainsKey(tokenInfo.TokenName))
+                if (TokenDictionary.TryGetValue(tokenInfo.TokenName, out string? value))
                 {
-                    string tokenValue = TokenDictionary[tokenInfo.TokenName];
+                    string tokenValue = value;
                     string replacementValue = GetReplacementValue(tokenInfo, tokenValue);
 
                     _ = builder.Replace(tokenInfo.TokenString, replacementValue);

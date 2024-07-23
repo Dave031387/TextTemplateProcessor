@@ -1092,7 +1092,7 @@
             MocksVerifyNoOtherCalls();
         }
 
-        private static void SetCurrentIndent(IIndentProcessor processor, int indent)
+        private static void SetCurrentIndent(IndentProcessor processor, int indent)
         {
             TextItem textItem = new(indent,
                                     false,

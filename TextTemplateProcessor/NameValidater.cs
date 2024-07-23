@@ -7,9 +7,9 @@
     /// The <see cref="NameValidater" /> class is used for validating segment names and token names
     /// in a text template file.
     /// </summary>
-    internal class NameValidater : INameValidater
+    internal partial class NameValidater : INameValidater
     {
-        private readonly Regex _valid = new("^([A-Z]|[a-z])+([A-Z]|[a-z]|[0-9]|_)*$");
+        private readonly Regex _valid = ValidNameRegex();
 
         /// <summary>
         /// Default constructor that creates an instance of the <see cref="NameValidater" /> class.
@@ -29,5 +29,8 @@
         /// name.
         /// </returns>
         public bool IsValidName(string? identifier) => identifier is not null && _valid.IsMatch(identifier);
+
+        [GeneratedRegex("^([A-Z]|[a-z])+([A-Z]|[a-z]|[0-9]|_)*$")]
+        private static partial Regex ValidNameRegex();
     }
 }

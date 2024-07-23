@@ -289,7 +289,7 @@
         /// This doesn't delete the directory, only the files and folders contained within the
         /// directory.
         /// </remarks>
-        public void ClearOutputDirectory()
+        public virtual void ClearOutputDirectory()
         {
             if (string.IsNullOrWhiteSpace(OutputDirectory) is false)
             {
@@ -317,25 +317,77 @@
         }
 
         /// <summary>
+        /// Generates the text lines for the given segment in the text template file.
+        /// </summary>
+        /// <param name="segmentName">
+        /// The name of the segment to be generated.
+        /// </param>
+        /// <param name="tokenValues">
+        /// An optional dictionary of key/value pairs where the key is a token name and the value is
+        /// the substitution value for that token.
+        /// </param>
+        /// <remarks>
+        /// Each text line will indented according to the indent controls and all tokens will be
+        /// replaced with their respective substitution values.
+        /// </remarks>
+        public override void GenerateSegment(string segmentName, Dictionary<string, string>? tokenValues = null)
+        {
+            try
+            {
+                base.GenerateSegment(segmentName, tokenValues);
+            }
+            catch (Exception ex)
+            {
+                Logger.SetLogEntryType(LogEntryType.Generating);
+                Logger.Log(MsgUnableToGenerateSegment, CurrentSegment, ex.Message);
+            }
+
+            Logger.WriteLogEntries();
+        }
+
+        /// <summary>
+        /// Loads a text template file into memory to be processed.
+        /// </summary>
+        /// <remarks>
+        /// The file path of the text template file must have previously been loaded either via the
+        /// constructor that takes a file path as an argument, or via the
+        /// <see cref="SetTemplateFilePath(string)" /> method.
+        /// </remarks>
+        public override void LoadTemplate()
+        {
+            try
+            {
+                base.LoadTemplate();
+            }
+            catch (Exception ex)
+            {
+                Logger.SetLogEntryType(LogEntryType.Loading);
+                Logger.Log(MsgUnableToLoadTemplateFile, TemplateFilePath, ex.Message);
+                ResetAll();
+            }
+
+            Logger.WriteLogEntries();
+        }
+
+        /// <summary>
         /// Load the given text template file into memory so that it can be processed.
         /// </summary>
         /// <param name="filePath">
         /// The file path (relative or absolute) of the text template file that is to be loaded.
         /// </param>
-        public new void LoadTemplate(string filePath)
+        public override void LoadTemplate(string filePath)
         {
-            Logger.SetLogEntryType(LogEntryType.Loading);
-
             try
             {
+                Logger.SetLogEntryType(LogEntryType.Loading);
                 string fullFilePath = FileAndDirectoryService.GetFullPath(filePath, SolutionDirectory, true);
                 string templateFilePath = PathValidater.ValidateFullPath(fullFilePath, true, true);
                 base.LoadTemplate(templateFilePath);
             }
             catch (Exception ex)
             {
-                Logger.Log(MsgUnableToLoadTemplateFile,
-                           ex.Message);
+                Logger.SetLogEntryType(LogEntryType.Loading);
+                Logger.Log(MsgUnableToLoadTemplateFile, filePath, ex.Message);
                 ResetAll();
             }
 
@@ -359,7 +411,7 @@
         /// while reading the user's response.
         /// </para>
         /// </returns>
-        public string PromptUserForInput(string message = MsgContinuationPrompt)
+        public virtual string PromptUserForInput(string message = MsgContinuationPrompt)
         {
             Logger.WriteLogEntries();
             Logger.SetLogEntryType(LogEntryType.User);
@@ -372,11 +424,101 @@
             }
             catch (Exception ex)
             {
-                Logger.Log(MsgErrorWhileReadingUserResponse,
+                Logger.Log(MsgUnableToGetUserResponse,
                            ex.Message);
             }
 
             return userResponse ?? string.Empty;
+        }
+
+        /// <summary>
+        /// Resets the text template processor back to its initial state
+        /// </summary>
+        /// <param name="shouldDisplayMessage">
+        /// An optional boolean value indicating whether or not a message should be logged after the
+        /// state has been reset.
+        /// <para> The default is <see langword="true" /> (message will be logged). </para>
+        /// </param>
+        public override void ResetAll(bool shouldDisplayMessage = true)
+        {
+            try
+            {
+                base.ResetAll(shouldDisplayMessage);
+            }
+            catch (Exception ex)
+            {
+                Logger.SetLogEntryType(LogEntryType.Reset);
+                Logger.Log(MsgUnableToResetAll, ex.Message);
+            }
+
+            Logger.WriteLogEntries();
+        }
+
+        /// <summary>
+        /// Clears the generated text buffer and resets the locater and indent processor.
+        /// </summary>
+        /// <param name="shouldDisplayMessage">
+        /// An optional boolean value indicating whether or not a message should be logged after the
+        /// buffer has been cleared.
+        /// <para> The default is <see langword="true" /> (message will be logged). </para>
+        /// </param>
+        public override void ResetGeneratedText(bool shouldDisplayMessage = true)
+        {
+            try
+            {
+                base.ResetGeneratedText(shouldDisplayMessage);
+            }
+            catch (Exception ex)
+            {
+                Logger.SetLogEntryType(LogEntryType.Reset);
+                Logger.Log(MsgUnableToResetGeneratedText, ex.Message);
+            }
+
+            Logger.WriteLogEntries();
+        }
+
+        /// <summary>
+        /// Resets the current line number of the given segment to zero and resets the "is first
+        /// time" control flag for the segment to <see langword="true" />.
+        /// </summary>
+        /// <param name="segmentName">
+        /// The name of the segment to be reset.
+        /// </param>
+        /// <remarks>
+        /// The CurrentSegment property will be set to the given segment name.
+        /// </remarks>
+        public override void ResetSegment(string segmentName)
+        {
+            try
+            {
+                base.ResetSegment(segmentName);
+            }
+            catch (Exception ex)
+            {
+                Logger.SetLogEntryType(LogEntryType.Reset);
+                Logger.Log(MsgUnableToResetSegment, segmentName, ex.Message);
+            }
+
+            Logger.WriteLogEntries();
+        }
+
+        /// <summary>
+        /// Resets the token start and token end delimiters and the token escape character to their
+        /// default values.
+        /// </summary>
+        public override void ResetTokenDelimiters()
+        {
+            try
+            {
+                base.ResetTokenDelimiters();
+            }
+            catch (Exception ex)
+            {
+                Logger.SetLogEntryType(LogEntryType.Reset);
+                Logger.Log(MsgUnableToResetTokenDelimiters, ex.Message);
+            }
+
+            Logger.WriteLogEntries();
         }
 
         /// <summary>
@@ -386,7 +528,7 @@
         /// The directory path (relative or absolute) of the directory where the generated text
         /// files are to be written.
         /// </param>
-        public void SetOutputDirectory(string directoryPath)
+        public virtual void SetOutputDirectory(string directoryPath)
         {
             Logger.SetLogEntryType(LogEntryType.Setup);
 
@@ -406,6 +548,81 @@
         }
 
         /// <summary>
+        /// Sets the tab size to be used when generating text lines.
+        /// </summary>
+        /// <param name="tabSize">
+        /// The new tab size value.
+        /// </param>
+        public override void SetTabSize(int tabSize)
+        {
+            try
+            {
+                base.SetTabSize(tabSize);
+            }
+            catch (Exception ex)
+            {
+                Logger.SetLogEntryType(LogEntryType.Setup);
+                Logger.Log(MsgUnableToSetTabSize, ex.Message);
+            }
+
+            Logger.WriteLogEntries();
+        }
+
+        /// <summary>
+        /// Sets the template file path to the given value.
+        /// </summary>
+        /// <param name="templateFilePath">
+        /// The file path of an existing text template file.
+        /// </param>
+        public override void SetTemplateFilePath(string templateFilePath)
+        {
+            try
+            {
+                base.SetTemplateFilePath(templateFilePath);
+            }
+            catch (Exception ex)
+            {
+                Logger.SetLogEntryType(LogEntryType.Setup);
+                Logger.Log(MsgUnableToSetTemplateFilePath, templateFilePath, ex.Message);
+            }
+
+            Logger.WriteLogEntries();
+        }
+
+        /// <summary>
+        /// Sets the token start and token end delimiters and the token escape character to the
+        /// specified values.
+        /// </summary>
+        /// <param name="tokenStart">
+        /// The new token start delimiter string.
+        /// </param>
+        /// <param name="tokenEnd">
+        /// The new token end delimiter string.
+        /// </param>
+        /// <param name="tokenEscapeChar">
+        /// The new token escape character.
+        /// </param>
+        /// <returns>
+        /// <see langword="true" /> if the delimiter values were successfully changed. Otherwise,
+        /// returns <see langword="false" />.
+        /// </returns>
+        public override bool SetTokenDelimiters(string tokenStart, string tokenEnd, char tokenEscapeChar)
+        {
+            try
+            {
+                return base.SetTokenDelimiters(tokenStart, tokenEnd, tokenEscapeChar);
+            }
+            catch (Exception ex)
+            {
+                Logger.SetLogEntryType(LogEntryType.Setup);
+                Logger.Log(MsgUnableToSetTokenDelimiters, ex.Message);
+            }
+
+            Logger.WriteLogEntries();
+            return false;
+        }
+
+        /// <summary>
         /// Writes the contents of the generated text buffer to the given output file.
         /// </summary>
         /// <param name="fileName">
@@ -416,23 +633,31 @@
         /// be cleared after the output file has been successfully written to.
         /// <para> The default is <see langword="true" /> (clear the generated text buffer). </para>
         /// </param>
-        public new void WriteGeneratedTextToFile(string fileName, bool resetGeneratedText = true)
+        public override void WriteGeneratedTextToFile(string fileName, bool resetGeneratedText = true)
         {
-            string filePath;
-            Logger.SetLogEntryType(LogEntryType.Writing);
-
-            if (string.IsNullOrWhiteSpace(OutputDirectory))
+            try
             {
-                Logger.Log(MsgOutputDirectoryNotSet);
-            }
-            else
-            {
-                filePath = GetOutputFilePath(fileName);
+                string filePath;
+                Logger.SetLogEntryType(LogEntryType.Writing);
 
-                if (string.IsNullOrEmpty(filePath) is false)
+                if (string.IsNullOrWhiteSpace(OutputDirectory))
                 {
-                    base.WriteGeneratedTextToFile(filePath, resetGeneratedText);
+                    Logger.Log(MsgOutputDirectoryNotSet);
                 }
+                else
+                {
+                    filePath = GetOutputFilePath(fileName);
+
+                    if (string.IsNullOrEmpty(filePath) is false)
+                    {
+                        base.WriteGeneratedTextToFile(filePath, resetGeneratedText);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.SetLogEntryType(LogEntryType.Writing);
+                Logger.Log(MsgUnableToWriteGeneratedTextToFile, ex.Message);
             }
 
             Logger.WriteLogEntries();

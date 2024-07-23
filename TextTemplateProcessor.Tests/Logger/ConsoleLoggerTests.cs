@@ -102,8 +102,8 @@
                 .Returns(LineNumber)
                 .Verifiable(Times.Exactly(2));
             ConsoleLogger consoleLogger = GetConsoleLogger();
-            List<LogEntry> expectedLogEntries = new()
-            {
+            List<LogEntry> expectedLogEntries =
+            [
                 new(LogEntryType.Generating, SegmentName, LineNumber, _expectedMessage),
                 new(LogEntryType.Writing, string.Empty, 0, _expectedMessage),
                 new(LogEntryType.Parsing, SegmentName, LineNumber, _expectedMessage),
@@ -111,7 +111,7 @@
                 new(LogEntryType.Loading, string.Empty, 0, _expectedMessage),
                 new(LogEntryType.Setup, string.Empty, 0, _expectedMessage),
                 new(LogEntryType.User, string.Empty, 0, _expectedMessage)
-            };
+            ];
 
             // Act
             WriteLogEntries(consoleLogger);
@@ -315,8 +315,8 @@
         internal void WriteLogEntries_LoggerContainsLogEntries_WritesAllLogEntriesAndClearsTheBuffer()
         {
             // Arrange
-            List<string> expectedMessages = new()
-            {
+            List<string> expectedMessages =
+            [
                 $"<{LogEntryType.Generating}> {SegmentName}[{LineNumber}] : {_expectedMessage}",
                 $"<{LogEntryType.Writing}> {_expectedMessage}",
                 $"<{LogEntryType.Parsing}> {SegmentName}[{LineNumber}] : {_expectedMessage}",
@@ -324,8 +324,8 @@
                 $"<{LogEntryType.Loading}> {_expectedMessage}",
                 $"<{LogEntryType.Setup}> {_expectedMessage}",
                 $"<{LogEntryType.User}> {_expectedMessage}"
-            };
-            List<string> writeBuffer = new();
+            ];
+            List<string> writeBuffer = [];
 
             _locater
                 .Setup(locater => locater.CurrentSegment)

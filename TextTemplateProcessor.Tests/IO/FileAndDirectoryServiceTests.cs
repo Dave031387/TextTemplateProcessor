@@ -747,13 +747,7 @@
             // Arrange
             FileAndDirectoryService service = new();
             string path = NextAbsoluteName;
-            string[] text =
-            {
-                "Line 1",
-                "Line 2",
-                "Line 3"
-            };
-            string filePath = CreateTestFiles(path, text);
+            string filePath = CreateTestFiles(path, SampleText);
 
             // Act
             IEnumerable<string> actual = service.ReadTextFile(filePath);
@@ -761,7 +755,7 @@
             // Assert
             actual
                 .Should()
-                .ContainInConsecutiveOrder(text);
+                .ContainInConsecutiveOrder(SampleText);
 
             // Cleanup
             DeleteTestFiles(path);
@@ -775,11 +769,7 @@
             string directoryPath = NextAbsoluteName;
             string fileName = NextFileName;
             string filePath = $"{directoryPath}{Sep}{fileName}";
-            string[] text =
-            {
-                "Text 1",
-                "Text 2"
-            };
+            string[] text = ["Text 1", "Text 2"];
             Directory.CreateDirectory(directoryPath);
 
             // Act

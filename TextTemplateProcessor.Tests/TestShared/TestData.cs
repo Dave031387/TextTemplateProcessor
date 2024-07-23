@@ -2,6 +2,7 @@
 {
     public static class TestData
     {
+#pragma warning disable IDE0028 // Simplify collection initialization
         public static TheoryData<string> InvalidFileNameCharacters => new()
         {
             "\0",
@@ -99,5 +100,6 @@
             "\u2029",
             Globals.Whitespace
         };
+#pragma warning restore IDE0028 // Simplify collection initialization
     }
 }

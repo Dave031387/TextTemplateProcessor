@@ -2,8 +2,6 @@
 
 namespace TextTemplateProcessor.TestShared
 {
-    using System;
-
     public static class Globals
     {
         public const string AnyString = "ANY";
@@ -55,16 +53,29 @@ namespace TextTemplateProcessor.TestShared
         }
 
         public static string CurrentDirectory => Directory.GetCurrentDirectory();
+
         public static string NextAbsoluteFilePath => $@"{NextAbsoluteName}{Sep}{NextFileName}";
+
         public static string NextAbsoluteName => $@"{VolumeRoot}{Sep}absolute{++_counter}";
+
         public static string NextFileName => $"file{++_counter}.txt";
+
         public static string NextRelativeFilePath => $@"{NextRelativeName}{Sep}{NextFileName}";
+
         public static string NextRelativeName => $"relative{++_counter}";
+
         public static string NextRootedName => $@"{Sep}rooted{++_counter}";
+
         public static string NextRootName => $"root{++_counter}";
+
+        public static string[] SampleText => ["Line 1", "Line 2", "Line 3"];
+
         public static string SolutionDirectory { get; private set; }
+
         public static string TemplateDirectoryPath => $@"{TestDirectoryRoot}{Sep}Templates";
+
         public static string TestDirectoryRoot => $@"{VolumeRoot}{Sep}Test";
+
         public static string VolumeRoot => CurrentDirectory[0..2];
 
         public static string CreateTestFiles(string path, string[] text)
@@ -87,7 +98,7 @@ namespace TextTemplateProcessor.TestShared
             for (int i = 0; i < numFiles; i++)
             {
                 string filePath = $"{directoryPath}{Sep}{NextFileName}";
-                File.WriteAllLines(filePath, Array.Empty<string>());
+                File.WriteAllLines(filePath, []);
             }
         }
 
@@ -104,7 +115,7 @@ namespace TextTemplateProcessor.TestShared
 
             string fileName = NextFileName;
             string fullFilePath = $"{directoryPath}{Sep}{fileName}";
-            File.WriteAllLines(fullFilePath, Array.Empty<string>());
+            File.WriteAllLines(fullFilePath, []);
             return fileName;
         }
 

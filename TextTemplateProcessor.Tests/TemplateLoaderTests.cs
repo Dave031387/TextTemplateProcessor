@@ -2,15 +2,15 @@
 {
     public class TemplateLoaderTests
     {
-        private readonly Dictionary<string, ControlItem> _actualControlDictionary = new();
-        private readonly Dictionary<string, List<TextItem>> _actualSegmentDictionary = new();
+        private readonly Dictionary<string, ControlItem> _actualControlDictionary = [];
+        private readonly Dictionary<string, List<TextItem>> _actualSegmentDictionary = [];
         private readonly Mock<IDefaultSegmentNameGenerator> _defaultSegmentNameGenerator = new();
-        private readonly Dictionary<string, ControlItem> _expectedControlDictionary = new();
-        private readonly Dictionary<string, List<TextItem>> _expectedSegmentDictionary = new();
+        private readonly Dictionary<string, ControlItem> _expectedControlDictionary = [];
+        private readonly Dictionary<string, List<TextItem>> _expectedSegmentDictionary = [];
         private readonly Mock<ILocater> _locater = new();
         private readonly Mock<ILogger> _logger = new();
         private readonly Mock<ISegmentHeaderParser> _segmentHeaderParser = new();
-        private readonly List<string> _templateLines = new();
+        private readonly List<string> _templateLines = [];
         private readonly Mock<ITextLineParser> _textLineParser = new();
         private string _currentSegmentName = string.Empty;
         private int _defaultSegmentNameCounter = 0;
@@ -656,13 +656,13 @@
 
         private void TextLine_AddTextItemToSegmentDictionary(string textLine, TextItem textItem)
         {
-            if (_expectedSegmentDictionary.ContainsKey(_currentSegmentName))
+            if (_expectedSegmentDictionary.TryGetValue(_currentSegmentName, out List<TextItem>? value))
             {
-                _expectedSegmentDictionary[_currentSegmentName].Add(textItem);
+                value.Add(textItem);
             }
             else
             {
-                _expectedSegmentDictionary[_currentSegmentName] = new() { textItem };
+                _expectedSegmentDictionary[_currentSegmentName] = [textItem];
             }
 
             _textLineParser

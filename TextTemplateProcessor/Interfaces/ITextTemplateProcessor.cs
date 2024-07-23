@@ -92,6 +92,15 @@
         void GenerateSegment(string segmentName, Dictionary<string, string>? tokenDictionary = null);
 
         /// <summary>
+        /// Gets the list of messages that have been logged.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="IEnumerable{T}" /> of <see langword="string" /> containing the log
+        /// messages.
+        /// </returns>
+        IEnumerable<string> GetMessages();
+
+        /// <summary>
         /// Loads a text template file into memory to be processed.
         /// </summary>
         /// <remarks>

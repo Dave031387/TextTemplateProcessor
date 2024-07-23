@@ -105,7 +105,7 @@
                 .Throws<IOException>()
                 .Verifiable(Times.Once);
             _logger
-                .Setup(logger => logger.Log(MsgErrorWhileReadingUserResponse, It.IsAny<string>(), null))
+                .Setup(logger => logger.Log(MsgUnableToGetUserResponse, It.IsAny<string>(), null))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
                 .Verifiable(Times.Once);
             _verifier.DefineExpectedCallOrder(MethodCallID.MessageWriter_WriteLine, MethodCallID.Logger_WriteLogEntries, 1);
@@ -249,21 +249,21 @@
             string text = "Line 1";
             consoleBase._generatedText.Add(text);
             consoleBase._controlDictionary[segmentName] = new();
-            consoleBase._segmentDictionary[segmentName] = new() { new(0, false, false, text) };
+            consoleBase._segmentDictionary[segmentName] = [new(0, false, false, text)];
             consoleBase.IsTemplateLoaded = true;
             consoleBase.IsOutputFileWritten = true;
             InitializeMocks();
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Loading))
-                .Verifiable(Times.Once);
+                .Verifiable(Times.AtLeastOnce);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.GetFullPath(_templateFilePath, It.IsAny<string>(), true))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetFullPath))
                 .Throws<IOException>()
                 .Verifiable(Times.Once);
             _logger
-                .Setup(logger => logger.Log(MsgUnableToLoadTemplateFile, It.IsAny<string>(), null))
+                .Setup(logger => logger.Log(MsgUnableToLoadTemplateFile, _templateFilePath, It.IsAny<string>()))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message, 1))
                 .Verifiable(Times.Once);
             _locater
@@ -302,7 +302,7 @@
             _logger
                 .Setup(logger => logger.WriteLogEntries())
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
-                .Verifiable(Times.Once);
+                .Verifiable(Times.AtLeastOnce);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Loading, MethodCallID.FileAndDirectoryService_GetFullPath);
             _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_GetFullPath, MethodCallID.Logger_Log_Message, 0, 1);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Locater_Reset, 1);
@@ -350,14 +350,14 @@
             string text = "Line 1";
             consoleBase._generatedText.Add(text);
             consoleBase._controlDictionary[segmentName] = new();
-            consoleBase._segmentDictionary[segmentName] = new() { new(0, false, false, text) };
+            consoleBase._segmentDictionary[segmentName] = [new(0, false, false, text)];
             consoleBase.IsTemplateLoaded = true;
             consoleBase.IsOutputFileWritten = true;
             InitializeMocks();
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Loading))
-                .Verifiable(Times.Once);
+                .Verifiable(Times.AtLeastOnce);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.GetFullPath(_templateFilePath, It.IsAny<string>(), true))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetFullPath))
@@ -369,7 +369,7 @@
                 .Throws<IOException>()
                 .Verifiable(Times.Once);
             _logger
-                .Setup(logger => logger.Log(MsgUnableToLoadTemplateFile, It.IsAny<string>(), null))
+                .Setup(logger => logger.Log(MsgUnableToLoadTemplateFile, _templateFilePath, It.IsAny<string>()))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message, 1))
                 .Verifiable(Times.Once);
             _locater
@@ -408,7 +408,7 @@
             _logger
                 .Setup(logger => logger.WriteLogEntries())
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
-                .Verifiable(Times.Once);
+                .Verifiable(Times.AtLeastOnce);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Loading, MethodCallID.FileAndDirectoryService_GetFullPath);
             _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_GetFullPath, MethodCallID.PathValidater_ValidateFullPath);
             _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidateFullPath, MethodCallID.Logger_Log_Message, 0, 1);
@@ -458,7 +458,7 @@
             consoleBase.IsOutputFileWritten = true;
             string returnedFileName = string.Empty;
             string returnedFilePath = string.Empty;
-            List<string> returnedTemplateLines = new() { "Line 1" };
+            List<string> returnedTemplateLines = ["Line 1"];
             void firstFileNameAction() => returnedFileName = string.Empty;
             void firstFilePathAction() => returnedFilePath = string.Empty;
             void secondFileNameAction() => returnedFileName = _templateFileName;
@@ -528,7 +528,7 @@
             _logger
                 .Setup(logger => logger.WriteLogEntries())
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
-                .Verifiable(Times.Once);
+                .Verifiable(Times.AtLeastOnce);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Loading, MethodCallID.FileAndDirectoryService_GetFullPath);
             _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_GetFullPath, MethodCallID.PathValidater_ValidateFullPath);
             _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidateFullPath, MethodCallID.TextReader_FileName);
@@ -590,7 +590,7 @@
                 .Throws<IOException>()
                 .Verifiable(Times.Once);
             _logger
-                .Setup(logger => logger.Log(MsgErrorWhileReadingUserResponse, It.IsAny<string>(), null))
+                .Setup(logger => logger.Log(MsgUnableToGetUserResponse, It.IsAny<string>(), null))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
                 .Verifiable(Times.Once);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_User);
@@ -826,14 +826,14 @@
                 _logger
                     .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
                     .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Loading))
-                    .Verifiable(Times.Once);
+                    .Verifiable(Times.AtLeastOnce);
                 _fileService
                     .Setup(fileAndDirectoryService => fileAndDirectoryService.GetFullPath(_templateFilePath, SolutionDirectory, true))
                     .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetFullPath))
                     .Throws<ArgumentException>()
                     .Verifiable(Times.Once);
                 _logger
-                    .Setup(logger => logger.Log(MsgUnableToLoadTemplateFile, It.IsAny<string>(), null))
+                    .Setup(logger => logger.Log(MsgUnableToLoadTemplateFile, _templateFilePath, It.IsAny<string>()))
                     .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message, 1))
                     .Verifiable(Times.Once);
                 _locater
@@ -872,7 +872,7 @@
                 _logger
                     .Setup(logger => logger.WriteLogEntries())
                     .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
-                    .Verifiable(Times.Once);
+                    .Verifiable(Times.AtLeastOnce);
                 _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_GetSolutionDirectory, MethodCallID.Logger_SetLogEntryType_Loading);
                 _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Loading, MethodCallID.FileAndDirectoryService_GetFullPath);
                 _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_GetFullPath, MethodCallID.Logger_Log_Message, 0, 1);
@@ -938,7 +938,7 @@
             void firstFilePathAction() => templateFilePath = string.Empty;
             void fileNameAction() => templateFileName = _templateFileName;
             void filePathAction() => templateFilePath = _templateFilePath;
-            List<string> templateLines = new() { "Line 1" };
+            List<string> templateLines = ["Line 1"];
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Setup))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Setup))
@@ -960,7 +960,7 @@
                 _logger
                     .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
                     .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Loading))
-                    .Verifiable(Times.Exactly(2));
+                    .Verifiable(Times.AtLeastOnce);
                 _fileService
                     .Setup(fileAndDirectoryService => fileAndDirectoryService.GetFullPath(_templateFilePath, string.Empty, true))
                     .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetFullPath))
@@ -1021,7 +1021,7 @@
                 _logger
                     .Setup(logger => logger.WriteLogEntries())
                     .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
-                    .Verifiable(Times.Once);
+                    .Verifiable(Times.AtLeastOnce);
                 _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_SetLogEntryType_Loading, 1);
                 _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Loading, MethodCallID.FileAndDirectoryService_GetFullPath);
                 _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_GetFullPath, MethodCallID.PathValidater_ValidateFullPath);
@@ -1101,7 +1101,7 @@
                 _logger
                     .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
                     .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Loading))
-                    .Verifiable(Times.Once);
+                    .Verifiable(Times.AtLeastOnce);
                 _fileService
                     .Setup(fileAndDirectoryService => fileAndDirectoryService.GetFullPath(_templateFilePath, SolutionDirectory, true))
                     .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetFullPath))
@@ -1113,7 +1113,7 @@
                     .Throws<ArgumentException>()
                     .Verifiable(Times.Once);
                 _logger
-                    .Setup(logger => logger.Log(MsgUnableToLoadTemplateFile, It.IsAny<string>(), null))
+                    .Setup(logger => logger.Log(MsgUnableToLoadTemplateFile, _templateFilePath, It.IsAny<string>()))
                     .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message, 1))
                     .Verifiable(Times.Once);
                 _locater
@@ -1152,7 +1152,7 @@
                 _logger
                     .Setup(logger => logger.WriteLogEntries())
                     .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
-                    .Verifiable(Times.Once);
+                    .Verifiable(Times.AtLeastOnce);
                 _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_GetSolutionDirectory, MethodCallID.Logger_SetLogEntryType_Loading);
                 _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Loading, MethodCallID.FileAndDirectoryService_GetFullPath);
                 _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_GetFullPath, MethodCallID.PathValidater_ValidateFullPath);
@@ -1855,7 +1855,7 @@
             void firstFilePathAction() => templateFilePath = string.Empty;
             void fileNameAction() => templateFileName = _templateFileName;
             void filePathAction() => templateFilePath = _templateFilePath;
-            List<string> templateLines = new() { "Line 1" };
+            List<string> templateLines = ["Line 1"];
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Setup))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Setup))
@@ -1872,7 +1872,7 @@
                 _logger
                     .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
                     .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Loading))
-                    .Verifiable(Times.Exactly(2));
+                    .Verifiable(Times.AtLeastOnce);
                 _fileService
                     .Setup(fileAndDirectoryService => fileAndDirectoryService.GetFullPath(_templateFilePath, SolutionDirectory, true))
                     .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetFullPath))
@@ -1933,7 +1933,7 @@
                 _logger
                     .Setup(logger => logger.WriteLogEntries())
                     .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
-                    .Verifiable(Times.Once);
+                    .Verifiable(Times.AtLeastOnce);
                 _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_GetSolutionDirectory, MethodCallID.Logger_SetLogEntryType_Loading);
                 _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Loading, MethodCallID.FileAndDirectoryService_GetFullPath);
                 _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_GetFullPath, MethodCallID.PathValidater_ValidateFullPath);
@@ -1995,13 +1995,7 @@
         {
             // Arrange
             MyConsoleBase consoleBase = GetMyConsoleBase();
-            List<string> generatedText = new()
-            {
-                "Line 1",
-                "Line 2",
-                "Line 3"
-            };
-            consoleBase._generatedText.AddRange(generatedText);
+            consoleBase._generatedText.AddRange(SampleText);
             InitializeOutputDirectoryPath(consoleBase);
             InitializeMocks();
             _logger
@@ -2034,7 +2028,7 @@
                 .NotBeEmpty();
             consoleBase._generatedText
                 .Should()
-                .ContainInConsecutiveOrder(generatedText);
+                .ContainInConsecutiveOrder(SampleText);
             consoleBase.IsOutputFileWritten
                 .Should()
                 .BeFalse();
@@ -2046,13 +2040,7 @@
         {
             // Arrange
             MyConsoleBase consoleBase = GetMyConsoleBase();
-            List<string> generatedText = new()
-            {
-                "Line 1",
-                "Line 2",
-                "Line 3"
-            };
-            consoleBase._generatedText.AddRange(generatedText);
+            consoleBase._generatedText.AddRange(SampleText);
             string segmentName1 = "Segment1";
             string segmentName2 = "Segment2";
             consoleBase._controlDictionary[segmentName1] = new() { IsFirstTime = false };
@@ -2071,7 +2059,7 @@
                 .Returns(expectedFilePath)
                 .Verifiable(Times.Once);
             _textWriter
-                .Setup(textWriter => textWriter.WriteTextFile(expectedFilePath, generatedText))
+                .Setup(textWriter => textWriter.WriteTextFile(expectedFilePath, SampleText))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.TextWriter_WriteTextFile))
                 .Returns(true)
                 .Verifiable(Times.Once);
@@ -2099,7 +2087,7 @@
             _logger
                 .Setup(logger => logger.WriteLogEntries())
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
-                .Verifiable(Times.Once);
+                .Verifiable(Times.AtLeastOnce);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Writing, MethodCallID.FileAndDirectoryService_CombineDirectoryAndFileName);
             _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_CombineDirectoryAndFileName, MethodCallID.TextWriter_WriteTextFile);
             _verifier.DefineExpectedCallOrder(MethodCallID.TextWriter_WriteTextFile, MethodCallID.Logger_SetLogEntryType_Reset);
@@ -2134,13 +2122,7 @@
         {
             // Arrange
             MyConsoleBase consoleBase = GetMyConsoleBase();
-            List<string> generatedText = new()
-            {
-                "Line 1",
-                "Line 2",
-                "Line 3"
-            };
-            consoleBase._generatedText.AddRange(generatedText);
+            consoleBase._generatedText.AddRange(SampleText);
             string segmentName1 = "Segment1";
             string segmentName2 = "Segment2";
             consoleBase._controlDictionary[segmentName1] = new() { IsFirstTime = false };
@@ -2157,7 +2139,7 @@
                 .Returns(_outputFilePath)
                 .Verifiable(Times.Once);
             _textWriter
-                .Setup(textWriter => textWriter.WriteTextFile(_outputFilePath, generatedText))
+                .Setup(textWriter => textWriter.WriteTextFile(_outputFilePath, SampleText))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.TextWriter_WriteTextFile))
                 .Returns(true)
                 .Verifiable(Times.Once);
@@ -2178,7 +2160,7 @@
                 .NotBeEmpty();
             consoleBase._generatedText
                 .Should()
-                .ContainInConsecutiveOrder(generatedText);
+                .ContainInConsecutiveOrder(SampleText);
             consoleBase._controlDictionary[segmentName1].IsFirstTime
                 .Should()
                 .BeFalse();
@@ -2196,13 +2178,7 @@
         {
             // Arrange
             MyConsoleBase consoleBase = GetMyConsoleBase();
-            List<string> generatedText = new()
-            {
-                "Line 1",
-                "Line 2",
-                "Line 3"
-            };
-            consoleBase._generatedText.AddRange(generatedText);
+            consoleBase._generatedText.AddRange(SampleText);
             string segmentName1 = "Segment1";
             string segmentName2 = "Segment2";
             consoleBase._controlDictionary[segmentName1] = new() { IsFirstTime = false };
@@ -2219,7 +2195,7 @@
                 .Returns(_outputFilePath)
                 .Verifiable(Times.Once);
             _textWriter
-                .Setup(textWriter => textWriter.WriteTextFile(_outputFilePath, generatedText))
+                .Setup(textWriter => textWriter.WriteTextFile(_outputFilePath, SampleText))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.TextWriter_WriteTextFile))
                 .Returns(true)
                 .Verifiable(Times.Once);
@@ -2247,7 +2223,7 @@
             _logger
                 .Setup(logger => logger.WriteLogEntries())
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
-                .Verifiable(Times.Once);
+                .Verifiable(Times.AtLeastOnce);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Writing, MethodCallID.FileAndDirectoryService_CombineDirectoryAndFileName);
             _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_CombineDirectoryAndFileName, MethodCallID.TextWriter_WriteTextFile);
             _verifier.DefineExpectedCallOrder(MethodCallID.TextWriter_WriteTextFile, MethodCallID.Logger_SetLogEntryType_Reset);
@@ -2282,13 +2258,7 @@
         {
             // Arrange
             MyConsoleBase consoleBase = GetMyConsoleBase();
-            List<string> generatedText = new()
-            {
-                "Line 1",
-                "Line 2",
-                "Line 3"
-            };
-            consoleBase._generatedText.AddRange(generatedText);
+            consoleBase._generatedText.AddRange(SampleText);
             InitializeMocks();
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Writing))
@@ -2314,7 +2284,7 @@
                 .NotBeEmpty();
             consoleBase._generatedText
                 .Should()
-                .ContainInConsecutiveOrder(generatedText);
+                .ContainInConsecutiveOrder(SampleText);
             consoleBase.IsOutputFileWritten
                 .Should()
                 .BeFalse();

@@ -54,12 +54,6 @@
             string filePath = $"{directoryPath}{Sep}{fileName}";
             TextReader reader = GetTextReader(directoryPath, fileName, filePath);
             InitializeMocks();
-            List<string> expected = new()
-            {
-                "Line 1",
-                "Line 2",
-                "Line 3"
-            };
             _logger
                 .Setup(logger => logger.Log(MsgAttemptingToReadFile, filePath, null))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message, 1))
@@ -71,7 +65,7 @@
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.ReadTextFile(filePath))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_ReadTextFile))
-                .Returns(expected)
+                .Returns(SampleText)
                 .Verifiable(Times.Once);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.FileAndDirectoryService_ReadTextFile, 1);
             _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_ReadTextFile, MethodCallID.Logger_Log_Message, 0, 2);
@@ -82,7 +76,7 @@
             // Assert
             actual
                 .Should()
-                .Equal(expected);
+                .Equal(SampleText);
             VerifyMocks();
         }
 
@@ -125,7 +119,7 @@
                 .Throws<ArgumentException>()
                 .Verifiable(Times.Once);
             _logger
-                .Setup(logger => logger.Log(MsgUnableToSetTemplateFilePath, It.IsAny<string>(), null))
+                .Setup(logger => logger.Log(MsgUnableToSetTemplateFilePath, invalidFilePath, It.IsAny<string>()))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
                 .Verifiable(Times.Once);
             _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidateFullPath, MethodCallID.Logger_Log_Message);
@@ -415,7 +409,7 @@
                     .Throws<ArgumentException>()
                     .Verifiable(Times.Once);
                 _logger
-                    .Setup(logger => logger.Log(MsgUnableToSetTemplateFilePath, It.IsAny<string>(), null))
+                    .Setup(logger => logger.Log(MsgUnableToSetTemplateFilePath, filePath, It.IsAny<string>()))
                     .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
                     .Verifiable(Times.Once);
                 _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidateFullPath, MethodCallID.Logger_Log_Message);

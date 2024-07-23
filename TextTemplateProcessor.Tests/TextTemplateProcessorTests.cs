@@ -67,14 +67,8 @@ namespace TextTemplateProcessor
         {
             // Arrange
             InitializeMocks();
-            List<string> expected = new()
-            {
-                "Line 1",
-                "Line 2",
-                "Line 3"
-            };
             TextTemplateProcessor processor = GetTextTemplateProcessor();
-            processor._generatedText.AddRange(expected);
+            processor._generatedText.AddRange(SampleText);
 
             // Act
             List<string> actual = processor.GeneratedText.ToList();
@@ -88,10 +82,10 @@ namespace TextTemplateProcessor
                 .NotBeSameAs(processor._generatedText);
             actual
                 .Should()
-                .HaveSameCount(expected);
+                .HaveSameCount(SampleText);
             actual
                 .Should()
-                .ContainInConsecutiveOrder(expected);
+                .ContainInConsecutiveOrder(SampleText);
             MocksVerifyNoOtherCalls();
         }
 
@@ -159,20 +153,10 @@ namespace TextTemplateProcessor
             TextTemplateProcessor processor = GetTextTemplateProcessor();
             ControlItem controlItem = new();
             processor._controlDictionary[segmentName] = controlItem;
-            processor._segmentDictionary[segmentName] = new()
-            {
-                textItem1,
-                textItem2,
-                textItem3
-            };
+            processor._segmentDictionary[segmentName] = [textItem1, textItem2, textItem3];
             processor.IsTemplateLoaded = true;
             processor.IsOutputFileWritten = true;
-            List<string> expected = new()
-            {
-                textLine1,
-                $"    {textLine2}",
-                textLine3
-            };
+            List<string> expected = [textLine1, $"    {textLine2}", textLine3];
 
             // Act
             processor.GenerateSegment(segmentName);
@@ -272,19 +256,9 @@ namespace TextTemplateProcessor
             TextTemplateProcessor processor = GetTextTemplateProcessor();
             ControlItem controlItem = new();
             processor._controlDictionary[segmentName] = controlItem;
-            processor._segmentDictionary[segmentName] = new()
-            {
-                textItem1,
-                textItem2,
-                textItem3
-            };
+            processor._segmentDictionary[segmentName] = [textItem1, textItem2, textItem3];
             processor.IsTemplateLoaded = true;
-            List<string> expected = new()
-            {
-                textLine1,
-                textLine2After,
-                textLine3
-            };
+            List<string> expected = [textLine1, textLine2After, textLine3];
 
             // Act
             processor.GenerateSegment(segmentName, tokenValues);
@@ -387,20 +361,14 @@ namespace TextTemplateProcessor
             TextTemplateProcessor processor = GetTextTemplateProcessor();
             ControlItem controlItem = new() { FirstTimeIndent = firstTimeIndent };
             processor._controlDictionary[segmentName] = controlItem;
-            processor._segmentDictionary[segmentName] = new()
-            {
-                textItem1,
-                textItem2,
-                textItem3,
-                textItem4
-            };
-            List<string> expected = new()
-            {
+            processor._segmentDictionary[segmentName] = [textItem1, textItem2, textItem3, textItem4];
+            List<string> expected =
+            [
                 $"        {textLine1}",
                 $"            {textLine2}",
                 $"        {textLine3}",
                 $"    {textLine4}"
-            };
+            ];
             processor.IsTemplateLoaded = true;
             processor.IsOutputFileWritten = false;
 
@@ -514,24 +482,16 @@ namespace TextTemplateProcessor
             };
             processor._controlDictionary[padSegment] = controlItem1;
             processor._controlDictionary[segmentName] = controlItem2;
-            processor._segmentDictionary[padSegment] = new()
-            {
-                padTextItem
-            };
-            processor._segmentDictionary[segmentName] = new()
-            {
-                textItem1,
-                textItem2,
-                textItem3
-            };
+            processor._segmentDictionary[padSegment] = [padTextItem];
+            processor._segmentDictionary[segmentName] = [textItem1, textItem2, textItem3];
             processor.IsTemplateLoaded = true;
             processor.IsOutputFileWritten = false;
-            List<string> expected = new()
-            {
+            List<string> expected =
+            [
                 $"  {textLine1}",
                 $"    {textLine2}",
                 $"  {textLine3}"
-            };
+            ];
 
             // Act
             processor.GenerateSegment(segmentName);
@@ -671,25 +631,17 @@ namespace TextTemplateProcessor
             };
             processor._controlDictionary[padSegment] = controlItem1;
             processor._controlDictionary[segmentName] = controlItem2;
-            processor._segmentDictionary[padSegment] = new()
-            {
-                padTextItem
-            };
-            processor._segmentDictionary[segmentName] = new()
-            {
-                textItem1,
-                textItem2,
-                textItem3
-            };
+            processor._segmentDictionary[padSegment] = [padTextItem];
+            processor._segmentDictionary[segmentName] = [textItem1, textItem2, textItem3];
             processor.IsTemplateLoaded = true;
             processor.IsOutputFileWritten = false;
-            List<string> expected = new()
-            {
+            List<string> expected =
+            [
                 $"    {padLine}",
                 textLine1,
                 $"  {textLine2}",
                 textLine3
-            };
+            ];
 
             // Act
             processor.GenerateSegment(segmentName);
@@ -815,24 +767,16 @@ namespace TextTemplateProcessor
             ControlItem controlItem2 = new() { PadSegment = padSegment };
             processor._controlDictionary[padSegment] = controlItem1;
             processor._controlDictionary[segmentName] = controlItem2;
-            processor._segmentDictionary[padSegment] = new()
-            {
-                padTextItem
-            };
-            processor._segmentDictionary[segmentName] = new()
-            {
-                textItem1,
-                textItem2,
-                textItem3
-            };
+            processor._segmentDictionary[padSegment] = [padTextItem];
+            processor._segmentDictionary[segmentName] = [textItem1, textItem2, textItem3];
             processor.IsTemplateLoaded = true;
             processor.IsOutputFileWritten = false;
-            List<string> expected = new()
-            {
+            List<string> expected =
+            [
                 $"    {textLine1}",
                 $"        {textLine2}",
                 textLine3
-            };
+            ];
 
             // Act
             processor.GenerateSegment(segmentName);
@@ -952,25 +896,17 @@ namespace TextTemplateProcessor
             ControlItem controlItem2 = new() { PadSegment = padSegment, IsFirstTime = false };
             processor._controlDictionary[padSegment] = controlItem1;
             processor._controlDictionary[segmentName] = controlItem2;
-            processor._segmentDictionary[padSegment] = new()
-            {
-                padTextItem
-            };
-            processor._segmentDictionary[segmentName] = new()
-            {
-                textItem1,
-                textItem2,
-                textItem3
-            };
+            processor._segmentDictionary[padSegment] = [padTextItem];
+            processor._segmentDictionary[segmentName] = [textItem1, textItem2, textItem3];
             processor.IsTemplateLoaded = true;
             processor.IsOutputFileWritten = false;
-            List<string> expected = new()
-            {
+            List<string> expected =
+            [
                 $"        {padLine}",
                 $"    {textLine1}",
                 $"        {textLine2}",
                 textLine3
-            };
+            ];
 
             // Act
             processor.GenerateSegment(segmentName);
@@ -1070,20 +1006,15 @@ namespace TextTemplateProcessor
             TextTemplateProcessor processor = GetTextTemplateProcessor();
             ControlItem controlItem = new() { TabSize = tabSize };
             processor._controlDictionary[segmentName] = controlItem;
-            processor._segmentDictionary[segmentName] = new()
-            {
-                textItem1,
-                textItem2,
-                textItem3
-            };
+            processor._segmentDictionary[segmentName] = [textItem1, textItem2, textItem3];
             processor.IsTemplateLoaded = true;
             processor.IsOutputFileWritten = false;
-            List<string> expected = new()
-            {
+            List<string> expected =
+            [
                 $"  {textLine1}",
                 $"    {textLine2}",
                 textLine3
-            };
+            ];
 
             // Act
             processor.GenerateSegment(segmentName);
@@ -1185,22 +1116,16 @@ namespace TextTemplateProcessor
             TextTemplateProcessor processor = GetTextTemplateProcessor();
             ControlItem controlItem = new();
             processor._controlDictionary[segmentName] = controlItem;
-            processor._segmentDictionary[segmentName] = new()
-            {
-                textItem1,
-                textItem2,
-                textItem3,
-                textItem4
-            };
+            processor._segmentDictionary[segmentName] = [textItem1, textItem2, textItem3, textItem4];
             processor.IsTemplateLoaded = true;
             processor.IsOutputFileWritten = false;
-            List<string> expected = new()
-            {
+            List<string> expected =
+            [
                 $"        {textLine1}",
                 $"        {textLine2}",
                 $"    {textLine3}",
                 $"            {textLine4}"
-            };
+            ];
 
             // Act
             processor.GenerateSegment(segmentName);
@@ -1338,6 +1263,67 @@ namespace TextTemplateProcessor
         }
 
         [Fact]
+        public void GetMessages_MessagesAvailable_ReturnsListOfMessages()
+        {
+            // Arrange
+            InitializeMocks();
+            LogEntry logEntry1 = new(LogEntryType.Generating, "Segment1", 1, "Message 1");
+            LogEntry logEntry2 = new(LogEntryType.Setup, string.Empty, 0, "Message 2");
+            LogEntry logEntry3 = new(LogEntryType.Loading, string.Empty, 0, "Message 3");
+            LogEntry logEntry4 = new(LogEntryType.Parsing, "Segment2", 3, "Message 4");
+            List<LogEntry> logEntries = [logEntry1, logEntry2, logEntry3, logEntry4];
+            List<string> expected =
+            [
+                logEntry1.ToString(),
+                logEntry2.ToString(),
+                logEntry3.ToString(),
+                logEntry4.ToString()
+            ];
+            _logger
+                .Setup(logger => logger.LogEntries)
+                .Returns(logEntries)
+                .Verifiable(Times.Once);
+            TextTemplateProcessor processor = GetTextTemplateProcessor();
+
+            // Act
+            IEnumerable<string> actual = processor.GetMessages();
+
+            // Assert
+            actual
+                .Should()
+                .NotBeNull();
+            actual
+                .Should()
+                .HaveCount(expected.Count);
+            actual
+                .Should()
+                .ContainInOrder(expected);
+        }
+
+        [Fact]
+        public void GetMessages_NoMessagesAvailable_ReturnsEmptyList()
+        {
+            // Arrange
+            InitializeMocks();
+            _logger
+                .Setup(logger => logger.LogEntries)
+                .Returns(new List<LogEntry>())
+                .Verifiable(Times.Once);
+            TextTemplateProcessor processor = GetTextTemplateProcessor();
+
+            // Act
+            IEnumerable<string> actual = processor.GetMessages();
+
+            // Assert
+            actual
+                .Should()
+                .NotBeNull();
+            actual
+                .Should()
+                .BeEmpty();
+        }
+
+        [Fact]
         public void LineNumber_Getter_CallsLocaterLineNumberGetter()
         {
             // Arrange
@@ -1364,7 +1350,6 @@ namespace TextTemplateProcessor
         {
             // Arrange
             string filePath = NextAbsoluteFilePath;
-            string[] generatedText = new[] { "Line 1", "Line 2" };
             TextTemplateProcessor processor = GetTextTemplateProcessor();
             InitializeMocks();
             _textReader
@@ -1388,7 +1373,7 @@ namespace TextTemplateProcessor
             _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFileName, MethodCallID.TextReader_SetFilePath);
             _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFullFilePath, MethodCallID.TextReader_SetFilePath);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Loading, MethodCallID.TextReader_SetFilePath);
-            processor._generatedText.AddRange(generatedText);
+            processor._generatedText.AddRange(SampleText);
             processor.IsTemplateLoaded = true;
 
             // Act
@@ -1403,7 +1388,7 @@ namespace TextTemplateProcessor
                 .BeFalse();
             processor._generatedText
                 .Should()
-                .ContainInConsecutiveOrder(generatedText);
+                .ContainInConsecutiveOrder(SampleText);
             VerifyMocks();
         }
 
@@ -1416,7 +1401,6 @@ namespace TextTemplateProcessor
             string lastFilePath = $"{directoryPath}{Sep}{lastFileName}";
             string fileName = NextFileName;
             string filePath = $"{directoryPath}{Sep}{fileName}";
-            string[] templateLines = new[] { "Line 1", "Line 2" };
             string returnedFileName = lastFileName;
             string returnedFilePath = lastFilePath;
             TextTemplateProcessor processor = GetTextTemplateProcessor(filePath);
@@ -1444,7 +1428,7 @@ namespace TextTemplateProcessor
             _textReader
                 .Setup(textReader => textReader.ReadTextFile())
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_ReadTextFile))
-                .Returns(templateLines)
+                .Returns(SampleText)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
@@ -1459,7 +1443,7 @@ namespace TextTemplateProcessor
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message, 2))
                 .Verifiable(Times.Once);
             _templateLoader
-                .Setup(templateLoader => templateLoader.LoadTemplate(templateLines, It.IsAny<Dictionary<string, List<TextItem>>>(), It.IsAny<Dictionary<string, ControlItem>>()))
+                .Setup(templateLoader => templateLoader.LoadTemplate(SampleText, It.IsAny<Dictionary<string, List<TextItem>>>(), It.IsAny<Dictionary<string, ControlItem>>()))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.TemplateLoader_LoadTemplate))
                 .Verifiable(Times.Once);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Loading, MethodCallID.TextReader_GetFileName);
@@ -1470,7 +1454,7 @@ namespace TextTemplateProcessor
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.TextReader_ReadTextFile, 1);
             SetupResetAll(MethodCallID.TextReader_ReadTextFile, MethodCallID.Logger_Log_Message, 0, 2);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.TemplateLoader_LoadTemplate, 2);
-            processor._generatedText.AddRange(new[] { "Line A", "Line B" });
+            processor._generatedText.AddRange(SampleText);
             processor.IsTemplateLoaded = true;
             processor.IsOutputFileWritten = false;
 
@@ -1499,7 +1483,6 @@ namespace TextTemplateProcessor
             string lastFilePath = $"{directoryPath}{Sep}{lastFileName}";
             string fileName = NextFileName;
             string filePath = $"{directoryPath}{Sep}{fileName}";
-            string[] templateLines = new[] { "Line 1", "Line 2" };
             string returnedFileName = lastFileName;
             string returnedFilePath = lastFilePath;
             TextTemplateProcessor processor = GetTextTemplateProcessor(filePath);
@@ -1527,7 +1510,7 @@ namespace TextTemplateProcessor
             _textReader
                 .Setup(textReader => textReader.ReadTextFile())
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_ReadTextFile))
-                .Returns(templateLines)
+                .Returns(SampleText)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
@@ -1538,7 +1521,7 @@ namespace TextTemplateProcessor
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
                 .Verifiable(Times.Once);
             _templateLoader
-                .Setup(templateLoader => templateLoader.LoadTemplate(templateLines, It.IsAny<Dictionary<string, List<TextItem>>>(), It.IsAny<Dictionary<string, ControlItem>>()))
+                .Setup(templateLoader => templateLoader.LoadTemplate(SampleText, It.IsAny<Dictionary<string, List<TextItem>>>(), It.IsAny<Dictionary<string, ControlItem>>()))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.TemplateLoader_LoadTemplate))
                 .Verifiable(Times.Once);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Loading, MethodCallID.TextReader_GetFileName);
@@ -1548,7 +1531,7 @@ namespace TextTemplateProcessor
             _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_SetFilePath, MethodCallID.TextReader_ReadTextFile);
             SetupResetAll(MethodCallID.TextReader_ReadTextFile, MethodCallID.Logger_Log_Message);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.TemplateLoader_LoadTemplate);
-            processor._generatedText.AddRange(new[] { "Line A", "Line B" });
+            processor._generatedText.AddRange(SampleText);
             processor.IsTemplateLoaded = true;
             processor.IsOutputFileWritten = true;
 
@@ -1575,7 +1558,6 @@ namespace TextTemplateProcessor
             string directoryPath = NextAbsoluteName;
             string fileName = NextFileName;
             string filePath = $"{directoryPath}{Sep}{fileName}";
-            string[] generatedText = new[] { "Line 1", "Line 2" };
             TextTemplateProcessor processor = GetTextTemplateProcessor(filePath);
             InitializeMocks();
             _textReader
@@ -1605,7 +1587,7 @@ namespace TextTemplateProcessor
             _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFileName, MethodCallID.TextReader_SetFilePath);
             _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFullFilePath, MethodCallID.TextReader_SetFilePath);
             _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_SetFilePath, MethodCallID.Logger_Log_Message);
-            processor._generatedText.AddRange(generatedText);
+            processor._generatedText.AddRange(SampleText);
             processor.IsTemplateLoaded = true;
 
             // Act
@@ -1620,7 +1602,7 @@ namespace TextTemplateProcessor
                 .BeFalse();
             processor._generatedText
                 .Should()
-                .ContainInConsecutiveOrder(generatedText);
+                .ContainInConsecutiveOrder(SampleText);
             VerifyMocks();
         }
 
@@ -1674,7 +1656,7 @@ namespace TextTemplateProcessor
             _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFullFilePath, MethodCallID.TextReader_SetFilePath);
             _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_SetFilePath, MethodCallID.TextReader_ReadTextFile);
             SetupResetAll(MethodCallID.TextReader_ReadTextFile, MethodCallID.Logger_Log_Message);
-            processor._generatedText.AddRange(new[] { "Line 1", "Line 2" });
+            processor._generatedText.AddRange(SampleText);
             processor.IsTemplateLoaded = false;
             processor.IsOutputFileWritten = false;
 
@@ -1698,7 +1680,6 @@ namespace TextTemplateProcessor
         public void LoadTemplateWithoutFilePath_FilePathNotSet_LogsMessage()
         {
             // Arrange
-            string[] generatedText = new[] { "Line 1", "Line 2" };
             TextTemplateProcessor processor = GetTextTemplateProcessor();
             InitializeMocks();
             _textReader
@@ -1716,7 +1697,7 @@ namespace TextTemplateProcessor
                 .Verifiable(Times.Once);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Loading, MethodCallID.TextReader_GetFullFilePath);
             _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFullFilePath, MethodCallID.Logger_Log_Message);
-            processor._generatedText.AddRange(generatedText);
+            processor._generatedText.AddRange(SampleText);
 
             // Act
             processor.LoadTemplate();
@@ -1730,7 +1711,7 @@ namespace TextTemplateProcessor
                 .BeFalse();
             processor._generatedText
                 .Should()
-                .ContainInConsecutiveOrder(generatedText);
+                .ContainInConsecutiveOrder(SampleText);
             VerifyMocks();
         }
 
@@ -1739,7 +1720,7 @@ namespace TextTemplateProcessor
         {
             // Arrange
             string filePath = NextAbsoluteFilePath;
-            string[] templateLines = Array.Empty<string>();
+            string[] templateLines = [];
             TextTemplateProcessor processor = GetTextTemplateProcessor(filePath);
             InitializeMocks();
             _textReader
@@ -1763,7 +1744,7 @@ namespace TextTemplateProcessor
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Loading, MethodCallID.TextReader_GetFullFilePath);
             _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFullFilePath, MethodCallID.TextReader_ReadTextFile);
             SetupResetAll(MethodCallID.TextReader_ReadTextFile, MethodCallID.Logger_Log_Message);
-            processor._generatedText.AddRange(new[] { "Line 1", "Line 2" });
+            processor._generatedText.AddRange(SampleText);
 
             // Act
             processor.LoadTemplate();
@@ -1788,7 +1769,6 @@ namespace TextTemplateProcessor
             string fileName = NextFileName;
             string directoryPath = NextAbsoluteName;
             string filePath = $"{directoryPath}{Sep}{fileName}";
-            string[] templateLines = new[] { "Line 1", "Line 2" };
             TextTemplateProcessor processor = GetTextTemplateProcessor(filePath);
             InitializeMocks();
             _textReader
@@ -1804,7 +1784,7 @@ namespace TextTemplateProcessor
             _textReader
                 .Setup(textReader => textReader.ReadTextFile())
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_ReadTextFile))
-                .Returns(templateLines)
+                .Returns(SampleText)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
@@ -1815,7 +1795,7 @@ namespace TextTemplateProcessor
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
                 .Verifiable(Times.Once);
             _templateLoader
-                .Setup(templateLoader => templateLoader.LoadTemplate(templateLines, It.IsAny<Dictionary<string, List<TextItem>>>(), It.IsAny<Dictionary<string, ControlItem>>()))
+                .Setup(templateLoader => templateLoader.LoadTemplate(SampleText, It.IsAny<Dictionary<string, List<TextItem>>>(), It.IsAny<Dictionary<string, ControlItem>>()))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.TemplateLoader_LoadTemplate))
                 .Verifiable(Times.Once);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Loading, MethodCallID.TextReader_GetFullFilePath);
@@ -1823,7 +1803,7 @@ namespace TextTemplateProcessor
             SetupResetAll(MethodCallID.TextReader_ReadTextFile, MethodCallID.Logger_Log_Message);
             _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFileName, MethodCallID.Logger_Log_Message);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.TemplateLoader_LoadTemplate);
-            processor._generatedText.AddRange(new[] { "Line A", "Line B" });
+            processor._generatedText.AddRange(SampleText);
 
             // Act
             processor.LoadTemplate();
@@ -1848,7 +1828,6 @@ namespace TextTemplateProcessor
             string fileName = NextFileName;
             string directoryPath = NextAbsoluteName;
             string filePath = $"{directoryPath}{Sep}{fileName}";
-            string[] generatedText = new[] { "Line 1", "Line 2" };
             TextTemplateProcessor processor = GetTextTemplateProcessor(filePath);
             InitializeMocks();
             _textReader
@@ -1866,7 +1845,7 @@ namespace TextTemplateProcessor
                 .Verifiable(Times.Once);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Loading, MethodCallID.TextReader_GetFileName);
             _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFileName, MethodCallID.Logger_Log_Message);
-            processor._generatedText.AddRange(generatedText);
+            processor._generatedText.AddRange(SampleText);
             processor.IsTemplateLoaded = true;
 
             // Act
@@ -1881,7 +1860,7 @@ namespace TextTemplateProcessor
                 .BeFalse();
             processor._generatedText
                 .Should()
-                .ContainInConsecutiveOrder(generatedText);
+                .ContainInConsecutiveOrder(SampleText);
             VerifyMocks();
         }
 
@@ -1895,13 +1874,13 @@ namespace TextTemplateProcessor
             string textLine2 = "Line 2";
             SetupResetAll();
             TextTemplateProcessor processor = GetTextTemplateProcessor();
-            processor._generatedText.AddRange(new[] { textLine1, textLine2 });
+            processor._generatedText.AddRange(SampleText);
             processor._controlDictionary[segmentName] = new();
-            processor._segmentDictionary[segmentName] = new()
-            {
+            processor._segmentDictionary[segmentName] =
+            [
                 new(0, true, false, textLine1),
                 new(0, true, false, textLine2)
-            };
+            ];
             processor.IsTemplateLoaded = true;
             processor.IsOutputFileWritten = true;
 
@@ -1960,11 +1939,11 @@ namespace TextTemplateProcessor
             TextTemplateProcessor processor = GetTextTemplateProcessor();
             processor._generatedText.AddRange(new[] { textLine1, textLine2 });
             processor._controlDictionary[segmentName] = new();
-            processor._segmentDictionary[segmentName] = new()
-            {
+            processor._segmentDictionary[segmentName] =
+            [
                 new(0, true, false, textLine1),
                 new(0, true, false, textLine2)
-            };
+            ];
             processor.IsTemplateLoaded = true;
             processor.IsOutputFileWritten = true;
 
@@ -2031,7 +2010,7 @@ namespace TextTemplateProcessor
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.Locater_Reset);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.IndentProcessor_Reset);
             TextTemplateProcessor processor = GetTextTemplateProcessor();
-            processor._generatedText.AddRange(new[] { "Line 1", "Line 2" });
+            processor._generatedText.AddRange(SampleText);
             processor.IsTemplateLoaded = true;
             processor.IsOutputFileWritten = true;
             processor._controlDictionary[segmentName1] = controlItem1;
@@ -2120,7 +2099,7 @@ namespace TextTemplateProcessor
             _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_Reset, MethodCallID.TextReader_GetFileName);
             _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFileName, MethodCallID.Logger_Log_Message);
             TextTemplateProcessor processor = GetTextTemplateProcessor();
-            processor._generatedText.AddRange(new[] { "Line 1", "Line 2" });
+            processor._generatedText.AddRange(SampleText);
             processor.IsTemplateLoaded = true;
             processor.IsOutputFileWritten = true;
             processor._controlDictionary[segmentName1] = controlItem1;
@@ -2182,7 +2161,7 @@ namespace TextTemplateProcessor
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Reset))
                 .Verifiable(Times.Once);
             _logger
-                .Setup(logger => logger.Log(MsgUnableToResetSegment, segmentName, null))
+                .Setup(logger => logger.Log(MsgUnableToResetUnknownSegment, segmentName, null))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
                 .Verifiable(Times.Once);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.Locater_CurrentSegment_Setter);
@@ -2861,23 +2840,18 @@ namespace TextTemplateProcessor
             // Arrange
             InitializeMocks();
             string filePath = NextAbsoluteFilePath;
-            List<string> generatedText = new()
-            {
-                "Line 1",
-                "Line 2"
-            };
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Writing))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Writing))
                 .Verifiable(Times.Once);
             _textWriter
-                .Setup(textWriter => textWriter.WriteTextFile(filePath, generatedText))
+                .Setup(textWriter => textWriter.WriteTextFile(filePath, SampleText))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.TextWriter_WriteTextFile))
                 .Returns(true)
                 .Verifiable(Times.Once);
             _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Writing, MethodCallID.TextWriter_WriteTextFile);
             TextTemplateProcessor processor = GetTextTemplateProcessor();
-            processor._generatedText.AddRange(generatedText);
+            processor._generatedText.AddRange(SampleText);
 
             // Act
             processor.WriteGeneratedTextToFile(filePath, false);
@@ -2888,7 +2862,7 @@ namespace TextTemplateProcessor
                 .BeTrue();
             processor._generatedText
                 .Should()
-                .BeEquivalentTo(generatedText);
+                .BeEquivalentTo(SampleText);
             VerifyMocks();
         }
 
@@ -2915,11 +2889,6 @@ namespace TextTemplateProcessor
                 TabSize = 2,
                 PadSegment = "Pad"
             };
-            List<string> generatedText = new()
-            {
-                "Line 1",
-                "Line 2"
-            };
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Writing))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Writing))
@@ -2945,7 +2914,7 @@ namespace TextTemplateProcessor
                 .Returns(fileName)
                 .Verifiable(Times.Once);
             _textWriter
-                .Setup(textWriter => textWriter.WriteTextFile(filePath, generatedText))
+                .Setup(textWriter => textWriter.WriteTextFile(filePath, SampleText))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.TextWriter_WriteTextFile))
                 .Returns(true)
                 .Verifiable(Times.Once);
@@ -2956,7 +2925,7 @@ namespace TextTemplateProcessor
             _verifier.DefineExpectedCallOrder(MethodCallID.Locater_Reset, MethodCallID.Logger_Log_Message);
             _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_Reset, MethodCallID.Logger_Log_Message);
             TextTemplateProcessor processor = GetTextTemplateProcessor();
-            processor._generatedText.AddRange(generatedText);
+            processor._generatedText.AddRange(SampleText);
             processor._controlDictionary[segmentName] = controlItem;
 
             // Act
@@ -2981,7 +2950,7 @@ namespace TextTemplateProcessor
             // Arrange
             InitializeMocks();
             string filePath = NextAbsoluteFilePath;
-            List<string> generatedText = new();
+            List<string> generatedText = [];
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Writing))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Writing))

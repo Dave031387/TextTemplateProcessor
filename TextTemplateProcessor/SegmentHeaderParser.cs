@@ -13,6 +13,7 @@
         private const string FirstTimeIndentOption = "FTI";
         private const string PadSegmentNameOption = "PAD";
         private const string TabSizeOption = "TAB";
+        private static readonly char[] _separator = [' ', ','];
 
         /// <summary>
         /// Default constructor that creates an instance of the <see cref="SegmentHeaderParser" />
@@ -132,7 +133,7 @@
                 usingDefaultSegmentName = true;
             }
 
-            string[] args = headerLine.Split(new[] { ' ', ',' }, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            string[] args = headerLine.Split(_separator, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
             string segmentName = args[1];
 
             if (usingDefaultSegmentName is false)
