@@ -27,6 +27,8 @@
         Locater_LineNumber_Getter,
         Locater_LineNumber_Setter,
         Locater_Reset,
+        Logger_Clear,
+        Logger_LogEntries,
         Logger_Log_Message,
         Logger_SetLogEntryType_Generating,
         Logger_SetLogEntryType_Loading,

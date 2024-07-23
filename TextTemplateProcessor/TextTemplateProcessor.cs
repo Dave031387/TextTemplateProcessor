@@ -353,19 +353,29 @@
         }
 
         /// <summary>
-        /// Gets the list of messages that have been logged.
+        /// Gets the list of messages that have been logged and optionally clears the log.
         /// </summary>
+        /// <param name="shouldClearMessages">
+        /// Boolean flag indicating whether or not the log messages should be cleared (
+        /// <see langword="true" />) or not ( <see langword="false" />) before the messages are
+        /// returned to the caller.
+        /// </param>
         /// <returns>
         /// An <see cref="IEnumerable{T}" /> of <see langword="string" /> containing the log
         /// messages.
         /// </returns>
-        public virtual IEnumerable<string> GetMessages()
+        public virtual IEnumerable<string> GetMessages(bool shouldClearMessages = false)
         {
             List<string> messages = [];
 
             foreach (LogEntry logEntry in Logger.LogEntries)
             {
                 messages.Add(logEntry.ToString());
+            }
+
+            if (shouldClearMessages)
+            {
+                Logger.Clear();
             }
 
             return messages;

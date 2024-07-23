@@ -1263,7 +1263,7 @@ namespace TextTemplateProcessor
         }
 
         [Fact]
-        public void GetMessages_MessagesAvailable_ReturnsListOfMessages()
+        public void GetMessages_MessagesAvailableAndShouldClearMessagesIsFalse_ReturnsListOfMessages()
         {
             // Arrange
             InitializeMocks();
@@ -1298,6 +1298,52 @@ namespace TextTemplateProcessor
             actual
                 .Should()
                 .ContainInOrder(expected);
+            VerifyMocks();
+        }
+
+        [Fact]
+        public void GetMessages_MessagesAvailableAndShouldClearMessagesIsTrue_ReturnsListOfMessagesAndClearsMessages()
+        {
+            // Arrange
+            InitializeMocks();
+            LogEntry logEntry1 = new(LogEntryType.Generating, "Segment1", 1, "Message 1");
+            LogEntry logEntry2 = new(LogEntryType.Setup, string.Empty, 0, "Message 2");
+            LogEntry logEntry3 = new(LogEntryType.Loading, string.Empty, 0, "Message 3");
+            LogEntry logEntry4 = new(LogEntryType.Parsing, "Segment2", 3, "Message 4");
+            List<LogEntry> logEntries = [logEntry1, logEntry2, logEntry3, logEntry4];
+            List<string> expected =
+            [
+                logEntry1.ToString(),
+                logEntry2.ToString(),
+                logEntry3.ToString(),
+                logEntry4.ToString()
+            ];
+            _logger
+                .Setup(logger => logger.LogEntries)
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_LogEntries))
+                .Returns(logEntries)
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(logger => logger.Clear())
+                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Clear))
+                .Verifiable(Times.Once);
+            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_LogEntries, MethodCallID.Logger_Clear);
+            TextTemplateProcessor processor = GetTextTemplateProcessor();
+
+            // Act
+            IEnumerable<string> actual = processor.GetMessages(true);
+
+            // Assert
+            actual
+                .Should()
+                .NotBeNull();
+            actual
+                .Should()
+                .HaveCount(expected.Count);
+            actual
+                .Should()
+                .ContainInOrder(expected);
+            VerifyMocks();
         }
 
         [Fact]
@@ -1321,6 +1367,7 @@ namespace TextTemplateProcessor
             actual
                 .Should()
                 .BeEmpty();
+            VerifyMocks();
         }
 
         [Fact]

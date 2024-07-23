@@ -94,11 +94,16 @@
         /// <summary>
         /// Gets the list of messages that have been logged.
         /// </summary>
+        /// <param name="shouldClearMessages">
+        /// Boolean flag indicating whether or not the log messages should be cleared (
+        /// <see langword="true" />) or not ( <see langword="false" />) before the messages are
+        /// returned to the caller.
+        /// </param>
         /// <returns>
         /// An <see cref="IEnumerable{T}" /> of <see langword="string" /> containing the log
         /// messages.
         /// </returns>
-        IEnumerable<string> GetMessages();
+        IEnumerable<string> GetMessages(bool shouldClearMessages = false);
 
         /// <summary>
         /// Loads a text template file into memory to be processed.

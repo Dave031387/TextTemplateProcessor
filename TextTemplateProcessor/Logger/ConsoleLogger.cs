@@ -61,8 +61,7 @@
         private IMessageWriter MessageWriter { get; init; }
 
         /// <summary>
-        /// Clears the list of <see cref="LogEntry" /> objects that haven't yet been written to the
-        /// <see cref="Console" />.
+        /// Clears the list of <see cref="LogEntry" /> objects that have been written to the log.
         /// </summary>
         public void Clear() => _logEntries.Clear();
 

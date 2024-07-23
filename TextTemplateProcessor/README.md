@@ -676,10 +676,38 @@ of 1, and a tab size value of 2. The following steps will be taken in the order 
    a. Append the resulting string to the end of the generated text buffer.
 
 #### ***GetMessages***
+The ***GetMessages*** method retrieves a list of all messages that have been logged. The method has the following signature:
+
+```csharp
+IEnumerable<string> GetMessages(bool shouldClearMessages = false)
+```
+
+The optional parameter `shouldClearMessages` indicates whether or not the messages should be cleared from the log prior to returning the list of messages
+to the caller. The default is *false*, which means the messages will not be cleared.
+
+The following example retrieves the list of log messages and clears the messages from the log:
+
+```csharp
+public class MyTemplateProcessor
+{
+    private ITextTemplateProcessor _processor = new TextTemplateProcessor(@"C:\Templates\MyTemplate.txt");
+
+    void GetLogMessages()
+    {
+        List<string> messages = _processor.GetMessages(true);
+    }
+}
+```
+
+<br>
+
+> [!NOTE]
+> *The **TextTemplateProcessor** class doesn't implement any process for outputting the log messages to the Console, log file, or any other location.
+> It is up to the user of the class to implement this functionality if it is needed.*
 
 #### ***LoadTemplate***
 As the name implies, the ***LoadTemplate*** method loads a text template file into memory so that it can be processed. The contents of the template
-file are validated during the loading process and any errors that are detected result in appropriate error messages being written to the console.
+file are validated during the loading process and any errors that are detected result in appropriate error messages being written to the log.
 The names of all tokens are also determined and saved for later use.
 
 The ***LoadTemplate*** method has two variations with the following signatures:
