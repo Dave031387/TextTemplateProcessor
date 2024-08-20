@@ -40,19 +40,20 @@
         }
 
         /// <summary>
-        /// Combine the given directory path and file name to create the full file path.
+        /// Combine the given path strings to create the resulting file path string.
         /// </summary>
-        /// <param name="directoryPath">
-        /// The directory path.
+        /// <param name="path1">
+        /// The first part of the path that is to be combined to generate the file path.
         /// </param>
-        /// <param name="fileName">
-        /// The file name.
+        /// <param name="path2">
+        /// The second part of the path that is to be combined to generate the file path.
         /// </param>
         /// <returns>
-        /// A string representation of the full file path.
+        /// The file path obtained by combining <paramref name="path1" /> and
+        /// <paramref name="path2" />.
         /// </returns>
-        public string CombineDirectoryAndFileName(string directoryPath, string fileName)
-            => Path.Combine(directoryPath, fileName);
+        public string CombinePaths(string path1, string path2)
+            => Path.Combine(path1, path2);
 
         /// <summary>
         /// Validates the given directory path and then creates the directory if it doesn't exist.

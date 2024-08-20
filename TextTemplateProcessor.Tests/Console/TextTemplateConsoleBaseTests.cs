@@ -2003,7 +2003,7 @@
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Writing))
                 .Verifiable(Times.Once);
             _fileService
-                .Setup(fileAndDirectoryService => fileAndDirectoryService.CombineDirectoryAndFileName(_outputDirectoryPath, _outputFileName))
+                .Setup(fileAndDirectoryService => fileAndDirectoryService.CombinePaths(_outputDirectoryPath, _outputFileName))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_CombineDirectoryAndFileName))
                 .Throws<IOException>()
                 .Verifiable(Times.Once);
@@ -2054,7 +2054,7 @@
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Writing))
                 .Verifiable(Times.AtLeastOnce);
             _fileService
-                .Setup(fileAndDirectoryService => fileAndDirectoryService.CombineDirectoryAndFileName(_outputDirectoryPath, expectedFileName))
+                .Setup(fileAndDirectoryService => fileAndDirectoryService.CombinePaths(_outputDirectoryPath, expectedFileName))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_CombineDirectoryAndFileName))
                 .Returns(expectedFilePath)
                 .Verifiable(Times.Once);
@@ -2134,7 +2134,7 @@
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Writing))
                 .Verifiable(Times.AtLeastOnce);
             _fileService
-                .Setup(fileAndDirectoryService => fileAndDirectoryService.CombineDirectoryAndFileName(_outputDirectoryPath, _outputFileName))
+                .Setup(fileAndDirectoryService => fileAndDirectoryService.CombinePaths(_outputDirectoryPath, _outputFileName))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_CombineDirectoryAndFileName))
                 .Returns(_outputFilePath)
                 .Verifiable(Times.Once);
@@ -2190,7 +2190,7 @@
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Writing))
                 .Verifiable(Times.AtLeastOnce);
             _fileService
-                .Setup(fileAndDirectoryService => fileAndDirectoryService.CombineDirectoryAndFileName(_outputDirectoryPath, _outputFileName))
+                .Setup(fileAndDirectoryService => fileAndDirectoryService.CombinePaths(_outputDirectoryPath, _outputFileName))
                 .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_CombineDirectoryAndFileName))
                 .Returns(_outputFilePath)
                 .Verifiable(Times.Once);

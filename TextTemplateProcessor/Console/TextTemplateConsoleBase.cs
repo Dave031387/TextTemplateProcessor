@@ -625,19 +625,20 @@
         /// <summary>
         /// Writes the contents of the generated text buffer to the given output file.
         /// </summary>
-        /// <param name="fileName">
-        /// The file name of the output file that is to be written to.
+        /// <param name="filePath">
+        /// The absolute or relative file path of the output file where the generated text will be
+        /// written.
         /// </param>
         /// <param name="resetGeneratedText">
         /// An optional boolean value that indicates whether or not the generated text buffer should
         /// be cleared after the output file has been successfully written to.
         /// <para> The default is <see langword="true" /> (clear the generated text buffer). </para>
         /// </param>
-        public override void WriteGeneratedTextToFile(string fileName, bool resetGeneratedText = true)
+        public override void WriteGeneratedTextToFile(string filePath, bool resetGeneratedText = true)
         {
             try
             {
-                string filePath;
+                string outputFilePath;
                 Logger.SetLogEntryType(LogEntryType.Writing);
 
                 if (string.IsNullOrWhiteSpace(OutputDirectory))
@@ -646,11 +647,11 @@
                 }
                 else
                 {
-                    filePath = GetOutputFilePath(fileName);
+                    outputFilePath = GetOutputFilePath(filePath);
 
-                    if (string.IsNullOrEmpty(filePath) is false)
+                    if (string.IsNullOrEmpty(outputFilePath) is false)
                     {
-                        base.WriteGeneratedTextToFile(filePath, resetGeneratedText);
+                        base.WriteGeneratedTextToFile(outputFilePath, resetGeneratedText);
                     }
                 }
             }
@@ -663,14 +664,14 @@
             Logger.WriteLogEntries();
         }
 
-        private string GetOutputFilePath(string fileName)
+        private string GetOutputFilePath(string filePath)
         {
             try
             {
-                string outputFileName = string.IsNullOrWhiteSpace(fileName)
+                string outputFilePath = string.IsNullOrWhiteSpace(filePath)
                     ? NextDefaultFileName
-                    : fileName;
-                return FileAndDirectoryService.CombineDirectoryAndFileName(OutputDirectory, outputFileName);
+                    : filePath;
+                return FileAndDirectoryService.CombinePaths(OutputDirectory, outputFilePath);
             }
             catch (Exception ex)
             {

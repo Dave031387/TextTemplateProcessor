@@ -1,15 +1,15 @@
 # Text Template Processor
 ## Overview
-***Text Template Processor*** is a class library written in C# 10 and .NET 6 that allows you to easily create console applications for processing
-text template files and generating new text files from the templates. The library implements the following features:
+***Text Template Processor*** is a class library written in C# 12 and .NET 8 that allows you to easily create console applications for processing
+text template files and generating new text files from those templates. The library implements the following features:
 
 - Control of the indentation of each generated text line (see the section covering [Text Lines](#text-lines).)
 - Support for named tokens that act as placeholders for generated text (see the section covering [Tokens](#tokens).)
 - Template files are made up of named blocks of text lines (called *Segments*) that are logical units that can be pieced together in any order to
   generate the final output file (see the section on [Segment Header Lines](#segment-header-lines).)
 - A special *Segment* called a *Pad Segment* can be defined to be automatically placed between consecutive occurrences of the same named *Segment*
-- Special handling of the indentation of the first line of a *Segment* the first time that *Segment* is processed (called a "first time indent",
-  this and the *Pad Segment* are covered in the section on [Segment Options](#segment-options).)
+- Special handling of the indentation of the first line of a *Segment* the first time that *Segment* is processed. This is called a "first time indent".
+  (This and the *Pad Segment* are covered in the section on [Segment Options](#segment-options).)
 - Extensive validation of the text template file to ensure it is valid and usable
 - Detailed informational, warning, and error messages (messages are displayed in a *Console* window)
 
@@ -52,22 +52,22 @@ the design of this class library.
 - ***Locater*** - This class is shared by many of the other classes described here. It is used for keeping track of the current location in the
   text template file that is being processed.
 - ***TemplateLoader*** - This class manages the reading, parsing, and validation of the text template file.
-- ***SegmentHeaderParser*** - Parses and validates segment header lines in the text template file and saves the segment names and control
-  information.
+- ***SegmentHeaderParser*** - Parses and validates segment header lines in the text template file and saves the segment names and
+  segment options.
 - ***TextLineParser*** - Parses and validates text lines in the text template file and saves the indent control information and text for each line.
 - ***TokenProcessor*** - Parses and validates the tokens contained on the text lines in the text template file and saves the token names. This class
   is also called to replace tokens with generated text in the generated output file.
 - ***NameValidater*** - Validates *Segment* names and token names to ensure that they are valid.
 - ***DefaultSegmentNameGenerator*** - Used for generating default names for *Segments* whose names are either missing or invalid in the
   text template file.
-- ***IndentProcessor*** - Maintains the proper indentation of generated text lines based on the control information that was
+- ***IndentProcessor*** - Maintains the proper indentation of generated text lines based on the *First Time Indent* option that was
   retrieved from the segment headers and the indent control information found on the text lines of the text template file.
 - ***ServiceLocater*** - This class implements a basic *Inversion of Control* container used for resolving class dependencies in the
   ***Text Template Processor*** class library. It uses the [***BasicIoC***](https://github.com/Dave031387/BasicIoC) package.
 
 ## Template Files
 ### Introduction
-A template file is a specially formatted text file that can be used as the basis for generating other text files. In the case of the ***Text
+A template file is a specially formatted text file that can be used as a "blueprint" for generating other text files. In the case of the ***Text
 Template Processor*** class library, the template files are made up of one or more *Segments*. Each *Segment* begins with a segment header line
 followed by one or more text lines. A text line can contain zero or more named token placeholders. Each named token is replaced with the
 appropriate text value when the output file is being generated.
@@ -161,18 +161,23 @@ immediately follow the equals sign, again with no intervening spaces.
 
 There are three segment options available in the current version of the ***Text Template Processor*** class library. These are:
 
-- **TAB** - This option changes the tab size value. The tab size gives the number of space characters that make up a single indent. For example,
-  if the tab size is set to 3 and the next text line to be processed specifies an indent value of 2, then that text line will be indented 6 spaces
+- **TAB** - This option changes the tab size value. The tab size gives the number of space characters that make up a single tab. For example,
+  if the tab size is set to 3 and the next text line to be processed specifies a tab value of 2, then that text line will be indented 6 spaces
   (3x2) from the current indent position. The value assigned to the **TAB** option must be a number between 1 and 9.
-- **FTI** - This is the *First Time Indent* option. A *Segment* may be processed multiple times during the processing of a template file. The
+- **FTI** - This is the *First Time Indent* option. A *Segment* may be processed multiple times when generating a single text output file. The
   *First Time Indent* option overrides the tab control code of the first text line of the segment the first time that the segment is
-  processed. The value assigned to this option must be a number between -9 and -1 (left tab), or between 1 and 9 (right tab). This is
-  always treated as a "normal" tab, not a "one-time" tab.
-- **PAD** - When a particular *Segment* is processed two or more times consecutively, sometimes it's nice to be able to insert padding
-  (typically one or more blank lines) between each occurrence of the *Segment* in the output file. The **PAD** option allows you to do that.
-  The value assigned to this option must be the name of a segment that appears earlier in the text template file. This segment is referred to
-  as the *Pad Segment*. The text lines in the *Pad Segment* will automatically be inserted just before the text lines of the *Segment* on the
-  second and subsequent times that the *Segment* is processed.
+  processed. The value assigned to this option must be a number between -9 and -1 (left tab), or between 1 and 9 (right tab).
+
+  > [!NOTE]
+  > *The **FTI** tab value is always treated as a "normal" tab control code (as opposed
+  > to a "one-time" tab control code). For example, the option **"FTI=-1"** would be handled
+  > the same as the tab control code **"@-1"**.*
+
+- **PAD** - When a particular *Segment* (the "active" *Segment*) is processed two or more times consecutively, sometimes it's nice to be able to insert padding
+  (typically one or more blank lines) between each occurrence of the active *Segment* in the output file. The **PAD** option allows you to do that.
+  The value assigned to this option must be the name of a segment that appears earlier in the text template file than the active *Segment*. This earlier segment is referred to
+  as the *Pad Segment*. The text lines in the *Pad Segment* will automatically be inserted just before the text lines of the active *Segment* on the
+  second and subsequent times that the active *Segment* is processed.
 
 Segment options can appear in any order on a segment header line. The following example shows a segment header line which makes use of all
 three segment options. (Assumes a *Segment* named *PadSegment* has been defined earlier in the text template file.)
@@ -197,12 +202,13 @@ three segment options. (Assumes a *Segment* named *PadSegment* has been defined 
 ### Text Lines
 Text lines define the text that gets written to the generated output file. The text on a text line will be written verbatim to the output file
 after applying the appropriate indentation and after replacing all tokens with their corresponding token values. ([Tokens](#tokens) will be covered
-later in this document.) The amount of indentation depends on the current indent amount carried forward from the previous text line and the indent
-amount specified in the control code of the current text line.
+later in this document.) The amount of indentation depends on the current indent amount carried forward from the previous text line and the tab value
+specified in the tab control code of the current text line.
 
 > [!NOTE]
 > *The current indent amount always gives the number of space characters to be inserted at the start of a generated text line. This is
-> different than the indent amount specified in the control code of a text line, which gives the number of tabs.*
+> different than the tab value specified in the tab control code of a text line, which gives the number of tabs which will be added or
+> removed from the current indent amount to arrive at the new current indent amount.*
 
 The current indent amount always starts at 0 (zero) at the beginning of the text template process. It may or may not get adjusted when a text
 line is processed, depending on the nature of the tab control code at the start of the text line. One-time tab control codes (with the
@@ -214,13 +220,13 @@ value in each of the following examples is assumed to be 2 and the current inden
 
 - **@+1** - This is a normal right tab control code with a tab value of 1. When this code is processed the current indent amount will be
   increased from 6 to 8 spaces (adding 1 tab to the current indent amount).
-- **@-2** - This is a normal left tab control code with a tab value of 2. When this code is processed the current indent amount will be
+- **@-2** - This is a normal left tab control code with a tab value of -2. When this code is processed the current indent amount will be
   decreased from 6 to 2 spaces (removing 2 tabs from the current indent amount).
 - **@=2** - This is a normal absolute tab control code with a tab value of 2. Two tabs contain a total of 4 spaces (tab value of 2
-  multiplied by the current tab size value of 2). The current indent amount will therefore be set to 4 spaces.
+  multiplied by the current tab size value of 2). The current indent amount will therefore be set to 4 spaces regardless of its current value..
 
 > [!NOTE]
-> *The current indent amount can never be less than zero. If a normal left tab control code contains an tab value that would cause
+> *The current indent amount can never be less than zero. If a normal left tab control code contains a tab value that would cause
 > the current indent amount to go negative, the current indent amount will be set to zero instead.*
 
 The following table shows examples of the various tab control codes along with the impact on the current indent position and the generated
@@ -420,7 +426,7 @@ namespace MyNamespace
 
 There are a couple other things to note in this example:
 
-1. The tab size value defaults to 4 spaces if no tab size is set by the **TAB** option on a segment header, or by the ***SetTabSize*** method of the
+1. The tab size value defaults to 4 spaces if no tab size is set by the **TAB** option on a segment header, or by the [***SetTabSize***](#settabsize) method of the
    ***TextTemplateProcessor*** class.
 1. Blank text lines in a text template file can be shortened to 4 characters (the three-character tab control code, and the required space in
    the fourth character position).
@@ -459,7 +465,7 @@ public class MyTemplateProcessor
 }
 ```
 
-Note that the ***TextTemplateProcessor*** class implements the ***ITextTemplateProcessor*** interface.
+Note that the ***TextTemplateProcessor*** class implements the [***ITextTemplateProcessor***](#public-interfaces) interface.
 
 The following sections will describe the properties and methods that are provided by the ***TextTemplateProcessor*** class. These same properties and
 methods are also defined in the ***ITextTemplateProcessor*** interface.
@@ -483,7 +489,7 @@ constructors that initialize all of the internal class dependencies.
 ### Properties
 #### ***CurrentIndent***
 The ***CurrentIndent*** property is used to retrieve the current indent amount. This property is initialized to 0 (zero) when the class is
-instantiated. The ***CurrentIndent*** then gets updated as the indent control codes are processed in the text template file. The value of this
+instantiated. The ***CurrentIndent*** then gets updated as the tab control codes are processed in the text template file. The value of this
 property will always be a positive number (or zero). See the example in the [*Text Lines*](#text-lines) section earlier in this document.
 
 #### ***CurrentSegment***
@@ -505,7 +511,7 @@ buffer are written to the output file. The property will get set back to *false*
 - The [***ResetAll***](#resetall) method is invoked
 
 #### ***IsTemplateLoaded***
-This property is set to *false* when the ***TextTemplateProcessor** class is initialized. It gets set to *true* when a valid text template file
+This property is set to *false* when the ***TextTemplateProcessor*** class is initialized. It gets set to *true* when a valid text template file
 containing one or more segments gets loaded and parsed. After that, it will only ever be set back to *false* under two conditions:
 
 - An attempt is made to load a text template file using an invalid file path
@@ -559,7 +565,7 @@ The ***GenerateSegment*** method processes the text lines for the specified segm
 generated text buffer. The method has the following signature:
 
 ```csharp
-void GenerateSegment(string segmentName, Dictionary<string, string>? tokenValues = null)
+virtual void GenerateSegment(string segmentName, Dictionary<string, string>? tokenValues = null)
 ```
 
 The `segmentName` argument must specify the name of a segment in the text template file. The optional `tokenValues` argument must be a
@@ -603,7 +609,7 @@ Text line 1
 
 > [!NOTE]
 > *The token values that are supplied to the **GenerateSegment** method are saved by the **Text Template Processor** class library. If you later
-> call **GenerateSegment** for another segment that has some of the same token names and associated values then you would need to supply token
+> call **GenerateSegment** for another segment that has some of the same token names then you would need to supply token
 > values only for any new token names or for previous token names that have changed values.*
 
 Before processing any text lines, the ***GenerateSegment*** method will take care of processing any segment options that may be defined on the
@@ -614,9 +620,9 @@ of 1, and a tab size value of 2. The following steps will be taken in the order 
    second and subsequent times that ***GenerateSegment*** is called for **Segment1**.)
 1. The tab size will be set to 2 spaces.
 1. Each text line for **Segment1** will be processed in the order they were defined in the template file. For each text line:
-   a. Determine the indent amount for the text line. (Note that the first time ***GenerateSegment*** is called for **Segment1**, the indent amount
+   a. Determine the indent amount for the text line. Note that the first time ***GenerateSegment*** is called for **Segment1**, the indent amount
       of the first text line is determined from the first time indent value on the segment header. All other times the indent amount is determined
-      from the indent control code on the corresponding template line.)
+      from the tab control code on the corresponding template line.
    a. Replace all token placeholders on the text line with their respective token values.
    a. Add the required number of spaces to the beginning of the text line. The number of spaces is equal to the indent amount that was determined earlier.
    a. Append the resulting string to the end of the generated text buffer.
@@ -625,7 +631,7 @@ of 1, and a tab size value of 2. The following steps will be taken in the order 
 The ***GetMessages*** method retrieves a list of all messages that have been logged. The method has the following signature:
 
 ```csharp
-IEnumerable<string> GetMessages(bool shouldClearMessages = false)
+virtual IEnumerable<string> GetMessages(bool shouldClearMessages = false)
 ```
 
 The optional parameter `shouldClearMessages` indicates whether or not the messages should be cleared from the log prior to returning the list of messages
@@ -659,8 +665,9 @@ The names of all tokens are also determined and saved for later use.
 The ***LoadTemplate*** method has two variations with the following signatures:
 
 ```csharp
-void LoadTemplate()
-void LoadTemplate(string filePath)
+virtual void LoadTemplate()
+
+virtual void LoadTemplate(string filePath)
 ```
 
 The first variation assumes that the template file path has already been set (either by the constructor or the
@@ -700,7 +707,7 @@ public class MyTemplateProcessor
 The ***ResetAll*** method is used to reset the state of the ***TextTemplateProcessor*** class object. It has the following signature:
 
 ```csharp
-void ResetAll(bool shouldDisplayMessage = true)
+virtual void ResetAll(bool shouldDisplayMessage = true)
 ```
 
 This method performs the following tasks:
@@ -722,7 +729,7 @@ The optional `shouldDisplayMessage` parameter determines whether or not a messag
 The ***ResetGeneratedText*** method is used to clear the generated text buffer. The method has the following signature:
 
 ```csharp
-void ResetGeneratedText(bool shouldDisplayMessage = true)
+virtual void ResetGeneratedText(bool shouldDisplayMessage = true)
 ```
 
 This method performs the following tasks:
@@ -730,46 +737,48 @@ This method performs the following tasks:
 - Resets the current indent amount to 0
 - Resets the tab size to its default value of 4
 - Sets the [**IsOutputFileWritten**](#isoutputfilewritten) property to *false*
-- Sets the [**IsFirstTime**](#isfirsttime) flag to *true* for each *Segment* in the text template file
+- Resets the state of each *Segment* in the text template file (see the [***ResetSegment***](#resetsegment) method below for details)
 
 The optional `shouldDisplayMessage` parameter determines whether or not a message gets logged at the end of the reset process. The default is
 *true* (a message is logged). The message can be suppressed by passing *false* into the method.
 
 The ***ResetGeneratedText*** method is normally called after you have written the contents of the generated text buffer to an output file. (See the
-[***WriteGeneratedTextToFile***](#writegeneratedtexttofile) method.) You can then reprocess the same text template to generate another file using
-different token values (for example).
+[***WriteGeneratedTextToFile***](#writegeneratedtexttofile) method.) You can then reprocess the same text template to generate another file (using
+different token values, for example).
 
 > [!NOTE]
 > *The [**WriteGeneratedTextToFile**](#writegeneratedtexttofile) method automatically calls the **ResetGeneratedText** method by default after the
-> output file has been written.*
+> output file has been written. So normally there isn't a need to explicitly call the **ResetGeneratedText** method.*
 
 #### ***ResetSegment***
-The ***ResetSegment*** method is used to set the [**IsFirstTime**](#isfirsttime) property back to *true* for the specified segment. It has the
+The ***ResetSegment*** method is used to reset the state of the specified segment. It has the
 following signature:
 
 ```csharp
-void ResetSegment(string segmentName)
+virtual void ResetSegment(string segmentName)
 ```
 
 The `segmentName` parameter specifies the name of the segment that is to be reset.
 
-The [**IsFirstTime**](#isfirsttime) property determines whether the **FTI** (first time indent) or **PAD** (pad segment) options are processed.
-This property is initialized to *true* for each segment in the text template file when the template is loaded. It gets set to *false* for a given
-segment after that segment has been generated one time (see the [***GenerateSegment***](#generatesegment) method). It then remains *false* for the
-life of the application, or until the ***ResetSegment*** method is called.
+As mentioned earlier in this document, the first time [***GenerateSegment***](#generatesegment) is called for a given segment the **FTI** (*First Time Indent*) option is handled if that option was
+specified on the segment header. The second and subsequent times ***GenerateSegment*** is called for that segment the **PAD** option is handled if that option was
+specified on the segment header.
 
-The ***ResetSegment*** method would normally be called only if a given segment is processed in two or more groupings within the same generated output
-file. For example, assume you're generating a class file that has a private class definition contained within the main class definition. Assume both the
-containing class and the contained class have two or more properties which will be generated by a single segment named *PropertySegment* in the template
-file, and this segment specifies both the **FTI** and **PAD** options in its segment header. In this scenario you would want to call ***ResetSegment***
-for the *PropertySegment* after you have generated the properties for the first class and before you generate the properties for the second class.
+When a segment is reset it starts this sequence all over again. The **FTI** option will be handled the next time ***GenerateSegment*** is called for the
+given segment, and the **PAD** option will be handled every time ***GenerateSegment*** is called after that.
+
+For an example of why you might want to do this, consider a public class that contains an embedded private class. Both classes have
+properties defined on them. The text template file used for generating this class will likely have a segment used for generating those properties.
+The segment also will likely make use of the **FTI** and **PAD** options for formatting the properties. In this situation it would make
+sense to call the ***ResetSegment*** method on the property segment after generating the properties for the
+public class and before generating the properties for the private class to ensure that they are formatted correctly.
 
 #### ***ResetTokenDelimiters***
 The ***ResetTokenDelimiters*** method resets the token start and token end delimiters and the token escape character to their default values of "**<#**",
 "**#>**", and "**\\**", respectively. (See also the [***SetTokenDelimiters***](#settokendelimiters) method.) This method has the following signature:
 
 ```csharp
-void ResetTokenDelimiters()
+virtual void ResetTokenDelimiters()
 ```
 <br>
 
@@ -783,7 +792,7 @@ void ResetTokenDelimiters()
 The ***SetTabSize*** method simply sets the tab size to the specified value. The method has the following signature:
 
 ```csharp
-void SetTabSize(int tabSize)
+virtual void SetTabSize(int tabSize)
 ```
 
 The `tabSize` parameter specifies the new value for the tab size. It must be an integer value between 1 and 9, inclusive. The default value is 4.
@@ -799,7 +808,7 @@ load the template file. For that you need to call the [***LoadTemplate***](#load
 The method has the following signature:
 
 ```csharp
-void SetTemplateFilePath(string templateFilePath)
+virtual void SetTemplateFilePath(string templateFilePath)
 ```
 
 The `templateFilePath` parameter must specify a valid file path of an existing text template file. The template file path will be set to an empty
@@ -810,7 +819,7 @@ The ***SetTokenDelimiters*** method allows you to specify token start and end de
 of "**<#**", "**#>**", and "**\\**", respectively. The method has the following signature:
 
 ```csharp
-bool SetTokenDelimiters(string tokenStart, string tokenEnd, char tokenEscapeChar)
+virtual bool SetTokenDelimiters(string tokenStart, string tokenEnd, char tokenEscapeChar)
 ```
 
 The `tokenStart` and `tokenEnd` parameters must specify strings of one or more characters, whereas the `tokenEscapeChar` parameter must be a
@@ -848,7 +857,7 @@ The ***WriteGeneratedTextToFile*** method is used to write the contents of the g
 following signature:
 
 ```csharp
-void WriteGeneratedTextToFile(string filePath, bool resetGeneratedText = true)
+virtual void WriteGeneratedTextToFile(string filePath, bool resetGeneratedText = true)
 ```
 
 The `filePath` parameter must specify a valid file path for the output file. If the file already exists it will be overwritten. Otherwise, a new file
@@ -879,13 +888,265 @@ public class MyTemplateProcessor
 
 ## ***TextTemplateConsoleBase*** Class
 ### Overview
+The ***TextTemplateConsoleBase*** class inherits from the
+[***TextTemplateProcessor***](#texttemplateprocessor-class)
+class and adds methods and properties that are intended to be used in a console
+application. Specifically, it's intended to be used in a console app that is run from
+within the **Visual Studio IDE**. The class is an abstract base class from which your
+custom ***Text Template Processor*** class must derive.
+
+Since the ***TextTemplateConsoleBase*** class derives from the ***TextTemplateProcessor***
+class, only the new properties and methods are described below. Refer to the
+[***TextTemplateProcessor***](#texttemplateprocessor-class) class for descriptions of the
+other properties and methods.
+
+> [!NOTE]
+> *The **TextTemplateConsoleBase** class overrides each of the public methods of the
+> **TextTemplateProcessor** class. It wraps each method in a try/catch block and the method override
+> writes all log entries to the console before returning to the caller.*
+
 ### Constructors
+The ***TextTemplateConsoleBase*** class has two public constructors with the following
+signatures:
+
+```csharp
+public TextTemplateConsoleBase()
+
+public TextTemplateConsoleBase(string templateFilePath)
+```
+
+The default constructor takes no arguments. It initializes the class dependencies and then
+retrieves the directory path of
+the **Visual Studio** solution from which the custom ***Text Template Processor*** console
+app was run. It starts looking in the directory from which the console app was executed.
+If it doesn't find a solution file with the *".sln"* file name extension, then it looks in
+the next higher directory level. This continues until either the solution file is located,
+or the root directory is reached. The solution directory is saved in the
+[***SolutionDirectory***](#solutiondirectory-property) property.
+
+The other constructor does everything the default constructor does. It also takes
+a single `templateFilePath` argument that specifies the file path where the template file
+to be processed is located. It then loads the specified template file into memory if the file
+path is found to be valid.
+
 ### Properties
 #### ***OutputDirectory*** Property
+The ***OutputDirectory*** property gets the full directory path where the generated text
+files will be written to. This property defaults to an empty string. The desired output
+directory path must be set by calling the
+[***SetOutputDirectory***](#setoutputdirectory-method) method.
+
+Example:
+
+```csharp
+public class MyTextProcessor : TextTemplateConsoleBase
+{
+    public MyTextProcessor()
+    {
+        base();
+        SetOutputDirectory("C:\test\generatedText");
+    }
+
+    public void DoSomething()
+    {
+        // Returns "C:\test\generatedText"
+        string outputDirectory = OutputDirectory;
+    }
+}
+```
+
 #### ***SolutionDirectory*** Property
+The ***SolutionDirectory*** property returns the full directory path of the **Visual
+Studio** solution where the custom ***Text Template Processor*** console app is located.
+An empty string will be returned if the solution directory couldn't be located. (Refer to
+the description of the constructors, above, for more details.)
+
+For the following example assume that the *MyApp.sln* file is located in this directory:
+`C:\Users\JohnDoe\Source\Repos\MyApp` And the *MyTemplateApp.exe* console app was run
+from this directory: `C:\Users\JohnDoe\Source\Repos\MyApp\MyTemplateApp\bin\Debug\net6.0-windows`
+
+```csharp
+public class MyTemplateApp : TextTemplateConsoleBase
+{
+    public MyTemplateApp()
+    {
+        base(".\generated");
+    }
+
+    public void DoSomething()
+    {
+        // Returns "C:\Users\JohnDoe\Source\Repos\MyApp"
+        string solutionDirectory = SolutionDirectory;
+    }
+}
+```
+
 ### Methods
 #### ***ClearOutputDirectory*** Method
+The ***ClearOutputDirectory*** method deletes all files and folders existing in the
+output directory that was set by the [***SetOutputDirectory***](#setoutputdirectory-method)
+method. It first checks to ensure that the output directory has been set (that is, it is
+not an empty string). The method has the following signature:
+
+```csharp
+virtual void ClearOutputDirectory()
+```
+
 #### ***LoadTemplate*** Method
+The ***TextTemplateConsoleBase*** class overrides and modifies the version of the
+[***LoadTemplate***](#loadtemplate) method that takes a single parameter. The method
+signature is:
+
+```csharp
+override void LoadTemplate(string filePath)
+```
+
+As in the ***TextTemplateProcessor*** class, the `filePath` parameter is an absolute or
+relative file path for the text template file that is to be loaded. If a relative file
+path is specified, then the file path is assumed to be relative to the value of the
+[***SolutionDirectory***](#solutiondirectory-property) property. This differs from the
+usage in the ***TextTemplateProcessor*** class which assumes the file path is relative
+to the current working directory.
+
+The following example assumes the ***SolutionDirectory*** property is currently set to
+"C:\Users\JohnDoe\Source\Repos\MyApp".
+
+```csharp
+public class MyTemplateApp : TextTemplateConsoleBase
+{
+    public MyTemplateApp()
+    {
+        base(".\generated");
+    }
+
+    public void DoSomething()
+    {
+        // Loads the template file located at file path
+        // "C:\Users\JohnDoe\Source\Repos\MyApp\Templates\MyTemplate.txt"
+        LoadTemplate(@"Templates\MyTemplate.txt");
+    }
+}
+```
+
 #### ***PromptUserForInput*** Method
+The ***PromptUserForInput*** method allows for user interaction in the file generation
+process. The method has the following signature:
+
+```csharp
+virtual string PromptUserForInput(string message = MsgContinuationPrompt)
+```
+
+The optional `message` parameter can be used to specify a prompt message to be displayed
+on the console for the user to respond to. If no message is given, the default message
+**"Press [ENTER] to continue..."** will be displayed.
+
+The method returns whatever the user types in the console. Here's an example of how
+this method is used:
+
+```csharp
+public class MyTemplateApp : TextTemplateConsoleBase
+{
+    public MyTemplateApp()
+    {
+        base(".\generated");
+    }
+
+    public void DoSomething()
+    {
+        string response = PromptForUserInput("Generate the debug segment? (Y or N)");
+
+        if (response.ToUpper() == "Y")
+        {
+            GenerateSegment("DebugSegment");
+        }
+    }
+}
+```
+
 #### ***SetOutputDirectory*** Method
+The ***SetOutputDirectory*** method sets the directory path where generated text files
+will be written to. The method has the following signature:
+
+```csharp
+virtual void SetOutputDirectory(string directoryPath)
+```
+
+The `directoryPath` parameter specifies an absolute or relative directory path where
+generated text files are to be written to. If a relative directory path is specified,
+then the directory path is assumed to be relative to the value of the
+[***SolutionDirectory***](#solutiondirectory-property) property. If the specified file
+path doesn't exist, then it will be created.
+
+> [!NOTE]
+> *The [**OutputDirectory**](#outputdirectory-property) property sill be set to the directory path determined by
+> this method.*
+
+The following example assumes the ***SolutionDirectory*** property is currently set to
+"C:\Users\JohnDoe\Source\Repos\MyApp".
+
+```csharp
+public class MyTemplateApp : TextTemplateConsoleBase
+{
+    public MyTemplateApp()
+    {
+        base();
+    }
+
+    public void DoSomething()
+    {
+        // The OutputDirectory property will be set to
+        // "C:\Users\JohnDoe\Source\Repos\MyApp\generated"
+        SetOutputDirectory("generated");
+    }
+}
+```
+
 #### ***WriteGeneratedTextToFile*** Method
+The ***WriteGeneratedTextToFile*** method is used for writing the contents of the
+generated text buffer to the output file. It has the following signature:
+
+```csharp
+override void WriteGeneratedTextToFile(string filePath, bool resetGeneratedText = true)
+```
+
+This method overrides the method with the [same name](#writegeneratedtexttofile) in
+the ***TextTemplateProcessor*** class. The required `filePath` parameter specifies an
+absolute or relative file path for the generated text output file. If a relative file
+path is specified, then it is assumed to be relative to the value of the
+[***OutputDirectory***](#outputdirectory-property) property. This differs from the
+usage in the ***TextTemplateProcessor*** class where the parameter is assumed
+to be relative to the current working directory.
+
+The optional `resetGeneratedText` parameter specifies whether or not the generated
+text buffer should be cleared after its contents are written to the output file. The
+default if this parameter is omitted is *true* (the buffer will be cleared).
+
+> [!NOTE]
+> *The output directory path must be set by calling the [**SetOutputDirectory**](#setoutputdirectory-method) method
+> prior to calling the **WriteGeneratedTextToFile** method.*
+
+The following example assumes that the generated text buffer isn't empty when the
+***WriteGeneratedTextToFile*** method is called and the ***SolutionDirectory*** property
+is currently set to "C:\Users\JohnDoe\Source\Repos\MyApp".
+
+```csharp
+public class MyTemplateApp : TextTemplateConsoleBase
+{
+    public MyTemplateApp()
+    {
+        base();
+    }
+
+    public void DoSomething()
+    {
+        // The OutputDirectory property will be set to
+        // "C:\Users\JohnDoe\Source\Repos\MyApp\generated"
+        SetOutputDirectory("generated");
+
+        // The generated text buffer will be written to
+        // "C:\Users\JohnDoe\Source\Repos\MyApp\generated\MyFile.cs"
+        // and then the generated text buffer will be cleared.
+        WriteGeneratedTextToFile("MyFile.cs");
+    }
+}
+```

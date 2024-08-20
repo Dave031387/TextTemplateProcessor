@@ -65,7 +65,7 @@
             string expected = $@"{absolutePath}{Sep}{fileName}";
 
             // Act
-            string actual = service.CombineDirectoryAndFileName(absolutePath, fileName);
+            string actual = service.CombinePaths(absolutePath, fileName);
 
             // Assert
             actual
@@ -83,7 +83,7 @@
             string expected = $@"{relativePath}{Sep}{fileName}";
 
             // Act
-            string actual = service.CombineDirectoryAndFileName(relativePath, fileName);
+            string actual = service.CombinePaths(relativePath, fileName);
 
             // Assert
             actual
