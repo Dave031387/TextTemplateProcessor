@@ -2,9 +2,9 @@
 {
     public class TokenProcessorTests
     {
-        private readonly Mock<ILocater> _locater = new();
-        private readonly Mock<ILogger> _logger = new();
-        private readonly Mock<INameValidater> _nameValidater = new();
+        private readonly Mock<ILocater> _locater = new(MockBehavior.Strict);
+        private readonly Mock<ILogger> _logger = new(MockBehavior.Strict);
+        private readonly Mock<INameValidater> _nameValidater = new(MockBehavior.Strict);
         private readonly MethodCallOrderVerifier _verifier = new();
 
         [Fact]
@@ -1086,7 +1086,7 @@
         {
             // Arrange
             InitializeMocks();
-            Action action = () => { TokenProcessor processor = new(_logger.Object, null!, _nameValidater.Object); };
+            Action action = () => { TokenProcessor processor = new(null!, _logger.Object, _nameValidater.Object); };
             string expected = GetNullDependencyMessage(ClassNames.TokenProcessorClass,
                                                        ServiceNames.LocaterService,
                                                        ServiceParameterNames.LocaterParameter);
@@ -1104,7 +1104,7 @@
         {
             // Arrange
             InitializeMocks();
-            Action action = () => { TokenProcessor processor = new(null!, _locater.Object, _nameValidater.Object); };
+            Action action = () => { TokenProcessor processor = new(_locater.Object, null!, _nameValidater.Object); };
             string expected = GetNullDependencyMessage(ClassNames.TokenProcessorClass,
                                                        ServiceNames.LoggerService,
                                                        ServiceParameterNames.LoggerParameter);
@@ -1122,7 +1122,7 @@
         {
             // Arrange
             InitializeMocks();
-            Action action = () => { TokenProcessor processor = new(_logger.Object, _locater.Object, null!); };
+            Action action = () => { TokenProcessor processor = new(_locater.Object, _logger.Object, null!); };
             string expected = GetNullDependencyMessage(ClassNames.TokenProcessorClass,
                                                        ServiceNames.NameValidaterService,
                                                        ServiceParameterNames.NameValidaterParameter);
@@ -1167,7 +1167,7 @@
             : $"{TokenStart}{tokenName}{TokenEnd}";
 
         private TokenProcessor GetTokenProcessor()
-            => new(_logger.Object, _locater.Object, _nameValidater.Object);
+            => new(_locater.Object, _logger.Object, _nameValidater.Object);
 
         private void InitializeMocks()
         {

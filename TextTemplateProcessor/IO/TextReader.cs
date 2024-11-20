@@ -12,52 +12,6 @@
         private bool _isFilePathSet = false;
 
         /// <summary>
-        /// Default constructor that creates an instance of the <see cref="TextReader" /> class.
-        /// </summary>
-        public TextReader() : this(ServiceLocater.Current.Get<ILogger>(),
-                                   ServiceLocater.Current.Get<IFileAndDirectoryService>(),
-                                   ServiceLocater.Current.Get<IPathValidater>())
-        {
-        }
-
-        /// <summary>
-        /// Constructor that creates an instance of the <see cref="TextReader" /> class and sets the
-        /// file path to the given value.
-        /// </summary>
-        /// <param name="filePath">
-        /// The file path of a text file to be read.
-        /// </param>
-        public TextReader(string filePath) : this(filePath,
-                                                  ServiceLocater.Current.Get<ILogger>(),
-                                                  ServiceLocater.Current.Get<IFileAndDirectoryService>(),
-                                                  ServiceLocater.Current.Get<IPathValidater>())
-        {
-        }
-
-        /// <summary>
-        /// Constructor that creates an instance of the <see cref="TextReader" /> class and sets the
-        /// file path to the given value. (Used for unit testing.)
-        /// </summary>
-        /// <param name="filePath">
-        /// The file path of a text file to be read.
-        /// </param>
-        /// <param name="logger">
-        /// A reference to a logger object for logging messages.
-        /// </param>
-        /// <param name="fileAndDirectoryService">
-        /// A reference to a path service object used for performing I/O operations.
-        /// </param>
-        /// <param name="pathValidater">
-        /// A reference to a path validater object for validating file and directory paths.
-        /// </param>
-        internal TextReader(string filePath,
-                            ILogger logger,
-                            IFileAndDirectoryService fileAndDirectoryService,
-                            IPathValidater pathValidater)
-            : this(logger, fileAndDirectoryService, pathValidater)
-            => SetFilePath(filePath);
-
-        /// <summary>
         /// Constructor that creates an instance of the <see cref="TextReader" /> class and
         /// initializes dependencies. (Used for unit testing.)
         /// </summary>
@@ -74,8 +28,8 @@
         /// Exception is thrown if any of the dependencies passed into the constructor are
         /// <see langword="null" />.
         /// </exception>
-        internal TextReader(ILogger logger,
-                            IFileAndDirectoryService fileAndDirectoryService,
+        internal TextReader(IFileAndDirectoryService fileAndDirectoryService,
+                            ILogger logger,
                             IPathValidater pathValidater)
         {
             Utility.NullDependencyCheck(logger,
@@ -131,7 +85,7 @@
         {
             List<string> textLines = [];
 
-            if (_isFilePathSet is false)
+            if (!_isFilePathSet)
             {
                 Logger.Log(MsgTemplateFilePathNotSet);
                 return textLines;

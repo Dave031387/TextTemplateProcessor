@@ -1,8 +1,8 @@
 ﻿namespace TextTemplateProcessor.Core
 {
-    using global::TextTemplateProcessor.Console;
-    using global::TextTemplateProcessor.IO;
-    using global::TextTemplateProcessor.Logger;
+    using TextTemplateProcessor.Console;
+    using TextTemplateProcessor.IO;
+    using TextTemplateProcessor.Logger;
 
     internal static class ClassNames
     {
@@ -21,7 +21,6 @@
         public static string TextLineParserClass = nameof(TextLineParser);
         public static string TextReaderClass = nameof(TextReader);
         public static string TextTemplateConsoleBaseClass = nameof(TextTemplateConsoleBase);
-        public static string TextTemplateProcessorClass = nameof(TextTemplateProcessor);
         public static string TextWriterClass = nameof(TextWriter);
         public static string TokenProcessorClass = nameof(TokenProcessor);
     }

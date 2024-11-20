@@ -2,7 +2,7 @@
 {
     /// <summary>
     /// The <see cref="Messages" /> static class defines all the message strings that are used for
-    /// exceptions, log entries, etc, in the <see cref="TextTemplateProcessor" /> class library.
+    /// exceptions, log entries, etc, in the Text Template Processor class library.
     /// </summary>
     internal static class Messages
     {
@@ -101,11 +101,8 @@
         internal const string MsgUnableToResetAll = "Unable to perform Reset All.\nReason{0}";
         internal const string MsgUnableToResetGeneratedText = "Unable to reset the generated text buffer.\nReason: {0}";
         internal const string MsgUnableToResetSegment = "Unable to reset segment \"{0}\".\nReason: {1}";
-        internal const string MsgUnableToResetTokenDelimiters = "Unable to reset the token delimiters.\nReason: {0}";
-        internal const string MsgUnableToResetUnknownSegment = "Unable to reset segment \"{0}\" because of a null or unknown segment name.";
-        internal const string MsgUnableToSetTabSize = "Unable to set the tab size.\nReason: {0}";
+        internal const string MsgUnableToResetUnknownSegment = "Unable to reset segment \"{0}\" because of a null, empty or unknown segment name.";
         internal const string MsgUnableToSetTemplateFilePath = "Unable to set the template file path \"{0}\".Reason: {1}";
-        internal const string MsgUnableToSetTokenDelimiters = "Unable to set token delimiters.\nReason: {0}";
         internal const string MsgUnableToWriteFile = "Unable to write to output file. {0}";
         internal const string MsgUnableToWriteGeneratedTextToFile = "Unable to write generated text to file.\nReason: {0}";
         internal const string MsgUnknownSegmentName = "A request was made to generate segment \"{0}\" but that segment wasn't found in the template file.";

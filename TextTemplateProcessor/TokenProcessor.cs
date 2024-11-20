@@ -21,16 +21,6 @@
         private record TokenSearchResult(bool IsValid, int IndexValue);
 
         /// <summary>
-        /// The default constructor that creates an instance of the <see cref="TokenProcessor" />
-        /// class.
-        /// </summary>
-        public TokenProcessor() : this(ServiceLocater.Current.Get<ILogger>(),
-                                       ServiceLocater.Current.Get<ILocater>(),
-                                       ServiceLocater.Current.Get<INameValidater>())
-        {
-        }
-
-        /// <summary>
         /// A constructor that creates an instance of the <see cref="TokenProcessor" /> class and
         /// initializes the dependencies.
         /// </summary>
@@ -48,7 +38,7 @@
         /// Exception is thrown if any of the dependencies passed into the constructor are
         /// <see langword="null" />.
         /// </exception>
-        internal TokenProcessor(ILogger logger, ILocater locater, INameValidater nameValidater)
+        internal TokenProcessor(ILocater locater, ILogger logger, INameValidater nameValidater)
         {
             Utility.NullDependencyCheck(logger,
                                         ClassNames.TokenProcessorClass,
@@ -114,10 +104,7 @@
                     continue;
                 }
 
-                if (TokenDictionary.ContainsKey(tokenInfo.TokenName) is false)
-                {
-                    TokenDictionary.Add(tokenInfo.TokenName, string.Empty);
-                }
+                _ = TokenDictionary.TryAdd(tokenInfo.TokenName, string.Empty);
             }
         }
 
@@ -317,14 +304,14 @@
                 Logger.Log(MsgMissingTokenName);
                 isValidToken = false;
             }
-            else if (NameValidater.IsValidName(tokenName) is false)
+            else if (!NameValidater.IsValidName(tokenName))
             {
                 Logger.Log(MsgTokenHasInvalidName,
                            tokenName);
                 isValidToken = false;
             }
 
-            if (isValidToken is false)
+            if (!isValidToken)
             {
                 text = InsertEscapeCharacter(tokenStart, text);
                 tokenString = string.Empty;
@@ -348,7 +335,7 @@
             {
                 TokenSearchResult tokenStart = LocateTokenStartDelimiter(startIndex, text);
 
-                if (tokenStart.IsValid is false)
+                if (!tokenStart.IsValid)
                 {
                     startIndex = tokenStart.IndexValue;
                     continue;
@@ -356,7 +343,7 @@
 
                 TokenSearchResult tokenEnd = LocateTokenEndDelimiter(tokenStart.IndexValue, ref text);
 
-                if (tokenEnd.IsValid is false)
+                if (!tokenEnd.IsValid)
                 {
                     startIndex = tokenEnd.IndexValue;
                     break;

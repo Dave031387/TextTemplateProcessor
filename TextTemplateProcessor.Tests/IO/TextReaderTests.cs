@@ -2,9 +2,9 @@
 {
     public class TextReaderTests
     {
-        private readonly Mock<IFileAndDirectoryService> _fileService = new();
-        private readonly Mock<ILogger> _logger = new();
-        private readonly Mock<IPathValidater> _pathValidater = new();
+        private readonly Mock<IFileAndDirectoryService> _fileService = new(MockBehavior.Strict);
+        private readonly Mock<ILogger> _logger = new(MockBehavior.Strict);
+        private readonly Mock<IPathValidater> _pathValidater = new(MockBehavior.Strict);
         private readonly MethodCallOrderVerifier _verifier = new();
 
         [Fact]
@@ -184,81 +184,6 @@
         }
 
         [Fact]
-        public void TextReader_ConstructWithFilePathAndNullFileServiceReference_ThrowsException()
-        {
-            // Arrange
-            InitializeMocks();
-            string filePath = NextAbsoluteFilePath;
-            Action action = () =>
-            {
-                TextReader reader = new(filePath,
-                                        _logger.Object,
-                                        null!,
-                                        _pathValidater.Object);
-            };
-            string expected = GetNullDependencyMessage(ClassNames.TextReaderClass,
-                                                       ServiceNames.FileAndDirectoryService,
-                                                       ServiceParameterNames.FileAndDirectoryServiceParameter);
-
-            // Act/Assert
-            action
-                .Should()
-                .Throw<ArgumentNullException>()
-                .WithMessage(expected);
-            MocksVerifyNoOtherCalls();
-        }
-
-        [Fact]
-        public void TextReader_ConstructWithFilePathAndNullLoggerReference_ThrowsException()
-        {
-            // Arrange
-            InitializeMocks();
-            string filePath = NextAbsoluteFilePath;
-            Action action = () =>
-            {
-                TextReader reader = new(filePath,
-                                        null!,
-                                        _fileService.Object,
-                                        _pathValidater.Object);
-            };
-            string expected = GetNullDependencyMessage(ClassNames.TextReaderClass,
-                                                       ServiceNames.LoggerService,
-                                                       ServiceParameterNames.LoggerParameter);
-
-            // Act/Assert
-            action
-                .Should()
-                .Throw<ArgumentNullException>()
-                .WithMessage(expected);
-            MocksVerifyNoOtherCalls();
-        }
-
-        [Fact]
-        public void TextReader_ConstructWithFilePathAndNullPathValidaterReference_ThrowsException()
-        {
-            // Arrange
-            InitializeMocks();
-            string filePath = NextAbsoluteFilePath;
-            Action action = () =>
-            {
-                TextReader reader = new(filePath,
-                                        _logger.Object,
-                                        _fileService.Object,
-                                        null!);
-            };
-            string expected = GetNullDependencyMessage(ClassNames.TextReaderClass,
-                                                       ServiceNames.PathValidaterService,
-                                                       ServiceParameterNames.PathValidaterParameter);
-
-            // Act/Assert
-            action
-                .Should()
-                .Throw<ArgumentNullException>()
-                .WithMessage(expected);
-            MocksVerifyNoOtherCalls();
-        }
-
-        [Fact]
         public void TextReader_ConstructWithInvalidFilePath_LogsAnError()
         {
             // Arrange
@@ -288,8 +213,8 @@
             InitializeMocks();
             Action action = () =>
             {
-                TextReader reader = new(_logger.Object,
-                                        null!,
+                TextReader reader = new(null!,
+                                        _logger.Object,
                                         _pathValidater.Object);
             };
             string expected = GetNullDependencyMessage(ClassNames.TextReaderClass,
@@ -311,8 +236,8 @@
             InitializeMocks();
             Action action = () =>
             {
-                TextReader reader = new(null!,
-                                        _fileService.Object,
+                TextReader reader = new(_fileService.Object,
+                                        null!,
                                         _pathValidater.Object);
             };
             string expected = GetNullDependencyMessage(ClassNames.TextReaderClass,
@@ -334,8 +259,8 @@
             InitializeMocks();
             Action action = () =>
             {
-                TextReader reader = new(_logger.Object,
-                                        _fileService.Object,
+                TextReader reader = new(_fileService.Object,
+                                        _logger.Object,
                                         null!);
             };
             string expected = GetNullDependencyMessage(ClassNames.TextReaderClass,
@@ -395,8 +320,8 @@
             MocksVerifyNoOtherCalls();
         }
 
-        private TextReader GetTextReader() => new(_logger.Object,
-                                                  _fileService.Object,
+        private TextReader GetTextReader() => new(_fileService.Object,
+                                                  _logger.Object,
                                                   _pathValidater.Object);
 
         private TextReader GetTextReader(string directoryPath, string fileName, string filePath, bool shouldThrow = false)
@@ -435,10 +360,11 @@
                 _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidateFullPath, MethodCallID.FileAndDirectoryService_GetFileName);
             }
 
-            return new(filePath,
-                       _logger.Object,
-                       _fileService.Object,
-                       _pathValidater.Object);
+            TextReader textReader = new(_fileService.Object,
+                                        _logger.Object,
+                                        _pathValidater.Object);
+            textReader.SetFilePath(filePath);
+            return textReader;
         }
 
         private void InitializeMocks()

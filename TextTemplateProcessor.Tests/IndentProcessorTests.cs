@@ -3,8 +3,8 @@
     public class IndentProcessorTests
     {
         private const string SegmentName = "Segment1";
-        private readonly Mock<ILocater> _locater = new();
-        private readonly Mock<ILogger> _logger = new();
+        private readonly Mock<ILocater> _locater = new(MockBehavior.Strict);
+        private readonly Mock<ILogger> _logger = new(MockBehavior.Strict);
         private readonly MethodCallOrderVerifier _verifier = new();
 
         // Case 01 / firstTimeOffset = 0 / isRelative = true / indent < 0 / calculated value < 0 /
@@ -734,7 +734,7 @@
         {
             // Arrange
             InitializeMocks();
-            Action action = () => { IndentProcessor processor = new(_logger.Object, null!); };
+            Action action = () => { IndentProcessor processor = new(null!, _logger.Object); };
             string expected = GetNullDependencyMessage(ClassNames.IndentProcessorClass,
                                                        ServiceNames.LocaterService,
                                                        ServiceParameterNames.LocaterParameter);
@@ -752,7 +752,7 @@
         {
             // Arrange
             InitializeMocks();
-            Action action = () => { IndentProcessor processor = new(null!, _locater.Object); };
+            Action action = () => { IndentProcessor processor = new(_locater.Object, null!); };
             string expected = GetNullDependencyMessage(ClassNames.IndentProcessorClass,
                                                        ServiceNames.LoggerService,
                                                        ServiceParameterNames.LoggerParameter);
@@ -1102,7 +1102,7 @@
         }
 
         private IndentProcessor GetIndentProcessor()
-            => new(_logger.Object, _locater.Object);
+            => new(_locater.Object, _logger.Object);
 
         private void InitializeMocks()
         {

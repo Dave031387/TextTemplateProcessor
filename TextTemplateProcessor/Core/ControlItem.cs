@@ -44,7 +44,7 @@
         /// Returns a boolean value indicating whether or not the pad segment should be inserted the
         /// next time the given segment is processed.
         /// </summary>
-        internal bool ShouldGeneratePadSegment => (string.IsNullOrEmpty(PadSegment) || IsFirstTime) is false;
+        internal bool ShouldGeneratePadSegment => !string.IsNullOrEmpty(PadSegment) && !IsFirstTime;
 
         /// <summary>
         /// Gets or sets the tab size for the segment.

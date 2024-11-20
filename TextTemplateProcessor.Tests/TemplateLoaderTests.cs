@@ -4,14 +4,14 @@
     {
         private readonly Dictionary<string, ControlItem> _actualControlDictionary = [];
         private readonly Dictionary<string, List<TextItem>> _actualSegmentDictionary = [];
-        private readonly Mock<IDefaultSegmentNameGenerator> _defaultSegmentNameGenerator = new();
+        private readonly Mock<IDefaultSegmentNameGenerator> _defaultSegmentNameGenerator = new(MockBehavior.Strict);
         private readonly Dictionary<string, ControlItem> _expectedControlDictionary = [];
         private readonly Dictionary<string, List<TextItem>> _expectedSegmentDictionary = [];
-        private readonly Mock<ILocater> _locater = new();
-        private readonly Mock<ILogger> _logger = new();
-        private readonly Mock<ISegmentHeaderParser> _segmentHeaderParser = new();
+        private readonly Mock<ILocater> _locater = new(MockBehavior.Strict);
+        private readonly Mock<ILogger> _logger = new(MockBehavior.Strict);
+        private readonly Mock<ISegmentHeaderParser> _segmentHeaderParser = new(MockBehavior.Strict);
         private readonly List<string> _templateLines = [];
-        private readonly Mock<ITextLineParser> _textLineParser = new();
+        private readonly Mock<ITextLineParser> _textLineParser = new(MockBehavior.Strict);
         private string _currentSegmentName = string.Empty;
         private int _defaultSegmentNameCounter = 0;
         private int _lineCounter;
@@ -21,11 +21,13 @@
         {
             // Arrange
             InitializeMocks();
+            LoadTemplate_Begin();
             AddCommentLineToTemplateFile();
             AddCommentLineToTemplateFile();
             AddSegmentHeaderLineToTemplateFile("Segment1");
             AddTextLineToTemplateFile();
             AddTextLineToTemplateFile();
+            LoadTemplate_End();
 
             // Act
             LoadTemplate();
@@ -40,10 +42,12 @@
         {
             // Arrange
             InitializeMocks();
+            LoadTemplate_Begin();
             AddSegmentHeaderLineToTemplateFile("Segment1");
             AddCommentLineToTemplateFile();
             AddTextLineToTemplateFile();
             AddCommentLineToTemplateFile();
+            LoadTemplate_End();
 
             // Act
             LoadTemplate();
@@ -58,8 +62,10 @@
         {
             // Arrange
             InitializeMocks();
+            LoadTemplate_Begin();
             AddTextLineToTemplateFile(true, false);
             AddTextLineToTemplateFile();
+            LoadTemplate_End();
 
             // Act
             LoadTemplate();
@@ -74,11 +80,13 @@
         {
             // Arrange
             InitializeMocks();
+            LoadTemplate_Begin();
             AddSegmentHeaderLineToTemplateFile("Segment1");
             AddTextLineToTemplateFile();
             AddSegmentHeaderLineToTemplateFile("Segment2", false, false);
             AddCommentLineToTemplateFile();
             AddCommentLineToTemplateFile();
+            LoadTemplate_End();
 
             // Act
             LoadTemplate();
@@ -93,9 +101,11 @@
         {
             // Arrange
             InitializeMocks();
+            LoadTemplate_Begin();
             AddTextLineToTemplateFile(true);
             AddSegmentHeaderLineToTemplateFile("Segment1");
             AddTextLineToTemplateFile();
+            LoadTemplate_End();
 
             // Act
             LoadTemplate();
@@ -110,13 +120,22 @@
         {
             // Arrange
             InitializeMocks();
+            LoadTemplate_Begin();
             AddTextLineToTemplateFile(true);
-            AddSegmentHeaderLineToTemplateFile("Segment1", false, true, "Segment2", true);
+            AddSegmentHeaderLineToTemplateFile("Segment1",
+                                               false,
+                                               true,
+                                               "Segment2",
+                                               true);
             AddCommentLineToTemplateFile();
             AddTextLineToTemplateFile();
-            AddSegmentHeaderLineToTemplateFile("Segment1", true);
+            AddSegmentHeaderLineToTemplateFile("Segment1",
+                                               true);
             AddTextLineToTemplateFile();
-            AddSegmentHeaderLineToTemplateFile("Segment2", false, false);
+            AddSegmentHeaderLineToTemplateFile("Segment2",
+                                               false,
+                                               false);
+            LoadTemplate_End();
 
             // Act
             LoadTemplate();
@@ -130,10 +149,14 @@
         public void LoadTemplate_NoTextLinesAfterLastSegmentHeader_LogsMessage()
         {
             InitializeMocks();
+            LoadTemplate_Begin();
             AddSegmentHeaderLineToTemplateFile("Segment1");
             AddTextLineToTemplateFile();
             AddTextLineToTemplateFile();
-            AddSegmentHeaderLineToTemplateFile("Segment2", false, false);
+            AddSegmentHeaderLineToTemplateFile("Segment2",
+                                               false,
+                                               false);
+            LoadTemplate_End();
 
             // Act
             LoadTemplate();
@@ -148,9 +171,11 @@
         {
             // Arrange
             InitializeMocks();
+            LoadTemplate_Begin();
             AddSegmentHeaderLineToTemplateFile("Segment1", false, false);
             AddSegmentHeaderLineToTemplateFile("Segment2");
             AddTextLineToTemplateFile();
+            LoadTemplate_End();
 
             // Act
             LoadTemplate();
@@ -165,10 +190,15 @@
         {
             // Arrange
             InitializeMocks();
+            LoadTemplate_Begin();
             AddSegmentHeaderLineToTemplateFile("Segment1");
             AddTextLineToTemplateFile();
-            AddSegmentHeaderLineToTemplateFile("Segment2", false, true, "Segment1");
+            AddSegmentHeaderLineToTemplateFile("Segment2",
+                                               false,
+                                               true,
+                                               "Segment1");
             AddTextLineToTemplateFile();
+            LoadTemplate_End();
 
             // Act
             LoadTemplate();
@@ -183,10 +213,16 @@
         {
             // Arrange
             InitializeMocks();
-            AddSegmentHeaderLineToTemplateFile("Segment1", false, true, "Segment2", true);
+            LoadTemplate_Begin();
+            AddSegmentHeaderLineToTemplateFile("Segment1",
+                                               false,
+                                               true,
+                                               "Segment2",
+                                               true);
             AddTextLineToTemplateFile();
             AddSegmentHeaderLineToTemplateFile("Segment2");
             AddTextLineToTemplateFile();
+            LoadTemplate_End();
 
             // Act
             LoadTemplate();
@@ -201,8 +237,13 @@
         {
             // Arrange
             InitializeMocks();
-            AddSegmentHeaderLineToTemplateFile("Segment1", false, true, "Segment1");
+            LoadTemplate_Begin();
+            AddSegmentHeaderLineToTemplateFile("Segment1",
+                                               false,
+                                               true,
+                                               "Segment1");
             AddTextLineToTemplateFile();
+            LoadTemplate_End();
 
             // Act
             LoadTemplate();
@@ -217,10 +258,12 @@
         {
             // Arrange
             InitializeMocks();
+            LoadTemplate_Begin();
             AddSegmentHeaderLineToTemplateFile("Segment1");
             AddTextLineToTemplateFile();
             AddTextLineToTemplateFile(false, false);
             AddTextLineToTemplateFile();
+            LoadTemplate_End();
 
             // Act
             LoadTemplate();
@@ -235,12 +278,16 @@
         {
             // Arrange
             InitializeMocks();
-            AddSegmentHeaderLineToTemplateFile("Segment1", false, false);
+            LoadTemplate_Begin();
+            AddSegmentHeaderLineToTemplateFile("Segment1",
+                                               false,
+                                               false);
             AddCommentLineToTemplateFile();
             AddCommentLineToTemplateFile();
             AddSegmentHeaderLineToTemplateFile("Segment2");
             AddTextLineToTemplateFile();
             AddTextLineToTemplateFile();
+            LoadTemplate_End();
 
             // Act
             LoadTemplate();
@@ -255,6 +302,7 @@
         {
             // Arrange
             InitializeMocks();
+            LoadTemplate_Begin();
             AddSegmentHeaderLineToTemplateFile("Segment1",
                                                false,
                                                true,
@@ -271,6 +319,7 @@
                                                false,
                                                2);
             AddTextLineToTemplateFile();
+            LoadTemplate_End();
 
             // Act
             LoadTemplate();
@@ -285,14 +334,29 @@
         {
             // Arrange
             InitializeMocks();
+            LoadTemplate_Begin();
             AddSegmentHeaderLineToTemplateFile("Segment1");
             AddTextLineToTemplateFile();
-            AddSegmentHeaderLineToTemplateFile("Segment2", false, true, "Segment1");
+            AddSegmentHeaderLineToTemplateFile("Segment2",
+                                               false,
+                                               true,
+                                               "Segment1");
             AddTextLineToTemplateFile();
-            AddSegmentHeaderLineToTemplateFile("Segment3", false, true, "Segment2", false, true);
+            AddSegmentHeaderLineToTemplateFile("Segment3",
+                                               false,
+                                               true,
+                                               "Segment2",
+                                               false,
+                                               true);
             AddTextLineToTemplateFile();
-            AddSegmentHeaderLineToTemplateFile("Segment4", false, true, "Segment3", false, true);
+            AddSegmentHeaderLineToTemplateFile("Segment4",
+                                               false,
+                                               true,
+                                               "Segment3",
+                                               false,
+                                               true);
             AddTextLineToTemplateFile();
+            LoadTemplate_End();
 
             // Act
             LoadTemplate();
@@ -307,12 +371,22 @@
         {
             // Arrange
             InitializeMocks();
+            LoadTemplate_Begin();
             AddSegmentHeaderLineToTemplateFile("Segment1");
             AddTextLineToTemplateFile();
-            AddSegmentHeaderLineToTemplateFile("Segment2", false, true, "Segment1");
+            AddSegmentHeaderLineToTemplateFile("Segment2",
+                                               false,
+                                               true,
+                                               "Segment1");
             AddTextLineToTemplateFile();
-            AddSegmentHeaderLineToTemplateFile("Segment3", false, true, "Segment2", false, true);
+            AddSegmentHeaderLineToTemplateFile("Segment3",
+                                               false,
+                                               true,
+                                               "Segment2",
+                                               false,
+                                               true);
             AddTextLineToTemplateFile();
+            LoadTemplate_End();
 
             // Act
             LoadTemplate();
@@ -331,9 +405,9 @@
                                                        ServiceParameterNames.DefaultSegmentNameGeneratorParameter);
             Action action = () =>
             {
-                TemplateLoader loader = new(_logger.Object,
-                                            null!,
+                TemplateLoader loader = new(null!,
                                             _locater.Object,
+                                            _logger.Object,
                                             _segmentHeaderParser.Object,
                                             _textLineParser.Object);
             };
@@ -354,9 +428,9 @@
                                                        ServiceParameterNames.LocaterParameter);
             Action action = () =>
             {
-                TemplateLoader loader = new(_logger.Object,
-                                            _defaultSegmentNameGenerator.Object,
+                TemplateLoader loader = new(_defaultSegmentNameGenerator.Object,
                                             null!,
+                                            _logger.Object,
                                             _segmentHeaderParser.Object,
                                             _textLineParser.Object);
             };
@@ -377,9 +451,9 @@
                                                        ServiceParameterNames.LoggerParameter);
             Action action = () =>
             {
-                TemplateLoader loader = new(null!,
-                                            _defaultSegmentNameGenerator.Object,
+                TemplateLoader loader = new(_defaultSegmentNameGenerator.Object,
                                             _locater.Object,
+                                            null!,
                                             _segmentHeaderParser.Object,
                                             _textLineParser.Object);
             };
@@ -400,9 +474,9 @@
                                                        ServiceParameterNames.SegmentHeaderParserParameter);
             Action action = () =>
             {
-                TemplateLoader loader = new(_logger.Object,
-                                            _defaultSegmentNameGenerator.Object,
+                TemplateLoader loader = new(_defaultSegmentNameGenerator.Object,
                                             _locater.Object,
+                                            _logger.Object,
                                             null!,
                                             _textLineParser.Object);
             };
@@ -423,9 +497,9 @@
                                                        ServiceParameterNames.TextLineParserParameter);
             Action action = () =>
             {
-                TemplateLoader loader = new(_logger.Object,
-                                            _defaultSegmentNameGenerator.Object,
+                TemplateLoader loader = new(_defaultSegmentNameGenerator.Object,
                                             _locater.Object,
+                                            _logger.Object,
                                             _segmentHeaderParser.Object,
                                             null!);
             };
@@ -527,14 +601,35 @@
         private void LoadTemplate()
         {
             // Arrange
-            TemplateLoader loader = new(_logger.Object,
-                                        _defaultSegmentNameGenerator.Object,
+            TemplateLoader loader = new(_defaultSegmentNameGenerator.Object,
                                         _locater.Object,
-                                        _segmentHeaderParser.Object,
-                                        _textLineParser.Object);
+                                            _logger.Object,
+                                            _segmentHeaderParser.Object,
+                                            _textLineParser.Object);
 
             // Act
             loader.LoadTemplate(_templateLines, _actualSegmentDictionary, _actualControlDictionary);
+        }
+
+        private void LoadTemplate_Begin()
+        {
+            _logger
+                .Setup(logger => logger.GetLogEntryType())
+                .Returns(LogEntryType.Loading)
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(logger => logger.SetLogEntryType(LogEntryType.Parsing))
+                .Verifiable(Times.Once);
+            _locater
+                .SetupSet(locater => locater.CurrentSegment = string.Empty)
+                .Verifiable(Times.Once);
+        }
+
+        private void LoadTemplate_End()
+        {
+            _logger
+                .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
+                .Verifiable(Times.Once);
         }
 
         private void MocksVerifyNoOtherCalls()
@@ -587,10 +682,7 @@
         {
             string expectedPadSegment = string.Empty;
 
-            if (padSegment is null)
-            {
-            }
-            else
+            if (padSegment is not null)
             {
                 if (isUnknownPadSegment)
                 {

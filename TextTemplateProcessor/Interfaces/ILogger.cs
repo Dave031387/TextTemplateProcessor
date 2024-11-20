@@ -20,6 +20,11 @@
         void Clear();
 
         /// <summary>
+        /// Get the type of log entry currently being processed.
+        /// </summary>
+        LogEntryType GetLogEntryType();
+
+        /// <summary>
         /// Adds a new <see cref="LogEntry" /> object to the <see cref="LogEntries" /> collection.
         /// </summary>
         /// <param name="message">

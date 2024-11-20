@@ -20,15 +20,6 @@
         private int _saveTabSize = 0;
 
         /// <summary>
-        /// The default constructor that creates an instance of the <see cref="IndentProcessor" />
-        /// class.
-        /// </summary>
-        public IndentProcessor() : this(ServiceLocater.Current.Get<ILogger>(),
-                                        ServiceLocater.Current.Get<ILocater>())
-        {
-        }
-
-        /// <summary>
         /// A constructor that creates an instance of the <see cref="IndentProcessor" /> class and
         /// initializes its dependencies.
         /// </summary>
@@ -43,7 +34,7 @@
         /// Exception is thrown if any of the dependencies passed into the constructor are
         /// <see langword="null" />.
         /// </exception>
-        internal IndentProcessor(ILogger logger, ILocater locater)
+        internal IndentProcessor(ILocater locater, ILogger logger)
         {
             Utility.NullDependencyCheck(logger,
                                         ClassNames.IndentProcessorClass,
@@ -152,7 +143,7 @@
                 indent = 0;
             }
 
-            if (textItem.IsOneTime is false)
+            if (!textItem.IsOneTime)
             {
                 CurrentIndent = indent;
             }

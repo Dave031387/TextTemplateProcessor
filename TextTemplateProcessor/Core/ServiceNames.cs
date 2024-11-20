@@ -1,6 +1,6 @@
 ﻿namespace TextTemplateProcessor.Core
 {
-    using global::TextTemplateProcessor.Interfaces;
+    using TextTemplateProcessor.Interfaces;
 
     internal static class ServiceNames
     {
@@ -18,7 +18,6 @@
         public static string TemplateLoaderService = nameof(ITemplateLoader);
         public static string TextLineParserService = nameof(ITextLineParser);
         public static string TextReaderService = nameof(ITextReader);
-        public static string TextTemplateProcessorService = nameof(ITextTemplateProcessor);
         public static string TextWriterService = nameof(ITextWriter);
         public static string TokenProcessorService = nameof(ITokenProcessor);
     }

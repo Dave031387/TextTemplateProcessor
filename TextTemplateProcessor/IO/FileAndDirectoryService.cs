@@ -75,7 +75,7 @@
         {
             string fullDirectoryPath = GetFullPath(path, rootDirectory);
 
-            if (Directory.Exists(fullDirectoryPath) is false)
+            if (!Directory.Exists(fullDirectoryPath))
             {
                 _ = Directory.CreateDirectory(fullDirectoryPath);
             }
@@ -240,13 +240,13 @@
         /// </returns>
         public IEnumerable<string> ReadTextFile(string fullFilePath)
         {
-            if (File.Exists(fullFilePath) is false)
+            if (!File.Exists(fullFilePath))
             {
                 throw new FilePathException(MsgFileNotFound + fullFilePath);
             }
 
             using StreamReader reader = new(fullFilePath);
-            while (reader.EndOfStream is false)
+            while (!reader.EndOfStream)
             {
                 string? textLine = reader.ReadLine();
 

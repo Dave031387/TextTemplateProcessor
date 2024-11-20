@@ -13,14 +13,6 @@
         private LogEntryType _currentLogEntryType = LogEntryType.Setup;
 
         /// <summary>
-        /// Default constructor that creates an instance of the <see cref="ConsoleLogger" /> class.
-        /// </summary>
-        public ConsoleLogger() : this(ServiceLocater.Current.Get<IMessageWriter>(),
-                                      ServiceLocater.Current.Get<ILocater>())
-        {
-        }
-
-        /// <summary>
         /// Constructor that creates an instance of the <see cref="ConsoleLogger" /> class with the
         /// given <see cref="IMessageWriter" /> object.
         /// </summary>
@@ -34,7 +26,7 @@
         /// Exception is thrown if any of the dependencies passed into the constructor are
         /// <see langword="null" />.
         /// </exception>
-        internal ConsoleLogger(IMessageWriter messageWriter, ILocater locater)
+        internal ConsoleLogger(ILocater locater, IMessageWriter messageWriter)
         {
             Utility.NullDependencyCheck(messageWriter,
                                         ClassNames.ConsoleLoggerClass,
@@ -64,6 +56,11 @@
         /// Clears the list of <see cref="LogEntry" /> objects that have been written to the log.
         /// </summary>
         public void Clear() => _logEntries.Clear();
+
+        /// <summary>
+        /// Get the type of log entry currently being processed.
+        /// </summary>
+        public LogEntryType GetLogEntryType() => _currentLogEntryType;
 
         /// <summary>
         /// Adds a new <see cref="LogEntry" /> object to the <see cref="LogEntries" /> collection.

@@ -2,9 +2,9 @@
 {
     public class TextWriterTests
     {
-        private readonly Mock<IFileAndDirectoryService> _fileService = new();
-        private readonly Mock<ILogger> _logger = new();
-        private readonly Mock<IPathValidater> _pathValidater = new();
+        private readonly Mock<IFileAndDirectoryService> _fileService = new(MockBehavior.Strict);
+        private readonly Mock<ILogger> _logger = new(MockBehavior.Strict);
+        private readonly Mock<IPathValidater> _pathValidater = new(MockBehavior.Strict);
         private readonly MethodCallOrderVerifier _verifier = new();
 
         [Fact]
@@ -14,9 +14,9 @@
             InitializeMocks();
             Action action = () =>
             {
-                TextWriter writer = new(_logger.Object,
-                                                null!,
-                                                    _pathValidater.Object);
+                TextWriter writer = new(null!,
+                                        _logger.Object,
+                                        _pathValidater.Object);
             };
             string expected = GetNullDependencyMessage(ClassNames.TextWriterClass,
                                                        ServiceNames.FileAndDirectoryService,
@@ -37,9 +37,9 @@
             InitializeMocks();
             Action action = () =>
             {
-                TextWriter writer = new(null!,
-                                        _fileService.Object,
-                                                     _pathValidater.Object);
+                TextWriter writer = new(_fileService.Object,
+                                        null!,
+                                        _pathValidater.Object);
             };
             string expected = GetNullDependencyMessage(ClassNames.TextWriterClass,
                                                        ServiceNames.LoggerService,
@@ -60,9 +60,9 @@
             InitializeMocks();
             Action action = () =>
             {
-                TextWriter writer = new(_logger.Object,
-                                                _fileService.Object,
-                                                             null!);
+                TextWriter writer = new(_fileService.Object,
+                                        _logger.Object,
+                                        null!);
             };
             string expected = GetNullDependencyMessage(ClassNames.TextWriterClass,
                                                        ServiceNames.PathValidaterService,
@@ -258,7 +258,7 @@
         }
 
         private TextWriter GetTextWriter()
-            => new(_logger.Object, _fileService.Object, _pathValidater.Object);
+            => new(_fileService.Object, _logger.Object, _pathValidater.Object);
 
         private void InitializeMocks()
         {

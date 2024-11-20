@@ -185,14 +185,14 @@
         {
             if (isFilePath)
             {
-                if (File.Exists(fullPath) is false)
+                if (!File.Exists(fullPath))
                 {
                     throw new FilePathException(MsgFileNotFound + fullPath);
                 }
             }
             else
             {
-                if (Directory.Exists(fullPath) is false)
+                if (!Directory.Exists(fullPath))
                 {
                     throw new FilePathException(MsgDirectoryNotFound + fullPath);
                 }

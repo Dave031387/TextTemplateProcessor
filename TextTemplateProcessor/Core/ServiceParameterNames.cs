@@ -18,7 +18,6 @@
         public static string TemplateLoaderParameter = GetParameterName(TemplateLoaderService);
         public static string TextLineParserParameter = GetParameterName(TextLineParserService);
         public static string TextReaderParameter = GetParameterName(TextReaderService);
-        public static string TextTemplateProcessorParameter = GetParameterName(TextTemplateProcessorService);
         public static string TextWriterParameter = GetParameterName(TextWriterService);
         public static string TokenProcessorParameter = GetParameterName(TokenProcessorService);
 

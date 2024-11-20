@@ -2,7 +2,7 @@
 {
     public class MessageWriterTests
     {
-        private readonly Mock<IConsoleWriter> _consoleWriter = new();
+        private readonly Mock<IConsoleWriter> _consoleWriter = new(MockBehavior.Strict);
 
         [Fact]
         public void MessageWriter_ConstructUsingNullConsoleWriterObject_ThrowsException()

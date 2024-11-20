@@ -1,15 +1,15 @@
 ﻿namespace TextTemplateProcessor
 {
-    using global::TextTemplateProcessor.Interfaces;
+    using TextTemplateProcessor.Interfaces;
 
     public class SegmentHeaderParserTests
     {
         private const string SegmentName = "Segment1";
-        private readonly Mock<IDefaultSegmentNameGenerator> _defaultSegmentNameGenerator = new();
-        private readonly Mock<IIndentProcessor> _indentProcessor = new();
-        private readonly Mock<ILocater> _locater = new();
-        private readonly Mock<ILogger> _logger = new();
-        private readonly Mock<INameValidater> _nameValidater = new();
+        private readonly Mock<IDefaultSegmentNameGenerator> _defaultSegmentNameGenerator = new(MockBehavior.Strict);
+        private readonly Mock<IIndentProcessor> _indentProcessor = new(MockBehavior.Strict);
+        private readonly Mock<ILocater> _locater = new(MockBehavior.Strict);
+        private readonly Mock<ILogger> _logger = new(MockBehavior.Strict);
+        private readonly Mock<INameValidater> _nameValidater = new(MockBehavior.Strict);
         private readonly MethodCallOrderVerifier _verifier = new();
 
         [Theory]
@@ -878,10 +878,10 @@
                                                        ServiceParameterNames.DefaultSegmentNameGeneratorParameter);
             Action action = () =>
             {
-                SegmentHeaderParser parser = new(_logger.Object,
-                                                 null!,
-                                                 _locater.Object,
+                SegmentHeaderParser parser = new(null!,
                                                  _indentProcessor.Object,
+                                                 _locater.Object,
+                                                 _logger.Object,
                                                  _nameValidater.Object);
             };
 
@@ -903,10 +903,10 @@
                                                        ServiceParameterNames.IndentProcessorParameter);
             Action action = () =>
             {
-                SegmentHeaderParser parser = new(_logger.Object,
-                                                 _defaultSegmentNameGenerator.Object,
-                                                 _locater.Object,
+                SegmentHeaderParser parser = new(_defaultSegmentNameGenerator.Object,
                                                  null!,
+                                                 _locater.Object,
+                                                 _logger.Object,
                                                  _nameValidater.Object);
             };
 
@@ -928,10 +928,10 @@
                                                        ServiceParameterNames.LocaterParameter);
             Action action = () =>
             {
-                SegmentHeaderParser parser = new(_logger.Object,
-                                                 _defaultSegmentNameGenerator.Object,
-                                                 null!,
+                SegmentHeaderParser parser = new(_defaultSegmentNameGenerator.Object,
                                                  _indentProcessor.Object,
+                                                 null!,
+                                                 _logger.Object,
                                                  _nameValidater.Object);
             };
 
@@ -953,10 +953,10 @@
                                                        ServiceParameterNames.LoggerParameter);
             Action action = () =>
             {
-                SegmentHeaderParser parser = new(null!,
-                                                 _defaultSegmentNameGenerator.Object,
-                                                 _locater.Object,
+                SegmentHeaderParser parser = new(_defaultSegmentNameGenerator.Object,
                                                  _indentProcessor.Object,
+                                                 _locater.Object,
+                                                 null!,
                                                  _nameValidater.Object);
             };
 
@@ -978,10 +978,10 @@
                                                        ServiceParameterNames.NameValidaterParameter);
             Action action = () =>
             {
-                SegmentHeaderParser parser = new(_logger.Object,
-                                                 _defaultSegmentNameGenerator.Object,
-                                                 _locater.Object,
+                SegmentHeaderParser parser = new(_defaultSegmentNameGenerator.Object,
                                                  _indentProcessor.Object,
+                                                 _locater.Object,
+                                                 _logger.Object,
                                                  null!);
             };
 
@@ -1011,10 +1011,10 @@
         }
 
         private SegmentHeaderParser GetSegmentHeaderParser()
-            => new(_logger.Object,
-                   _defaultSegmentNameGenerator.Object,
-                   _locater.Object,
+            => new(_defaultSegmentNameGenerator.Object,
                    _indentProcessor.Object,
+                   _locater.Object,
+                   _logger.Object,
                    _nameValidater.Object);
 
         private void InitializeMocks()

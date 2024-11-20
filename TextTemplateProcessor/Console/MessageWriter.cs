@@ -11,13 +11,6 @@
     internal class MessageWriter : IMessageWriter
     {
         /// <summary>
-        /// Default constructor that creates an instance of the <see cref="MessageWriter" /> class.
-        /// </summary>
-        public MessageWriter() : this(ServiceLocater.Current.Get<IConsoleWriter>())
-        {
-        }
-
-        /// <summary>
         /// Constructor that creates an instance of the <see cref="MessageWriter" /> class and
         /// initializes dependencies.
         /// </summary>

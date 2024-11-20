@@ -11,15 +11,6 @@
         private string _filePath = string.Empty;
 
         /// <summary>
-        /// The default constructor for creating an instance of the <see cref="TextWriter" /> class.
-        /// </summary>
-        public TextWriter() : this(ServiceLocater.Current.Get<ILogger>(),
-                                   ServiceLocater.Current.Get<IFileAndDirectoryService>(),
-                                   ServiceLocater.Current.Get<IPathValidater>())
-        {
-        }
-
-        /// <summary>
         /// A constructor that creates an instance of the <see cref="TextWriter" /> class and
         /// initializes its dependencies.
         /// </summary>
@@ -36,8 +27,8 @@
         /// Exception is thrown if any of the dependencies passed into the constructor are
         /// <see langword="null" />.
         /// </exception>
-        internal TextWriter(ILogger logger,
-                            IFileAndDirectoryService fileAndDirectoryService,
+        internal TextWriter(IFileAndDirectoryService fileAndDirectoryService,
+                            ILogger logger,
                             IPathValidater pathValidater)
         {
             Utility.NullDependencyCheck(logger,
@@ -118,7 +109,7 @@
                 return false;
             }
 
-            if (textLines.Any() is false)
+            if (!textLines.Any())
             {
                 Logger.Log(MsgGeneratedTextIsEmpty,
                            _fileName);

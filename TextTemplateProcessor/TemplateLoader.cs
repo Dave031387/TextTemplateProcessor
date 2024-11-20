@@ -16,17 +16,6 @@
         private int _textLineCount = 0;
 
         /// <summary>
-        /// Default constructor that creates an instance of the <see cref="TemplateLoader" /> class.
-        /// </summary>
-        public TemplateLoader() : this(ServiceLocater.Current.Get<ILogger>(),
-                                       ServiceLocater.Current.Get<IDefaultSegmentNameGenerator>(),
-                                       ServiceLocater.Current.Get<ILocater>(),
-                                       ServiceLocater.Current.Get<ISegmentHeaderParser>(),
-                                       ServiceLocater.Current.Get<ITextLineParser>())
-        {
-        }
-
-        /// <summary>
         /// Constructor that creates an instance of the <see cref="TemplateLoader" /> class and
         /// initializes dependencies.
         /// </summary>
@@ -44,9 +33,9 @@
         /// Exception is thrown if any of the dependencies passed into the constructor are
         /// <see langword="null" />.
         /// </exception>
-        internal TemplateLoader(ILogger logger,
-                                IDefaultSegmentNameGenerator defaultSegmentNameGenerator,
+        internal TemplateLoader(IDefaultSegmentNameGenerator defaultSegmentNameGenerator,
                                 ILocater locater,
+                                ILogger logger,
                                 ISegmentHeaderParser segmentHeaderParser,
                                 ITextLineParser textLineParser)
         {
@@ -112,6 +101,7 @@
                                  Dictionary<string, List<TextItem>> segmentDictionary,
                                  Dictionary<string, ControlItem> controlDictionary)
         {
+            LogEntryType logEntryType = Logger.GetLogEntryType();
             Logger.SetLogEntryType(LogEntryType.Parsing);
             _segmentDictionary = segmentDictionary;
             _controlDictionary = controlDictionary;
@@ -136,6 +126,7 @@
             }
 
             CheckForEmptySegment();
+            Logger.SetLogEntryType(logEntryType);
         }
 
         private void AddSegmentToControlDictionary(string segmentName, ControlItem controlItem)

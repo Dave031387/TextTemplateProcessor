@@ -16,18 +16,6 @@
         private static readonly char[] _separator = [' ', ','];
 
         /// <summary>
-        /// Default constructor that creates an instance of the <see cref="SegmentHeaderParser" />
-        /// class.
-        /// </summary>
-        public SegmentHeaderParser() : this(ServiceLocater.Current.Get<ILogger>(),
-                                            ServiceLocater.Current.Get<IDefaultSegmentNameGenerator>(),
-                                            ServiceLocater.Current.Get<ILocater>(),
-                                            ServiceLocater.Current.Get<IIndentProcessor>(),
-                                            ServiceLocater.Current.Get<INameValidater>())
-        {
-        }
-
-        /// <summary>
         /// Constructor that creates an instance of the <see cref="SegmentHeaderParser" /> class and
         /// initializes dependencies.
         /// </summary>
@@ -52,10 +40,10 @@
         /// Exception is thrown if any of the dependencies passed into the constructor are
         /// <see langword="null" />.
         /// </exception>
-        internal SegmentHeaderParser(ILogger logger,
-                                     IDefaultSegmentNameGenerator defaultSegmentNameGenerator,
-                                     ILocater locater,
+        internal SegmentHeaderParser(IDefaultSegmentNameGenerator defaultSegmentNameGenerator,
                                      IIndentProcessor indentProcessor,
+                                     ILocater locater,
+                                     ILogger logger,
                                      INameValidater nameValidater)
         {
             Utility.NullDependencyCheck(logger,
@@ -136,7 +124,7 @@
             string[] args = headerLine.Split(_separator, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
             string segmentName = args[1];
 
-            if (usingDefaultSegmentName is false)
+            if (!usingDefaultSegmentName)
             {
                 if (NameValidater.IsValidName(segmentName))
                 {

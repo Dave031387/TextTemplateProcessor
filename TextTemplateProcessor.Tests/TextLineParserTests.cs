@@ -4,8 +4,8 @@
 
     public class TextLineParserTests
     {
-        private readonly Mock<ILogger> _logger = new();
-        private readonly Mock<ITokenProcessor> _tokenProcessor = new();
+        private readonly Mock<ILogger> _logger = new(MockBehavior.Strict);
+        private readonly Mock<ITokenProcessor> _tokenProcessor = new(MockBehavior.Strict);
 
         [Fact]
         public void IsCommentLine_TextIsCommentLine_ReturnsTrue()

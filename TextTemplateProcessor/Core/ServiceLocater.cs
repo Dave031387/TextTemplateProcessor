@@ -1,42 +1,35 @@
 ﻿namespace TextTemplateProcessor.Core
 {
-    using BasicIoC;
+    using BasicDI;
     using global::TextTemplateProcessor.Console;
     using global::TextTemplateProcessor.Interfaces;
     using global::TextTemplateProcessor.IO;
     using global::TextTemplateProcessor.Logger;
 
-    internal class ServiceLocater : IServiceLocater
+    internal static class ServiceLocater
     {
-        private readonly Container _container;
+        private static IContainer _container = Container.Current;
 
-        private static readonly Lazy<ServiceLocater> _lazy
-            = new(() => new ServiceLocater());
-
-        private ServiceLocater()
+        static ServiceLocater()
         {
-            _container = Container.Instance;
-            _container.RegisterSingleton<IConsoleReader, ConsoleReader>();
-            _container.RegisterSingleton<IConsoleWriter, ConsoleWriter>();
-            _container.RegisterSingleton<IDefaultSegmentNameGenerator, DefaultSegmentNameGenerator>();
-            _container.RegisterSingleton<IFileAndDirectoryService, FileAndDirectoryService>();
-            _container.RegisterSingleton<IIndentProcessor, IndentProcessor>();
-            _container.RegisterSingleton<IMessageWriter, MessageWriter>();
-            _container.RegisterSingleton<ILocater, Locater>();
-            _container.RegisterSingleton<ILogger, ConsoleLogger>();
-            _container.RegisterSingleton<INameValidater, NameValidater>();
-            _container.RegisterSingleton<IPathValidater, PathValidater>();
-            _container.RegisterSingleton<ISegmentHeaderParser, SegmentHeaderParser>();
-            _container.RegisterSingleton<ITemplateLoader, TemplateLoader>();
-            _container.RegisterSingleton<ITextLineParser, TextLineParser>();
-            _container.RegisterSingleton<ITextReader, TextReader>();
-            _container.RegisterSingleton<ITextWriter, TextWriter>();
-            _container.RegisterSingleton<ITokenProcessor, TokenProcessor>();
+            _container.Bind<IConsoleReader>().To<ConsoleReader>().AsSingleton();
+            _container.Bind<IConsoleWriter>().To<ConsoleWriter>().AsSingleton();
+            _container.Bind<IDefaultSegmentNameGenerator>().To<DefaultSegmentNameGenerator>().AsSingleton();
+            _container.Bind<IFileAndDirectoryService>().To<FileAndDirectoryService>().AsSingleton();
+            _container.Bind<IIndentProcessor>().To<IndentProcessor>().AsSingleton();
+            _container.Bind<ILocater>().To<Locater>().AsSingleton();
+            _container.Bind<ILogger>().To<ConsoleLogger>().AsSingleton();
+            _container.Bind<IMessageWriter>().To<MessageWriter>().AsSingleton();
+            _container.Bind<INameValidater>().To<NameValidater>().AsSingleton();
+            _container.Bind<IPathValidater>().To<PathValidater>().AsSingleton();
+            _container.Bind<ISegmentHeaderParser>().To<SegmentHeaderParser>().AsSingleton();
+            _container.Bind<ITemplateLoader>().To<TemplateLoader>().AsSingleton();
+            _container.Bind<ITextLineParser>().To<TextLineParser>().AsSingleton();
+            _container.Bind<ITextReader>().To<TextReader>().AsSingleton();
+            _container.Bind<ITextWriter>().To<TextWriter>().AsSingleton();
+            _container.Bind<ITokenProcessor>().To<TokenProcessor>().AsSingleton();
         }
 
-        public static IServiceLocater Current => _lazy.Value;
-
-        public T Get<T>(string? key = null) where T : class
-            => _container.ResolveDependency<T>(key)!;
+        public static T Get<T>() where T : class => _container.Resolve<T>();
     }
 }

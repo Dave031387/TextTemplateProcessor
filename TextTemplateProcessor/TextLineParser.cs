@@ -19,14 +19,6 @@
         private readonly Regex _validTextLine = ValidTextLineRegex();
 
         /// <summary>
-        /// Default constructor that creates an instance of the <see cref="TextLineParser" /> class.
-        /// </summary>
-        public TextLineParser() : this(ServiceLocater.Current.Get<ILogger>(),
-                                       ServiceLocater.Current.Get<ITokenProcessor>())
-        {
-        }
-
-        /// <summary>
         /// Constructor that creates an instance of the <see cref="TextLineParser" /> class and
         /// initializes dependencies.
         /// </summary>

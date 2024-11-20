@@ -10,8 +10,8 @@
         private readonly string _formatStringNoArgs = "This is a test";
         private readonly string _formatStringOneArg = "This {0} test";
         private readonly string _formatStringTwoArgs = "This {0} {1}";
-        private readonly Mock<ILocater> _locater = new();
-        private readonly Mock<IMessageWriter> _messageWriter = new();
+        private readonly Mock<ILocater> _locater = new(MockBehavior.Strict);
+        private readonly Mock<IMessageWriter> _messageWriter = new(MockBehavior.Strict);
 
         [Fact]
         internal void Clear_LoggerContainsMultipleLogEntries_ClearsAllLogEntries()
@@ -43,7 +43,7 @@
         {
             // Arrange
             InitializeMocks();
-            Action action = () => { _ = new ConsoleLogger(_messageWriter.Object, null!); };
+            Action action = () => { _ = new ConsoleLogger(null!, _messageWriter.Object); };
             string expected = GetNullDependencyMessage(ClassNames.ConsoleLoggerClass,
                                                        ServiceNames.LocaterService,
                                                        ServiceParameterNames.LocaterParameter);
@@ -61,7 +61,7 @@
         {
             // Arrange
             InitializeMocks();
-            Action action = () => { _ = new ConsoleLogger(null!, _locater.Object); };
+            Action action = () => { _ = new ConsoleLogger(_locater.Object, null!); };
             string expected = GetNullDependencyMessage(ClassNames.ConsoleLoggerClass,
                                                        ServiceNames.MessageWriterService,
                                                        ServiceParameterNames.MessageWriterParameter);
@@ -366,7 +366,7 @@
         }
 
         private ConsoleLogger GetConsoleLogger()
-            => new(_messageWriter.Object, _locater.Object);
+            => new(_locater.Object, _messageWriter.Object);
 
         private void InitializeMocks()
         {
