@@ -45,59 +45,59 @@
             Sequence<LogEntryType> logEntryTypeSequence = new([LogEntryType.Generating, LogEntryType.Reset], 2);
             _logger
                 .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
                 .Returns(logEntryTypeSequence.GetNext)
                 .Verifiable(Times.Exactly(2));
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Reset))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Reset))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Reset))
                 .Verifiable(Times.Exactly(2));
             _messageWriter
                 .Setup(messageWriter => messageWriter.WriteLine(MsgClearTheOutputDirectory, _outputDirectoryPath))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.MessageWriter_WriteLine, 1))
+                .Callback(_verifier.GetCallOrderAction(MessageWriter_WriteLine, 1))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.User))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_User))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_User))
                 .Verifiable(Times.Once);
             _messageWriter
                 .Setup(messageWriter => messageWriter.WriteLine("\n" + MsgYesNoPrompt + "\n"))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.MessageWriter_WriteLine, 2))
+                .Callback(_verifier.GetCallOrderAction(MessageWriter_WriteLine, 2))
                 .Verifiable(Times.Once);
             _consoleReader
                 .Setup(consoleReader => consoleReader.ReadLine())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.ConsoleReader_ReadLine))
+                .Callback(_verifier.GetCallOrderAction(ConsoleReader_ReadLine))
                 .Returns("y")
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.ClearDirectory(_outputDirectoryPath))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_ClearDirectory))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_ClearDirectory))
                 .Throws<IOException>()
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgErrorWhenClearingOutputDirectory, It.IsAny<string>(), null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.MessageWriter_WriteLine, 0, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.MessageWriter_WriteLine, MethodCallID.Logger_WriteLogEntries, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_GetLogEntryType);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_User);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_User, MethodCallID.MessageWriter_WriteLine, 0, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.MessageWriter_WriteLine, MethodCallID.ConsoleReader_ReadLine, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.ConsoleReader_ReadLine, MethodCallID.Logger_SetLogEntryType_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.FileAndDirectoryService_ClearDirectory);
-            _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_ClearDirectory, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_Generating);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Reset);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, MessageWriter_WriteLine, 0, 1);
+            _verifier.DefineExpectedCallOrder(MessageWriter_WriteLine, Logger_WriteLogEntries, 1);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_GetLogEntryType);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_User);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_User, MessageWriter_WriteLine, 0, 2);
+            _verifier.DefineExpectedCallOrder(MessageWriter_WriteLine, ConsoleReader_ReadLine, 2);
+            _verifier.DefineExpectedCallOrder(ConsoleReader_ReadLine, Logger_SetLogEntryType_Reset);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, FileAndDirectoryService_ClearDirectory);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_ClearDirectory, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Generating);
 
             // Act
             consoleBase.ClearOutputDirectory();
@@ -112,53 +112,55 @@
             // Arrange
             MyConsoleBase consoleBase = GetMyConsoleBase();
             consoleBase.OutputDirectory = _outputDirectoryPath;
+            Sequence<LogEntryType> logEntryTypeSequence = new([LogEntryType.Generating, LogEntryType.Reset], 2);
             _logger
-                .SetupSequence(logger => logger.GetLogEntryType())
-                .Returns(LogEntryType.Generating)
-                .Returns(LogEntryType.Reset)
-                .Throws<ApplicationException>();
+                .Setup(logger => logger.GetLogEntryType())
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
+                .Returns(logEntryTypeSequence.GetNext)
+                .Verifiable(Times.Exactly(2));
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Reset))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Reset))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Reset))
                 .Verifiable(Times.Exactly(2));
             _messageWriter
                 .Setup(messageWriter => messageWriter.WriteLine(MsgClearTheOutputDirectory, _outputDirectoryPath))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.MessageWriter_WriteLine, 1))
+                .Callback(_verifier.GetCallOrderAction(MessageWriter_WriteLine, 1))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.User))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_User))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_User))
                 .Verifiable(Times.Once);
             _messageWriter
                 .Setup(messageWriter => messageWriter.WriteLine("\n" + MsgYesNoPrompt + "\n"))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.MessageWriter_WriteLine, 2))
+                .Callback(_verifier.GetCallOrderAction(MessageWriter_WriteLine, 2))
                 .Verifiable(Times.Once);
             _consoleReader
                 .Setup(consoleReader => consoleReader.ReadLine())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.ConsoleReader_ReadLine))
+                .Callback(_verifier.GetCallOrderAction(ConsoleReader_ReadLine))
                 .Throws<IOException>()
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgUnableToGetUserResponse, It.IsAny<string>(), null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.MessageWriter_WriteLine, 0, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.MessageWriter_WriteLine, MethodCallID.Logger_WriteLogEntries, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_User);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_User, MethodCallID.MessageWriter_WriteLine, 0, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.MessageWriter_WriteLine, MethodCallID.ConsoleReader_ReadLine, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.ConsoleReader_ReadLine, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_SetLogEntryType_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_Generating);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Reset, -1, -1);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, MessageWriter_WriteLine, -1, 1);
+            _verifier.DefineExpectedCallOrder(MessageWriter_WriteLine, Logger_GetLogEntryType, 1, -2);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_User, -2);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_User, MessageWriter_WriteLine, 0, 2);
+            _verifier.DefineExpectedCallOrder(MessageWriter_WriteLine, ConsoleReader_ReadLine, 2);
+            _verifier.DefineExpectedCallOrder(ConsoleReader_ReadLine, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_SetLogEntryType_Reset, 0, -2);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, Logger_WriteLogEntries, -2);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Generating);
 
             // Act
             consoleBase.ClearOutputDirectory();
@@ -179,48 +181,50 @@
             // Arrange
             MyConsoleBase consoleBase = GetMyConsoleBase();
             consoleBase.OutputDirectory = _outputDirectoryPath;
+            Sequence<LogEntryType> logEntryTypeSequence = new([LogEntryType.Generating, LogEntryType.Reset], 2);
             _logger
-                .SetupSequence(logger => logger.GetLogEntryType())
-                .Returns(LogEntryType.Generating)
-                .Returns(LogEntryType.Reset)
-                .Throws<ApplicationException>();
+                .Setup(logger => logger.GetLogEntryType())
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
+                .Returns(logEntryTypeSequence.GetNext)
+                .Verifiable(Times.Exactly(2));
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Reset))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Reset))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Reset))
                 .Verifiable(Times.Exactly(2));
             _messageWriter
                 .Setup(messageWriter => messageWriter.WriteLine(MsgClearTheOutputDirectory, _outputDirectoryPath))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.MessageWriter_WriteLine, 1))
+                .Callback(_verifier.GetCallOrderAction(MessageWriter_WriteLine, 1))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.User))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_User))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_User))
                 .Verifiable(Times.Once);
             _messageWriter
                 .Setup(messageWriter => messageWriter.WriteLine("\n" + MsgYesNoPrompt + "\n"))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.MessageWriter_WriteLine, 2))
+                .Callback(_verifier.GetCallOrderAction(MessageWriter_WriteLine, 2))
                 .Verifiable(Times.Once);
             _consoleReader
                 .Setup(consoleReader => consoleReader.ReadLine())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.ConsoleReader_ReadLine))
+                .Callback(_verifier.GetCallOrderAction(ConsoleReader_ReadLine))
                 .Returns(userResponse)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.MessageWriter_WriteLine, 0, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.MessageWriter_WriteLine, MethodCallID.Logger_WriteLogEntries, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_User);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_User, MethodCallID.MessageWriter_WriteLine, 0, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.MessageWriter_WriteLine, MethodCallID.ConsoleReader_ReadLine, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.ConsoleReader_ReadLine, MethodCallID.Logger_SetLogEntryType_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_Generating);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Reset, -1, -1);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, MessageWriter_WriteLine, -1, 1);
+            _verifier.DefineExpectedCallOrder(MessageWriter_WriteLine, Logger_GetLogEntryType, 1, -2);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_User, -2);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_User, MessageWriter_WriteLine, 0, 2);
+            _verifier.DefineExpectedCallOrder(MessageWriter_WriteLine, ConsoleReader_ReadLine, 2);
+            _verifier.DefineExpectedCallOrder(ConsoleReader_ReadLine, Logger_SetLogEntryType_Reset, 0, -2);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, Logger_WriteLogEntries, -2);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Generating);
 
             // Act
             consoleBase.ClearOutputDirectory();
@@ -252,57 +256,60 @@
             // Arrange
             MyConsoleBase consoleBase = GetMyConsoleBase();
             consoleBase.OutputDirectory = _outputDirectoryPath;
+            Sequence<LogEntryType> logEntryTypeSequence = new([LogEntryType.Generating, LogEntryType.Reset], 2);
             _logger
-                .SetupSequence(logger => logger.GetLogEntryType())
-                .Returns(LogEntryType.Generating)
-                .Returns(LogEntryType.Reset)
-                .Throws<ApplicationException>();
+                .Setup(logger => logger.GetLogEntryType())
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
+                .Returns(logEntryTypeSequence.GetNext)
+                .Verifiable(Times.Exactly(2));
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Reset))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Reset))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Reset))
                 .Verifiable(Times.Exactly(2));
             _messageWriter
                 .Setup(messageWriter => messageWriter.WriteLine(MsgClearTheOutputDirectory, _outputDirectoryPath))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.MessageWriter_WriteLine, 1))
+                .Callback(_verifier.GetCallOrderAction(MessageWriter_WriteLine, 1))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.User))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_User))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_User))
                 .Verifiable(Times.Once);
             _messageWriter
                 .Setup(messageWriter => messageWriter.WriteLine("\n" + MsgYesNoPrompt + "\n"))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.MessageWriter_WriteLine, 2))
+                .Callback(_verifier.GetCallOrderAction(MessageWriter_WriteLine, 2))
                 .Verifiable(Times.Once);
             _consoleReader
                 .Setup(consoleReader => consoleReader.ReadLine())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.ConsoleReader_ReadLine))
+                .Callback(_verifier.GetCallOrderAction(ConsoleReader_ReadLine))
                 .Returns(userResponse)
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.ClearDirectory(_outputDirectoryPath))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_ClearDirectory))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_ClearDirectory))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgOutputDirectoryCleared, null, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.MessageWriter_WriteLine, 0, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.MessageWriter_WriteLine, MethodCallID.Logger_WriteLogEntries, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_User);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_User, MethodCallID.MessageWriter_WriteLine, 0, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.MessageWriter_WriteLine, MethodCallID.ConsoleReader_ReadLine, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.ConsoleReader_ReadLine, MethodCallID.FileAndDirectoryService_ClearDirectory);
-            _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_ClearDirectory, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_Generating);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Reset, -1, -1);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, MessageWriter_WriteLine, -1, 1);
+            _verifier.DefineExpectedCallOrder(MessageWriter_WriteLine, Logger_GetLogEntryType, 1, -2);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_User, -2);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_User, MessageWriter_WriteLine, 0, 2);
+            _verifier.DefineExpectedCallOrder(MessageWriter_WriteLine, ConsoleReader_ReadLine, 2);
+            _verifier.DefineExpectedCallOrder(ConsoleReader_ReadLine, Logger_SetLogEntryType_Reset, 0, -2);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, FileAndDirectoryService_ClearDirectory, -2);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_ClearDirectory, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Generating);
 
             // Act
             consoleBase.ClearOutputDirectory();
@@ -399,54 +406,60 @@
                 .SetupProperty(locater => locater.LineNumber, 5);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgProcessingSegment, _segmentName1, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _indentProcessor
+                .Setup(indentProcessor => indentProcessor.TabSize)
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetTabSize))
+                .Returns(4)
+                .Verifiable(Times.AtLeastOnce);
+            _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetFirstTimeIndent(0, textItem1))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetFirstTimeIndent))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetFirstTimeIndent))
                 .Returns(0)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_textLine1))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 1))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 1))
                 .Returns(_textLine1)
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetIndent(textItem2))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 1))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetIndent, 1))
                 .Returns(4)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_textLine2))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 2))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 2))
                 .Returns(_textLine2)
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetIndent(textItem3))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 2))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetIndent, 2))
                 .Returns(0)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_textLine3))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 3))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 3))
                 .Returns(_textLine3)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Generating, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.IndentProcessor_GetFirstTimeIndent);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetFirstTimeIndent, MethodCallID.TokenProcessor_ReplaceTokens, 0, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 1, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 1, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 2, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 2, 3);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.Logger_WriteLogEntries, 3);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Generating, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, IndentProcessor_GetTabSize);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetTabSize, IndentProcessor_GetFirstTimeIndent);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetFirstTimeIndent, TokenProcessor_ReplaceTokens, 0, 1);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, IndentProcessor_GetIndent, 1, 1);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetIndent, TokenProcessor_ReplaceTokens, 1, 2);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, IndentProcessor_GetIndent, 2, 2);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetIndent, TokenProcessor_ReplaceTokens, 2, 3);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, Logger_WriteLogEntries, 3);
 
             // Act
             consoleBase.GenerateSegment(_segmentName1);
@@ -497,59 +510,65 @@
                 .SetupProperty(locater => locater.LineNumber, 5);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.LoadTokenValues(tokenValues))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_LoadTokenValues))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_LoadTokenValues))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgProcessingSegment, _segmentName1, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _indentProcessor
+                .Setup(indentProcessor => indentProcessor.TabSize)
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetTabSize))
+                .Returns(4)
+                .Verifiable(Times.AtLeastOnce);
+            _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetFirstTimeIndent(0, textItem1))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetFirstTimeIndent))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetFirstTimeIndent))
                 .Returns(0)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_textLine1))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 1))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 1))
                 .Returns(_textLine1)
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetIndent(textItem2))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 1))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetIndent, 1))
                 .Returns(0)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(textLine2Before))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 2))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 2))
                 .Returns(textLine2After)
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetIndent(textItem3))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 2))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetIndent, 2))
                 .Returns(0)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_textLine3))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 3))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 3))
                 .Returns(_textLine3)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Generating, MethodCallID.TokenProcessor_LoadTokenValues);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_LoadTokenValues, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.IndentProcessor_GetFirstTimeIndent);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetFirstTimeIndent, MethodCallID.TokenProcessor_ReplaceTokens, 0, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 1, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 1, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 2, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 2, 3);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.Logger_WriteLogEntries, 3);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Generating, TokenProcessor_LoadTokenValues);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_LoadTokenValues, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, IndentProcessor_GetTabSize);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetTabSize, IndentProcessor_GetFirstTimeIndent);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetFirstTimeIndent, TokenProcessor_ReplaceTokens, 0, 1);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, IndentProcessor_GetIndent, 1, 1);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetIndent, TokenProcessor_ReplaceTokens, 1, 2);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, IndentProcessor_GetIndent, 2, 2);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetIndent, TokenProcessor_ReplaceTokens, 2, 3);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, Logger_WriteLogEntries, 3);
 
             // Act
             consoleBase.GenerateSegment(_segmentName1, tokenValues);
@@ -601,66 +620,72 @@
                 .SetupProperty(locater => locater.LineNumber, 5);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgProcessingSegment, _segmentName1, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _indentProcessor
+                .Setup(indentProcessor => indentProcessor.TabSize)
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetTabSize))
+                .Returns(4)
+                .Verifiable(Times.AtLeastOnce);
+            _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetFirstTimeIndent(firstTimeIndent, textItem1))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetFirstTimeIndent))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetFirstTimeIndent))
                 .Returns(8)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_textLine1))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 1))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 1))
                 .Returns(_textLine1)
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetIndent(textItem2))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 1))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetIndent, 1))
                 .Returns(12)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_textLine2))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 2))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 2))
                 .Returns(_textLine2)
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetIndent(textItem3))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 2))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetIndent, 2))
                 .Returns(8)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_textLine3))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 3))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 3))
                 .Returns(_textLine3)
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetIndent(textItem4))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 3))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetIndent, 3))
                 .Returns(4)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_textLine4))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 4))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 4))
                 .Returns(_textLine4)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Generating, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.IndentProcessor_GetFirstTimeIndent);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetFirstTimeIndent, MethodCallID.TokenProcessor_ReplaceTokens, 0, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 1, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 1, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 2, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 2, 3);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 3, 3);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 3, 4);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.Logger_WriteLogEntries, 4);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Generating, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, IndentProcessor_GetTabSize);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetTabSize, IndentProcessor_GetFirstTimeIndent);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetFirstTimeIndent, TokenProcessor_ReplaceTokens, 0, 1);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, IndentProcessor_GetIndent, 1, 1);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetIndent, TokenProcessor_ReplaceTokens, 1, 2);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, IndentProcessor_GetIndent, 2, 2);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetIndent, TokenProcessor_ReplaceTokens, 2, 3);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, IndentProcessor_GetIndent, 3, 3);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetIndent, TokenProcessor_ReplaceTokens, 3, 4);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, Logger_WriteLogEntries, 4);
 
             // Act
             consoleBase.GenerateSegment(_segmentName1);
@@ -720,71 +745,77 @@
                 .SetupProperty(locater => locater.LineNumber, 5);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Exactly(2));
             _logger
                 .Setup(logger => logger.Log(MsgProcessingSegment, _segmentName1, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.TabSize)
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetTabSize))
+                .Returns(4)
+                .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
                 .Returns(LogEntryType.Generating)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Setup))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Setup))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Setup))
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.SetTabSize(2))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_SetTabSize))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_SetTabSize))
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetFirstTimeIndent(1, textItem1))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetFirstTimeIndent))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetFirstTimeIndent))
                 .Returns(2)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_textLine1))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 1))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 1))
                 .Returns(_textLine1)
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetIndent(textItem2))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 1))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetIndent, 1))
                 .Returns(4)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_textLine2))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 2))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 2))
                 .Returns(_textLine2)
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetIndent(textItem3))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 2))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetIndent, 2))
                 .Returns(2)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_textLine3))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 3))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 3))
                 .Returns(_textLine3)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Generating, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_GetLogEntryType);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_Setup);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Setup, MethodCallID.IndentProcessor_SetTabSize);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_SetTabSize, MethodCallID.Logger_SetLogEntryType_Generating);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_SetTabSize, MethodCallID.IndentProcessor_GetFirstTimeIndent);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetFirstTimeIndent, MethodCallID.TokenProcessor_ReplaceTokens, 0, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 1, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 1, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 2, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 2, 3);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.Logger_WriteLogEntries, 3);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Generating, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, IndentProcessor_GetTabSize);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetTabSize, Logger_GetLogEntryType);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Setup);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Setup, IndentProcessor_SetTabSize);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_SetTabSize, Logger_SetLogEntryType_Generating);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_SetTabSize, IndentProcessor_GetFirstTimeIndent);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetFirstTimeIndent, TokenProcessor_ReplaceTokens, 0, 1);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, IndentProcessor_GetIndent, 1, 1);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetIndent, TokenProcessor_ReplaceTokens, 1, 2);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, IndentProcessor_GetIndent, 2, 2);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetIndent, TokenProcessor_ReplaceTokens, 2, 3);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, Logger_WriteLogEntries, 3);
 
             // Act
             consoleBase.GenerateSegment(_segmentName1);
@@ -846,98 +877,104 @@
                 .SetupProperty(locater => locater.LineNumber, 5);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Exactly(3));
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.SaveCurrentState())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_SaveCurrentState))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_SaveCurrentState))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgProcessingSegment, _padSegmentName, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message, 1))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message, 1))
                 .Verifiable(Times.Once);
             _indentProcessor
+                .Setup(indentProcessor => indentProcessor.TabSize)
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetTabSize))
+                .Returns(4)
+                .Verifiable(Times.AtLeastOnce);
+            _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetFirstTimeIndent(0, padTextItem))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetFirstTimeIndent, 1))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetFirstTimeIndent, 1))
                 .Returns(4)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_padTextLine))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 1))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 1))
                 .Returns(_padTextLine)
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.RestoreCurrentState())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_RestoreCurrentState))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_RestoreCurrentState))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgProcessingSegment, _segmentName1, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message, 2))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message, 2))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
                 .Returns(LogEntryType.Generating)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Setup))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Setup))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Setup))
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.SetTabSize(2))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_SetTabSize))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_SetTabSize))
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetIndent(textItem1))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 1))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetIndent, 1))
                 .Returns(0)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_textLine1))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 2))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 2))
                 .Returns(_textLine1)
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetIndent(textItem2))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 2))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetIndent, 2))
                 .Returns(2)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_textLine2))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 3))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 3))
                 .Returns(_textLine2)
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetIndent(textItem3))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 3))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetIndent, 3))
                 .Returns(0)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_textLine3))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 4))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 4))
                 .Returns(_textLine3)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Generating, MethodCallID.IndentProcessor_SaveCurrentState);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_SaveCurrentState, MethodCallID.Logger_Log_Message, 0, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.IndentProcessor_GetFirstTimeIndent, 1, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetFirstTimeIndent, MethodCallID.TokenProcessor_ReplaceTokens, 1, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_RestoreCurrentState, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_RestoreCurrentState, MethodCallID.Logger_Log_Message, 0, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_GetLogEntryType, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_Setup);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Setup, MethodCallID.IndentProcessor_SetTabSize);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_SetTabSize, MethodCallID.Logger_SetLogEntryType_Generating);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_SetTabSize, MethodCallID.IndentProcessor_GetIndent, 0, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 1, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 2, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 2, 3);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 3, 3);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 3, 4);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.Logger_WriteLogEntries, 4);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Generating, IndentProcessor_SaveCurrentState);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_SaveCurrentState, Logger_Log_Message, 0, 1);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, IndentProcessor_GetTabSize, 1);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetTabSize, IndentProcessor_GetFirstTimeIndent, 0, 1);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetFirstTimeIndent, TokenProcessor_ReplaceTokens, 1, 1);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, IndentProcessor_RestoreCurrentState, 1);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_RestoreCurrentState, Logger_Log_Message, 0, 2);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_GetLogEntryType, 2);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Setup);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Setup, IndentProcessor_SetTabSize);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_SetTabSize, Logger_SetLogEntryType_Generating);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_SetTabSize, IndentProcessor_GetIndent, 0, 1);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetIndent, TokenProcessor_ReplaceTokens, 1, 2);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, IndentProcessor_GetIndent, 2, 2);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetIndent, TokenProcessor_ReplaceTokens, 2, 3);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, IndentProcessor_GetIndent, 3, 3);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetIndent, TokenProcessor_ReplaceTokens, 3, 4);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, Logger_WriteLogEntries, 4);
 
             // Act
             consoleBase.GenerateSegment(_segmentName1);
@@ -974,18 +1011,18 @@
                 .SetupProperty(locater => locater.LineNumber);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgSegmentHasNoTextLines, _segmentName1, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Generating, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Generating, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_WriteLogEntries);
 
             // Act
             consoleBase.GenerateSegment(_segmentName1);
@@ -1026,54 +1063,60 @@
                 .SetupProperty(locater => locater.LineNumber, 5);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgProcessingSegment, _segmentName1, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _indentProcessor
+                .Setup(indentProcessor => indentProcessor.TabSize)
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetTabSize))
+                .Returns(4)
+                .Verifiable(Times.AtLeastOnce);
+            _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetFirstTimeIndent(0, textItem1))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetFirstTimeIndent))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetFirstTimeIndent))
                 .Returns(4)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_textLine1))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 1))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 1))
                 .Returns(_textLine1)
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetIndent(textItem2))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 1))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetIndent, 1))
                 .Returns(8)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_textLine2))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 2))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 2))
                 .Returns(_textLine2)
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetIndent(textItem3))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 2))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetIndent, 2))
                 .Returns(0)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_textLine3))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 3))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 3))
                 .Returns(_textLine3)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Generating, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.IndentProcessor_GetFirstTimeIndent);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetFirstTimeIndent, MethodCallID.TokenProcessor_ReplaceTokens, 0, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 1, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 1, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 2, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 2, 3);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.Logger_WriteLogEntries, 3);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Generating, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, IndentProcessor_GetTabSize);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetTabSize, IndentProcessor_GetFirstTimeIndent);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetFirstTimeIndent, TokenProcessor_ReplaceTokens, 0, 1);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, IndentProcessor_GetIndent, 1, 1);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetIndent, TokenProcessor_ReplaceTokens, 1, 2);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, IndentProcessor_GetIndent, 2, 2);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetIndent, TokenProcessor_ReplaceTokens, 2, 3);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, Logger_WriteLogEntries, 3);
 
             // Act
             consoleBase.GenerateSegment(_segmentName1);
@@ -1127,81 +1170,88 @@
                 .SetupProperty(locater => locater.LineNumber, 5);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Exactly(2));
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.SaveCurrentState())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_SaveCurrentState))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_SaveCurrentState))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgProcessingSegment, _padSegmentName, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message, 1))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message, 1))
                 .Verifiable(Times.Once);
             _indentProcessor
+                .Setup(indentProcessor => indentProcessor.TabSize)
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetTabSize))
+                .Returns(4)
+                .Verifiable(Times.AtLeastOnce);
+            _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetFirstTimeIndent(0, padTextItem))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetFirstTimeIndent))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetFirstTimeIndent))
                 .Returns(8)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_padTextLine))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 1))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 1))
                 .Returns(_padTextLine)
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.RestoreCurrentState())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_RestoreCurrentState))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_RestoreCurrentState))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgProcessingSegment, _segmentName1, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message, 2))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message, 2))
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetIndent(textItem1))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 1))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetIndent, 1))
                 .Returns(4)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_textLine1))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 2))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 2))
                 .Returns(_textLine1)
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetIndent(textItem2))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 2))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetIndent, 2))
                 .Returns(8)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_textLine2))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 3))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 3))
                 .Returns(_textLine2)
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetIndent(textItem3))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 3))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetIndent, 3))
                 .Returns(0)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_textLine3))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 4))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 4))
                 .Returns(_textLine3)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Generating, MethodCallID.IndentProcessor_SaveCurrentState);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_SaveCurrentState, MethodCallID.Logger_Log_Message, 0, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.IndentProcessor_GetFirstTimeIndent, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetFirstTimeIndent, MethodCallID.TokenProcessor_ReplaceTokens, 0, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_RestoreCurrentState, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_RestoreCurrentState, MethodCallID.Logger_Log_Message, 0, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.IndentProcessor_GetIndent, 2, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 1, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 2, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 2, 3);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 3, 3);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 3, 4);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.Logger_WriteLogEntries, 4);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Generating, IndentProcessor_SaveCurrentState);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_SaveCurrentState, Logger_Log_Message, 0, 1);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, IndentProcessor_GetTabSize, 1);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetTabSize, IndentProcessor_GetFirstTimeIndent);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetFirstTimeIndent, TokenProcessor_ReplaceTokens, 0, 1);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, IndentProcessor_RestoreCurrentState, 1);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_RestoreCurrentState, Logger_Log_Message, 0, 2);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, IndentProcessor_GetTabSize, 2);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetTabSize, IndentProcessor_GetIndent, 0, 1);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetIndent, TokenProcessor_ReplaceTokens, 1, 2);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, IndentProcessor_GetIndent, 2, 2);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetIndent, TokenProcessor_ReplaceTokens, 2, 3);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, IndentProcessor_GetIndent, 3, 3);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetIndent, TokenProcessor_ReplaceTokens, 3, 4);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, Logger_WriteLogEntries, 4);
 
             // Act
             consoleBase.GenerateSegment(_segmentName1);
@@ -1245,77 +1295,92 @@
             consoleBase._segmentDictionary[_segmentName1] = [textItem1, textItem2, textItem3];
             consoleBase.IsTemplateLoaded = true;
             consoleBase.IsOutputFileWritten = false;
+            Sequence<int> tabSizeSequence = new([4, 4, 2]);
             _locater
                 .SetupProperty(locater => locater.CurrentSegment, _lastSegmentName);
             _locater
                 .SetupProperty(locater => locater.LineNumber, 5);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
-                .Verifiable(Times.Exactly(2));
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
+                .Verifiable(Times.Exactly(3));
             _logger
                 .Setup(logger => logger.Log(MsgProcessingSegment, _segmentName1, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
-                .Verifiable(Times.Once);
-            _logger
-                .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
-                .Returns(LogEntryType.Generating)
-                .Verifiable(Times.Once);
-            _logger
-                .Setup(logger => logger.SetLogEntryType(LogEntryType.Setup))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Setup))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _indentProcessor
+                .Setup(indentProcessor => indentProcessor.TabSize)
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetTabSize))
+                .Returns(tabSizeSequence.GetNext)
+                .Verifiable(Times.AtLeastOnce);
+            _logger
+                .Setup(logger => logger.GetLogEntryType())
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
+                .Returns(LogEntryType.Generating)
+                .Verifiable(Times.Exactly(2));
+            _logger
+                .Setup(logger => logger.SetLogEntryType(LogEntryType.Setup))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Setup))
+                .Verifiable(Times.Exactly(2));
+            _indentProcessor
                 .Setup(indentProcessor => indentProcessor.SetTabSize(2))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_SetTabSize))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_SetTabSize, 1))
+                .Verifiable(Times.Once);
+            _indentProcessor
+                .Setup(indentProcessor => indentProcessor.SetTabSize(4))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_SetTabSize, 2))
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetFirstTimeIndent(0, textItem1))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetFirstTimeIndent))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetFirstTimeIndent))
                 .Returns(2)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_textLine1))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 1))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 1))
                 .Returns(_textLine1)
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetIndent(textItem2))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 1))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetIndent, 1))
                 .Returns(4)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_textLine2))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 2))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 2))
                 .Returns(_textLine2)
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetIndent(textItem3))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 2))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetIndent, 2))
                 .Returns(0)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_textLine3))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 3))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 3))
                 .Returns(_textLine3)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Generating, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_GetLogEntryType);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_Setup);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Setup, MethodCallID.IndentProcessor_SetTabSize);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_SetTabSize, MethodCallID.Logger_SetLogEntryType_Generating);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_SetTabSize, MethodCallID.IndentProcessor_GetFirstTimeIndent);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetFirstTimeIndent, MethodCallID.TokenProcessor_ReplaceTokens, 0, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 1, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 1, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 2, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 2, 3);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.Logger_WriteLogEntries, 3);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Generating, Logger_Log_Message, -1);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, IndentProcessor_GetTabSize);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetTabSize, Logger_GetLogEntryType, 0, -1);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Setup, -1, -1);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Setup, IndentProcessor_SetTabSize, -1, 1);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_SetTabSize, Logger_SetLogEntryType_Generating, 1, -2);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Generating, IndentProcessor_GetFirstTimeIndent, -2);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetFirstTimeIndent, TokenProcessor_ReplaceTokens, 0, 1);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, IndentProcessor_GetIndent, 1, 1);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetIndent, TokenProcessor_ReplaceTokens, 1, 2);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, IndentProcessor_GetIndent, 2, 2);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetIndent, TokenProcessor_ReplaceTokens, 2, 3);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, Logger_GetLogEntryType, 3, -2);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Setup, -2, -2);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Setup, IndentProcessor_SetTabSize, -2, 2);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_SetTabSize, Logger_SetLogEntryType_Generating, 2, -3);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Generating, Logger_WriteLogEntries, -3);
 
             // Act
             consoleBase.GenerateSegment(_segmentName1);
@@ -1366,66 +1431,72 @@
                 .SetupProperty(locater => locater.LineNumber, 5);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgProcessingSegment, _segmentName1, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _indentProcessor
+                .Setup(indentProcessor => indentProcessor.TabSize)
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetTabSize))
+                .Returns(4)
+                .Verifiable(Times.AtLeastOnce);
+            _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetFirstTimeIndent(0, textItem1))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetFirstTimeIndent))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetFirstTimeIndent))
                 .Returns(8)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_textLine1))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 1))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 1))
                 .Returns(_textLine1)
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetIndent(textItem2))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 1))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetIndent, 1))
                 .Returns(8)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_textLine2))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 2))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 2))
                 .Returns(_textLine2)
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetIndent(textItem3))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 2))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetIndent, 2))
                 .Returns(4)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_textLine3))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 3))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 3))
                 .Returns(_textLine3)
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.GetIndent(textItem4))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_GetIndent, 3))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_GetIndent, 3))
                 .Returns(12)
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ReplaceTokens(_textLine4))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ReplaceTokens, 4))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ReplaceTokens, 4))
                 .Returns(_textLine4)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Generating, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.IndentProcessor_GetFirstTimeIndent);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetFirstTimeIndent, MethodCallID.TokenProcessor_ReplaceTokens, 0, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 1, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 1, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 2, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 2, 3);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.IndentProcessor_GetIndent, 3, 3);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_GetIndent, MethodCallID.TokenProcessor_ReplaceTokens, 3, 4);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ReplaceTokens, MethodCallID.Logger_WriteLogEntries, 4);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Generating, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, IndentProcessor_GetTabSize);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetTabSize, IndentProcessor_GetFirstTimeIndent);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetFirstTimeIndent, TokenProcessor_ReplaceTokens, 0, 1);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, IndentProcessor_GetIndent, 1, 1);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetIndent, TokenProcessor_ReplaceTokens, 1, 2);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, IndentProcessor_GetIndent, 2, 2);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetIndent, TokenProcessor_ReplaceTokens, 2, 3);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, IndentProcessor_GetIndent, 3, 3);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_GetIndent, TokenProcessor_ReplaceTokens, 3, 4);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ReplaceTokens, Logger_WriteLogEntries, 4);
 
             // Act
             consoleBase.GenerateSegment(_segmentName1);
@@ -1462,18 +1533,18 @@
                 .SetupProperty(locater => locater.CurrentSegment);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgSegmentNameIsNullOrWhitespace, null, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Generating, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Generating, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_WriteLogEntries);
 
             // Act
             consoleBase.GenerateSegment(segmentName!);
@@ -1502,18 +1573,18 @@
                 .SetupProperty(locater => locater.CurrentSegment);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgAttemptToGenerateSegmentBeforeItWasLoaded, _segmentName1, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Generating, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Generating, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_WriteLogEntries);
 
             // Act
             consoleBase.GenerateSegment(_segmentName1);
@@ -1543,18 +1614,18 @@
                 .SetupProperty(locater => locater.CurrentSegment);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgUnknownSegmentName, _segmentName1, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Generating, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Generating, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_WriteLogEntries);
 
             // Act
             consoleBase.GenerateSegment(_segmentName1);
@@ -1605,20 +1676,20 @@
             consoleBase.IsOutputFileWritten = true;
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Loading))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Loading))
                 .Verifiable(Times.Exactly(2));
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.GetFullPath(_templateFilePath, It.IsAny<string>(), true))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetFullPath))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_GetFullPath))
                 .Throws<IOException>()
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgUnableToLoadTemplateFile, _templateFilePath, It.IsAny<string>()))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message, 1))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message, 1))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Loading, MethodCallID.FileAndDirectoryService_GetFullPath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_GetFullPath, MethodCallID.Logger_Log_Message, 0, 1);
-            SetupResetAll(MethodCallID.Logger_Log_Message, null, 1, 0, true, _templateFileName);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, FileAndDirectoryService_GetFullPath);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_GetFullPath, Logger_Log_Message, 0, 1);
+            SetupResetAll(Logger_Log_Message, null, 1, 0, true, _templateFileName);
 
             // Act
             consoleBase.LoadTemplate(_templateFilePath);
@@ -1654,26 +1725,26 @@
             consoleBase.IsOutputFileWritten = true;
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Loading))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Loading))
                 .Verifiable(Times.Exactly(2));
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.GetFullPath(_templateFilePath, It.IsAny<string>(), true))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetFullPath))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_GetFullPath))
                 .Returns(_templateFilePath)
                 .Verifiable(Times.Once);
             _pathValidater
                 .Setup(pathValidater => pathValidater.ValidateFullPath(_templateFilePath, true, true))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.PathValidater_ValidateFullPath))
+                .Callback(_verifier.GetCallOrderAction(PathValidater_ValidateFullPath))
                 .Throws<IOException>()
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgUnableToLoadTemplateFile, _templateFilePath, It.IsAny<string>()))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message, 1))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message, 1))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Loading, MethodCallID.FileAndDirectoryService_GetFullPath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_GetFullPath, MethodCallID.PathValidater_ValidateFullPath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidateFullPath, MethodCallID.Logger_Log_Message, 0, 1);
-            SetupResetAll(MethodCallID.Logger_Log_Message, null, 1, 0, true, _templateFileName);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, FileAndDirectoryService_GetFullPath);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_GetFullPath, PathValidater_ValidateFullPath);
+            _verifier.DefineExpectedCallOrder(PathValidater_ValidateFullPath, Logger_Log_Message, 0, 1);
+            SetupResetAll(Logger_Log_Message, null, 1, 0, true, _templateFileName);
 
             // Act
             consoleBase.LoadTemplate(_templateFilePath);
@@ -1706,32 +1777,32 @@
             consoleBase.IsTemplateLoaded = true;
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Loading))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Loading))
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.GetFullPath(_templateFilePath, It.IsAny<string>(), true))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetFullPath))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_GetFullPath))
                 .Returns(_templateFilePath)
                 .Verifiable(Times.Once);
             _pathValidater
                 .Setup(pathValidater => pathValidater.ValidateFullPath(_templateFilePath, true, true))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetFullPath))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_GetFullPath))
                 .Returns(_templateFilePath)
                 .Verifiable(Times.Once);
             _textReader
                 .Setup(textReader => textReader.FullFilePath)
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_GetFullFilePath))
+                .Callback(_verifier.GetCallOrderAction(TextReader_GetFullFilePath))
                 .Returns(_emptyString)
                 .Verifiable(Times.AtLeastOnce);
             _textReader
                 .Setup(textReader => textReader.SetFilePath(_templateFilePath))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_SetFilePath))
+                .Callback(_verifier.GetCallOrderAction(TextReader_SetFilePath))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Loading, MethodCallID.FileAndDirectoryService_GetFullPath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_GetFullPath, MethodCallID.TextReader_SetFilePath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFileName, MethodCallID.TextReader_SetFilePath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFullFilePath, MethodCallID.TextReader_SetFilePath);
-            SetupResetAll(MethodCallID.TextReader_SetFilePath, null, 0, 0, true, "");
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, FileAndDirectoryService_GetFullPath);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_GetFullPath, TextReader_SetFilePath);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFileName, TextReader_SetFilePath);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFullFilePath, TextReader_SetFilePath);
+            SetupResetAll(TextReader_SetFilePath, null, 0, 0, true, "");
 
             // Act
             consoleBase.LoadTemplate(_templateFilePath);
@@ -1761,56 +1832,56 @@
             Sequence<string> filePathSequence = new([_lastTemplateFilePath, _templateFilePath]);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.GetFullPath(_templateFilePath, It.IsAny<string>(), true))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetFullPath))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_GetFullPath))
                 .Returns(_templateFilePath)
                 .Verifiable(Times.Once);
             _pathValidater
                 .Setup(pathValidater => pathValidater.ValidateFullPath(_templateFilePath, true, true))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.PathValidater_ValidateFullPath))
+                .Callback(_verifier.GetCallOrderAction(PathValidater_ValidateFullPath))
                 .Returns(_templateFilePath)
                 .Verifiable(Times.Once);
             _textReader
                 .Setup(textReader => textReader.FileName)
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_GetFileName))
+                .Callback(_verifier.GetCallOrderAction(TextReader_GetFileName))
                 .Returns(fileNameSequence.GetNext)
                 .Verifiable(Times.AtLeast(2));
             _textReader
                 .Setup(textReader => textReader.FullFilePath)
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_GetFullFilePath))
+                .Callback(_verifier.GetCallOrderAction(TextReader_GetFullFilePath))
                 .Returns(filePathSequence.GetNext)
                 .Verifiable(Times.AtLeast(2));
             _textReader
                 .Setup(textReader => textReader.SetFilePath(_templateFilePath))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_SetFilePath))
+                .Callback(_verifier.GetCallOrderAction(TextReader_SetFilePath))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgNextLoadRequestBeforeFirstIsWritten, _templateFileName, _lastTemplateFileName))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message, 1))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message, 1))
                 .Verifiable(Times.Once);
             _textReader
                 .Setup(textReader => textReader.ReadTextFile())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_ReadTextFile))
+                .Callback(_verifier.GetCallOrderAction(TextReader_ReadTextFile))
                 .Returns(SampleText)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgLoadingTemplateFile, _templateFileName, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message, 2))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message, 2))
                 .Verifiable(Times.Once);
             _templateLoader
                 .Setup(templateLoader => templateLoader.LoadTemplate(SampleText, It.IsAny<Dictionary<string, List<TextItem>>>(), It.IsAny<Dictionary<string, ControlItem>>()))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TemplateLoader_LoadTemplate))
+                .Callback(_verifier.GetCallOrderAction(TemplateLoader_LoadTemplate))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Loading, MethodCallID.FileAndDirectoryService_GetFullPath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_GetFullPath, MethodCallID.PathValidater_ValidateFullPath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidateFullPath, MethodCallID.TextReader_SetFilePath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFileName, MethodCallID.TextReader_SetFilePath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFullFilePath, MethodCallID.TextReader_SetFilePath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_SetFilePath, MethodCallID.TextReader_GetFullFilePath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFullFilePath, MethodCallID.Logger_Log_Message, 0, 1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.TextReader_ReadTextFile, 1);
-            SetupResetAll(MethodCallID.TextReader_ReadTextFile, MethodCallID.Logger_Log_Message, 0, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.TemplateLoader_LoadTemplate, 2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TemplateLoader_LoadTemplate, MethodCallID.Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, FileAndDirectoryService_GetFullPath);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_GetFullPath, PathValidater_ValidateFullPath);
+            _verifier.DefineExpectedCallOrder(PathValidater_ValidateFullPath, TextReader_SetFilePath);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFileName, TextReader_SetFilePath);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFullFilePath, TextReader_SetFilePath);
+            _verifier.DefineExpectedCallOrder(TextReader_SetFilePath, TextReader_GetFullFilePath);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFullFilePath, Logger_Log_Message, 0, 1);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, TextReader_ReadTextFile, 1);
+            SetupResetAll(TextReader_ReadTextFile, Logger_Log_Message, 0, 2);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, TemplateLoader_LoadTemplate, 2);
+            _verifier.DefineExpectedCallOrder(TemplateLoader_LoadTemplate, Logger_WriteLogEntries);
 
             // Act
             consoleBase.LoadTemplate(_templateFilePath);
@@ -1840,56 +1911,56 @@
             Sequence<string> filePathSequence = new([_lastTemplateFilePath, _templateFilePath]);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Loading))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Loading))
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.GetFullPath(_templateFilePath, It.IsAny<string>(), true))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetFullPath))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_GetFullPath))
                 .Returns(_templateFilePath)
                 .Verifiable(Times.Once);
             _pathValidater
                 .Setup(pathValidater => pathValidater.ValidateFullPath(_templateFilePath, true, true))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.PathValidater_ValidateFullPath))
+                .Callback(_verifier.GetCallOrderAction(PathValidater_ValidateFullPath))
                 .Returns(_templateFilePath)
                 .Verifiable(Times.Once);
             _textReader
                 .Setup(textReader => textReader.FileName)
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_GetFileName))
+                .Callback(_verifier.GetCallOrderAction(TextReader_GetFileName))
                 .Returns(fileNameSequence.GetNext)
                 .Verifiable(Times.AtLeast(2));
             _textReader
                 .Setup(textReader => textReader.FullFilePath)
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_GetFullFilePath))
+                .Callback(_verifier.GetCallOrderAction(TextReader_GetFullFilePath))
                 .Returns(filePathSequence.GetNext)
                 .Verifiable(Times.AtLeast(2));
             _textReader
                 .Setup(textReader => textReader.SetFilePath(_templateFilePath))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_SetFilePath))
+                .Callback(_verifier.GetCallOrderAction(TextReader_SetFilePath))
                 .Verifiable(Times.Once);
             _textReader
                 .Setup(textReader => textReader.ReadTextFile())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_ReadTextFile))
+                .Callback(_verifier.GetCallOrderAction(TextReader_ReadTextFile))
                 .Returns(SampleText)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgLoadingTemplateFile, _templateFileName, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _templateLoader
                 .Setup(templateLoader => templateLoader.LoadTemplate(SampleText, It.IsAny<Dictionary<string, List<TextItem>>>(), It.IsAny<Dictionary<string, ControlItem>>()))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TemplateLoader_LoadTemplate))
+                .Callback(_verifier.GetCallOrderAction(TemplateLoader_LoadTemplate))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Loading, MethodCallID.FileAndDirectoryService_GetFullPath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_GetFullPath, MethodCallID.PathValidater_ValidateFullPath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidateFullPath, MethodCallID.TextReader_GetFileName, 0, -1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidateFullPath, MethodCallID.TextReader_GetFullFilePath, 0, -1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFileName, MethodCallID.TextReader_SetFilePath, -1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFullFilePath, MethodCallID.TextReader_SetFilePath, -1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_SetFilePath, MethodCallID.TextReader_GetFullFilePath, 0, -2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFullFilePath, MethodCallID.TextReader_ReadTextFile, -2);
-            SetupResetAll(MethodCallID.TextReader_ReadTextFile, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.TemplateLoader_LoadTemplate);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TemplateLoader_LoadTemplate, MethodCallID.Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, FileAndDirectoryService_GetFullPath);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_GetFullPath, PathValidater_ValidateFullPath);
+            _verifier.DefineExpectedCallOrder(PathValidater_ValidateFullPath, TextReader_GetFileName, 0, -1);
+            _verifier.DefineExpectedCallOrder(PathValidater_ValidateFullPath, TextReader_GetFullFilePath, 0, -1);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFileName, TextReader_SetFilePath, -1);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFullFilePath, TextReader_SetFilePath, -1);
+            _verifier.DefineExpectedCallOrder(TextReader_SetFilePath, TextReader_GetFullFilePath, 0, -2);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFullFilePath, TextReader_ReadTextFile, -2);
+            SetupResetAll(TextReader_ReadTextFile, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, TemplateLoader_LoadTemplate);
+            _verifier.DefineExpectedCallOrder(TemplateLoader_LoadTemplate, Logger_WriteLogEntries);
 
             // Act
             consoleBase.LoadTemplate(_templateFilePath);
@@ -1920,54 +1991,54 @@
             Sequence<string> filePathSequence = new([_emptyString, _templateFilePath]);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.GetFullPath(_templateFilePath, It.IsAny<string>(), true))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetFullPath))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_GetFullPath))
                 .Returns(_templateFilePath)
                 .Verifiable(Times.Once);
             _pathValidater
                 .Setup(pathValidater => pathValidater.ValidateFullPath(_templateFilePath, true, true))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.PathValidater_ValidateFullPath))
+                .Callback(_verifier.GetCallOrderAction(PathValidater_ValidateFullPath))
                 .Returns(_templateFilePath)
                 .Verifiable(Times.Once);
             _textReader
                 .Setup(textReader => textReader.FileName)
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_GetFileName))
+                .Callback(_verifier.GetCallOrderAction(TextReader_GetFileName))
                 .Returns(fileNameSequence.GetNext)
                 .Verifiable(Times.AtLeast(2));
             _textReader
                 .Setup(textReader => textReader.FullFilePath)
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_GetFullFilePath))
+                .Callback(_verifier.GetCallOrderAction(TextReader_GetFullFilePath))
                 .Returns(filePathSequence.GetNext)
                 .Verifiable(Times.AtLeast(2));
             _textReader
                 .Setup(textReader => textReader.SetFilePath(_templateFilePath))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_SetFilePath))
+                .Callback(_verifier.GetCallOrderAction(TextReader_SetFilePath))
                 .Verifiable(Times.Once);
             _textReader
                 .Setup(textReader => textReader.ReadTextFile())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_ReadTextFile))
+                .Callback(_verifier.GetCallOrderAction(TextReader_ReadTextFile))
                 .Returns(returnedTemplateLines)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgLoadingTemplateFile, _templateFileName, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _templateLoader
                 .Setup(templateLoader => templateLoader.LoadTemplate(returnedTemplateLines, It.IsAny<Dictionary<string, List<TextItem>>>(), It.IsAny<Dictionary<string, ControlItem>>()))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TemplateLoader_LoadTemplate))
+                .Callback(_verifier.GetCallOrderAction(TemplateLoader_LoadTemplate))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Loading, MethodCallID.FileAndDirectoryService_GetFullPath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_GetFullPath, MethodCallID.PathValidater_ValidateFullPath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidateFullPath, MethodCallID.TextReader_GetFileName);
-            _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidateFullPath, MethodCallID.TextReader_GetFullFilePath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFileName, MethodCallID.TextReader_SetFilePath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFullFilePath, MethodCallID.TextReader_SetFilePath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_SetFilePath, MethodCallID.TextReader_ReadTextFile);
-            SetupResetAll(MethodCallID.TextReader_ReadTextFile, MethodCallID.TemplateLoader_LoadTemplate);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TemplateLoader_LoadTemplate, MethodCallID.Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, FileAndDirectoryService_GetFullPath);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_GetFullPath, PathValidater_ValidateFullPath);
+            _verifier.DefineExpectedCallOrder(PathValidater_ValidateFullPath, TextReader_GetFileName);
+            _verifier.DefineExpectedCallOrder(PathValidater_ValidateFullPath, TextReader_GetFullFilePath);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFileName, TextReader_SetFilePath);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFullFilePath, TextReader_SetFilePath);
+            _verifier.DefineExpectedCallOrder(TextReader_SetFilePath, TextReader_ReadTextFile);
+            SetupResetAll(TextReader_ReadTextFile, TemplateLoader_LoadTemplate);
+            _verifier.DefineExpectedCallOrder(TemplateLoader_LoadTemplate, Logger_WriteLogEntries);
 
             // Act
             consoleBase.LoadTemplate(_templateFilePath);
@@ -1994,48 +2065,48 @@
             consoleBase.IsTemplateLoaded = true;
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Loading))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Loading))
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.GetFullPath(_templateFilePath, It.IsAny<string>(), true))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetFullPath))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_GetFullPath))
                 .Returns(_templateFilePath)
                 .Verifiable(Times.Once);
             _pathValidater
                 .Setup(pathValidater => pathValidater.ValidateFullPath(_templateFilePath, true, true))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.PathValidater_ValidateFullPath))
+                .Callback(_verifier.GetCallOrderAction(PathValidater_ValidateFullPath))
                 .Returns(_templateFilePath)
                 .Verifiable(Times.Once);
             _textReader
                 .Setup(textReader => textReader.FileName)
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_GetFileName))
+                .Callback(_verifier.GetCallOrderAction(TextReader_GetFileName))
                 .Returns(_templateFileName)
                 .Verifiable(Times.AtLeastOnce);
             _textReader
                 .Setup(textReader => textReader.FullFilePath)
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_GetFullFilePath))
+                .Callback(_verifier.GetCallOrderAction(TextReader_GetFullFilePath))
                 .Returns(_templateFilePath)
                 .Verifiable(Times.AtLeastOnce);
             _textReader
                 .Setup(textReader => textReader.SetFilePath(_templateFilePath))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_SetFilePath))
+                .Callback(_verifier.GetCallOrderAction(TextReader_SetFilePath))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgAttemptToLoadMoreThanOnce, _templateFileName, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Loading, MethodCallID.FileAndDirectoryService_GetFullPath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_GetFullPath, MethodCallID.PathValidater_ValidateFullPath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidateFullPath, MethodCallID.TextReader_SetFilePath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFileName, MethodCallID.TextReader_SetFilePath, -1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFullFilePath, MethodCallID.TextReader_SetFilePath, -1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_SetFilePath, MethodCallID.TextReader_GetFullFilePath, 0, -2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFullFilePath, MethodCallID.Logger_Log_Message, -2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, FileAndDirectoryService_GetFullPath);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_GetFullPath, PathValidater_ValidateFullPath);
+            _verifier.DefineExpectedCallOrder(PathValidater_ValidateFullPath, TextReader_SetFilePath);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFileName, TextReader_SetFilePath, -1);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFullFilePath, TextReader_SetFilePath, -1);
+            _verifier.DefineExpectedCallOrder(TextReader_SetFilePath, TextReader_GetFullFilePath, 0, -2);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFullFilePath, Logger_Log_Message, -2);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_WriteLogEntries);
 
             // Act
             consoleBase.LoadTemplate(_templateFilePath);
@@ -2065,50 +2136,50 @@
             Sequence<string> filePathSequence = new([_emptyString, _templateFilePath]);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Loading))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Loading))
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.GetFullPath(_templateFilePath, It.IsAny<string>(), true))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetFullPath))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_GetFullPath))
                 .Returns(_templateFilePath)
                 .Verifiable(Times.Once);
             _pathValidater
                 .Setup(pathValidater => pathValidater.ValidateFullPath(_templateFilePath, true, true))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.PathValidater_ValidateFullPath))
+                .Callback(_verifier.GetCallOrderAction(PathValidater_ValidateFullPath))
                 .Returns(_templateFilePath)
                 .Verifiable(Times.Once);
             _textReader
                 .Setup(textReader => textReader.FileName)
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_GetFileName))
+                .Callback(_verifier.GetCallOrderAction(TextReader_GetFileName))
                 .Returns(fileNameSequence.GetNext)
                 .Verifiable(Times.AtLeastOnce);
             _textReader
                 .Setup(textReader => textReader.FullFilePath)
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_GetFullFilePath))
+                .Callback(_verifier.GetCallOrderAction(TextReader_GetFullFilePath))
                 .Returns(filePathSequence.GetNext)
                 .Verifiable(Times.AtLeast(2));
             _textReader
                 .Setup(textReader => textReader.SetFilePath(_templateFilePath))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_SetFilePath))
+                .Callback(_verifier.GetCallOrderAction(TextReader_SetFilePath))
                 .Verifiable(Times.Once);
             _textReader
                 .Setup(textReader => textReader.ReadTextFile())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_ReadTextFile))
+                .Callback(_verifier.GetCallOrderAction(TextReader_ReadTextFile))
                 .Returns(Array.Empty<string>())
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgTemplateFileIsEmpty, _templateFilePath, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Loading, MethodCallID.FileAndDirectoryService_GetFullPath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_GetFullPath, MethodCallID.PathValidater_ValidateFullPath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidateFullPath, MethodCallID.TextReader_SetFilePath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFileName, MethodCallID.TextReader_SetFilePath, -1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFullFilePath, MethodCallID.TextReader_SetFilePath, -1);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_SetFilePath, MethodCallID.TextReader_GetFullFilePath, 0, -2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFullFilePath, MethodCallID.TextReader_ReadTextFile, -2);
-            SetupResetAll(MethodCallID.TextReader_ReadTextFile, MethodCallID.Logger_Log_Message, 0, 0, false, _emptyString, _templateFileName, -2);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, FileAndDirectoryService_GetFullPath);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_GetFullPath, PathValidater_ValidateFullPath);
+            _verifier.DefineExpectedCallOrder(PathValidater_ValidateFullPath, TextReader_SetFilePath);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFileName, TextReader_SetFilePath, -1);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFullFilePath, TextReader_SetFilePath, -1);
+            _verifier.DefineExpectedCallOrder(TextReader_SetFilePath, TextReader_GetFullFilePath, 0, -2);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFullFilePath, TextReader_ReadTextFile, -2);
+            SetupResetAll(TextReader_ReadTextFile, Logger_Log_Message, 0, 0, false, _emptyString, _templateFileName, -2);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_WriteLogEntries);
 
             // Act
             consoleBase.LoadTemplate(_templateFilePath);
@@ -2133,40 +2204,40 @@
             MyConsoleBase consoleBase = GetMyConsoleBase();
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
                 .Returns(LogEntryType.Loading)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.User))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_User))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_User))
                 .Verifiable(Times.Once);
             _messageWriter
                 .Setup(messageWriter => messageWriter.WriteLine("\n" + MsgContinuationPrompt + "\n"))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.MessageWriter_WriteLine))
+                .Callback(_verifier.GetCallOrderAction(MessageWriter_WriteLine))
                 .Verifiable(Times.Once);
             _consoleReader
                 .Setup(consoleReader => consoleReader.ReadLine())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.ConsoleReader_ReadLine))
+                .Callback(_verifier.GetCallOrderAction(ConsoleReader_ReadLine))
                 .Throws<IOException>()
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgUnableToGetUserResponse, It.IsAny<string>(), null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Loading))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Loading))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_GetLogEntryType);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_User);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_User, MethodCallID.MessageWriter_WriteLine);
-            _verifier.DefineExpectedCallOrder(MethodCallID.MessageWriter_WriteLine, MethodCallID.ConsoleReader_ReadLine);
-            _verifier.DefineExpectedCallOrder(MethodCallID.ConsoleReader_ReadLine, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_SetLogEntryType_Loading);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_GetLogEntryType);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_User);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_User, MessageWriter_WriteLine);
+            _verifier.DefineExpectedCallOrder(MessageWriter_WriteLine, ConsoleReader_ReadLine);
+            _verifier.DefineExpectedCallOrder(ConsoleReader_ReadLine, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_SetLogEntryType_Loading);
 
             // Act
             string actual = consoleBase.PromptUserForInput();
@@ -2186,35 +2257,35 @@
             string expected = "test";
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
                 .Returns(LogEntryType.Loading)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.User))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_User))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_User))
                 .Verifiable(Times.Once);
             _messageWriter
                 .Setup(messageWriter => messageWriter.WriteLine("\n" + MsgYesNoPrompt + "\n"))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.MessageWriter_WriteLine))
+                .Callback(_verifier.GetCallOrderAction(MessageWriter_WriteLine))
                 .Verifiable(Times.Once);
             _consoleReader
                 .Setup(consoleReader => consoleReader.ReadLine())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.ConsoleReader_ReadLine))
+                .Callback(_verifier.GetCallOrderAction(ConsoleReader_ReadLine))
                 .Returns(expected)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Loading))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Loading))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_GetLogEntryType);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_User);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_User, MethodCallID.MessageWriter_WriteLine);
-            _verifier.DefineExpectedCallOrder(MethodCallID.MessageWriter_WriteLine, MethodCallID.ConsoleReader_ReadLine);
-            _verifier.DefineExpectedCallOrder(MethodCallID.ConsoleReader_ReadLine, MethodCallID.Logger_SetLogEntryType_Loading);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_GetLogEntryType);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_User);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_User, MessageWriter_WriteLine);
+            _verifier.DefineExpectedCallOrder(MessageWriter_WriteLine, ConsoleReader_ReadLine);
+            _verifier.DefineExpectedCallOrder(ConsoleReader_ReadLine, Logger_SetLogEntryType_Loading);
 
             // Act
             string actual = consoleBase.PromptUserForInput(MsgYesNoPrompt);
@@ -2234,35 +2305,83 @@
             string expected = "test";
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
                 .Returns(LogEntryType.Loading)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.User))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_User))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_User))
                 .Verifiable(Times.Once);
             _messageWriter
                 .Setup(messageWriter => messageWriter.WriteLine("\n" + MsgContinuationPrompt + "\n"))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.MessageWriter_WriteLine))
+                .Callback(_verifier.GetCallOrderAction(MessageWriter_WriteLine))
                 .Verifiable(Times.Once);
             _consoleReader
                 .Setup(consoleReader => consoleReader.ReadLine())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.ConsoleReader_ReadLine))
+                .Callback(_verifier.GetCallOrderAction(ConsoleReader_ReadLine))
                 .Returns(expected)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Loading))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Loading))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_GetLogEntryType);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_User);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_User, MethodCallID.MessageWriter_WriteLine);
-            _verifier.DefineExpectedCallOrder(MethodCallID.MessageWriter_WriteLine, MethodCallID.ConsoleReader_ReadLine);
-            _verifier.DefineExpectedCallOrder(MethodCallID.ConsoleReader_ReadLine, MethodCallID.Logger_SetLogEntryType_Loading);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_GetLogEntryType);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_User);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_User, MessageWriter_WriteLine);
+            _verifier.DefineExpectedCallOrder(MessageWriter_WriteLine, ConsoleReader_ReadLine);
+            _verifier.DefineExpectedCallOrder(ConsoleReader_ReadLine, Logger_SetLogEntryType_Loading);
+
+            // Act
+            string actual = consoleBase.PromptUserForInput();
+
+            // Assert
+            actual
+                .Should()
+                .Be(expected);
+            VerifyMocks();
+        }
+
+        [Fact]
+        public void PromptForUserInput_UserResponseIsNull_ReturnsEmptyString()
+        {
+            // Arrange
+            MyConsoleBase consoleBase = GetMyConsoleBase();
+            string expected = _emptyString;
+            _logger
+                .Setup(logger => logger.WriteLogEntries())
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
+                .Verifiable(Times.AtLeastOnce);
+            _logger
+                .Setup(logger => logger.GetLogEntryType())
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
+                .Returns(LogEntryType.Loading)
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(logger => logger.SetLogEntryType(LogEntryType.User))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_User))
+                .Verifiable(Times.Once);
+            _messageWriter
+                .Setup(messageWriter => messageWriter.WriteLine("\n" + MsgContinuationPrompt + "\n"))
+                .Callback(_verifier.GetCallOrderAction(MessageWriter_WriteLine))
+                .Verifiable(Times.Once);
+            _consoleReader
+                .Setup(consoleReader => consoleReader.ReadLine())
+                .Callback(_verifier.GetCallOrderAction(ConsoleReader_ReadLine))
+                .Returns((string)null!)
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Loading))
+                .Verifiable(Times.Once);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_GetLogEntryType);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_User);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_User, MessageWriter_WriteLine);
+            _verifier.DefineExpectedCallOrder(MessageWriter_WriteLine, ConsoleReader_ReadLine);
+            _verifier.DefineExpectedCallOrder(ConsoleReader_ReadLine, Logger_SetLogEntryType_Loading);
 
             // Act
             string actual = consoleBase.PromptUserForInput();
@@ -2290,35 +2409,35 @@
             ];
             _logger
                 .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
                 .Returns(LogEntryType.Loading)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Reset))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Reset))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Reset))
                 .Verifiable(Times.Once);
             _locater
                 .Setup(locater => locater.Reset())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_Reset))
+                .Callback(_verifier.GetCallOrderAction(Locater_Reset))
                 .Throws<ApplicationException>()
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgUnableToResetAll, It.IsAny<string>(), null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Loading))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Loading))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.Locater_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_Reset, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_Loading);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Reset);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, Locater_Reset);
+            _verifier.DefineExpectedCallOrder(Locater_Reset, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Loading);
 
             // Act
             consoleBase.ResetAll(false);
@@ -2358,53 +2477,53 @@
             ];
             _logger
                 .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
                 .Returns(LogEntryType.Loading)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Reset))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Reset))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Reset))
                 .Verifiable(Times.Once);
             _locater
                 .Setup(locater => locater.Reset())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_Reset))
+                .Callback(_verifier.GetCallOrderAction(Locater_Reset))
                 .Verifiable(Times.Once);
             _defaultSegmentNameGenerator
                 .Setup(defaultSegmentNameGenerator => defaultSegmentNameGenerator.Reset())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.DefaultSegmentNameGenerator_Reset))
+                .Callback(_verifier.GetCallOrderAction(DefaultSegmentNameGenerator_Reset))
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.Reset())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_Reset))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_Reset))
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ClearTokens())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ClearTokens))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ClearTokens))
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ResetTokenDelimiters())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ResetTokenDelimiters))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ResetTokenDelimiters))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Loading))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Loading))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.Locater_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.DefaultSegmentNameGenerator_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.IndentProcessor_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.TokenProcessor_ClearTokens);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.TokenProcessor_ResetTokenDelimiters);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_Reset, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.DefaultSegmentNameGenerator_Reset, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_Reset, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ClearTokens, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ResetTokenDelimiters, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_Loading);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Reset);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, Locater_Reset);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, DefaultSegmentNameGenerator_Reset);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, IndentProcessor_Reset);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, TokenProcessor_ClearTokens);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, TokenProcessor_ResetTokenDelimiters);
+            _verifier.DefineExpectedCallOrder(Locater_Reset, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(DefaultSegmentNameGenerator_Reset, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_Reset, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ClearTokens, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ResetTokenDelimiters, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Loading);
 
             // Act
             consoleBase.ResetAll(false);
@@ -2444,64 +2563,64 @@
             ];
             _logger
                 .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
                 .Returns(LogEntryType.Loading)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Reset))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Reset))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Reset))
                 .Verifiable(Times.Once);
             _locater
                 .Setup(locater => locater.Reset())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_Reset))
+                .Callback(_verifier.GetCallOrderAction(Locater_Reset))
                 .Verifiable(Times.Once);
             _defaultSegmentNameGenerator
                 .Setup(defaultSegmentNameGenerator => defaultSegmentNameGenerator.Reset())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.DefaultSegmentNameGenerator_Reset))
+                .Callback(_verifier.GetCallOrderAction(DefaultSegmentNameGenerator_Reset))
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.Reset())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_Reset))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_Reset))
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ClearTokens())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ClearTokens))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ClearTokens))
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ResetTokenDelimiters())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ResetTokenDelimiters))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ResetTokenDelimiters))
                 .Verifiable(Times.Once);
             _textReader
                 .Setup(textReader => textReader.FileName)
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_GetFileName))
+                .Callback(_verifier.GetCallOrderAction(TextReader_GetFileName))
                 .Returns(_templateFileName)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgTemplateHasBeenReset, _templateFileName, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Loading))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Loading))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.Locater_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.DefaultSegmentNameGenerator_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.IndentProcessor_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.TokenProcessor_ClearTokens);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.TokenProcessor_ResetTokenDelimiters);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_Reset, MethodCallID.TextReader_GetFileName);
-            _verifier.DefineExpectedCallOrder(MethodCallID.DefaultSegmentNameGenerator_Reset, MethodCallID.TextReader_GetFileName);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_Reset, MethodCallID.TextReader_GetFileName);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ClearTokens, MethodCallID.TextReader_GetFileName);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ResetTokenDelimiters, MethodCallID.TextReader_GetFileName);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFileName, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_Loading);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Reset);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, Locater_Reset);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, DefaultSegmentNameGenerator_Reset);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, IndentProcessor_Reset);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, TokenProcessor_ClearTokens);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, TokenProcessor_ResetTokenDelimiters);
+            _verifier.DefineExpectedCallOrder(Locater_Reset, TextReader_GetFileName);
+            _verifier.DefineExpectedCallOrder(DefaultSegmentNameGenerator_Reset, TextReader_GetFileName);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_Reset, TextReader_GetFileName);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ClearTokens, TextReader_GetFileName);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ResetTokenDelimiters, TextReader_GetFileName);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFileName, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Loading);
 
             // Act
             consoleBase.ResetAll();
@@ -2561,35 +2680,35 @@
             consoleBase._controlDictionary[_segmentName3] = controlItem3;
             _logger
                 .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
                 .Returns(LogEntryType.Generating)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Reset))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Reset))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Reset))
                 .Verifiable(Times.Once);
             _locater
                 .Setup(locater => locater.Reset())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_Reset))
+                .Callback(_verifier.GetCallOrderAction(Locater_Reset))
                 .Throws<ApplicationException>()
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgUnableToResetGeneratedText, It.IsAny<string>(), null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.Locater_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_Reset, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_Generating);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Reset);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, Locater_Reset);
+            _verifier.DefineExpectedCallOrder(Locater_Reset, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Generating);
 
             // Act
             consoleBase.ResetGeneratedText();
@@ -2649,35 +2768,35 @@
             consoleBase._controlDictionary[_segmentName3] = controlItem3;
             _logger
                 .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
                 .Returns(LogEntryType.Generating)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Reset))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Reset))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Reset))
                 .Verifiable(Times.Once);
             _locater
                 .Setup(locater => locater.Reset())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_Reset))
+                .Callback(_verifier.GetCallOrderAction(Locater_Reset))
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.Reset())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_Reset))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_Reset))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.Locater_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.IndentProcessor_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_Reset, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_Reset, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_Generating);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Reset);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, Locater_Reset);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, IndentProcessor_Reset);
+            _verifier.DefineExpectedCallOrder(Locater_Reset, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_Reset, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Generating);
 
             // Act
             consoleBase.ResetGeneratedText(false);
@@ -2737,46 +2856,46 @@
             consoleBase._controlDictionary[_segmentName3] = controlItem3;
             _logger
                 .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
                 .Returns(LogEntryType.Generating)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Reset))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Reset))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Reset))
                 .Verifiable(Times.Once);
             _locater
                 .Setup(locater => locater.Reset())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_Reset))
+                .Callback(_verifier.GetCallOrderAction(Locater_Reset))
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.Reset())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_Reset))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_Reset))
                 .Verifiable(Times.Once);
             _textReader
                 .Setup(textReader => textReader.FileName)
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_GetFileName))
+                .Callback(_verifier.GetCallOrderAction(TextReader_GetFileName))
                 .Returns(_templateFileName)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgGeneratedTextHasBeenReset, _templateFileName, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.Locater_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.IndentProcessor_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_Reset, MethodCallID.TextReader_GetFileName);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_Reset, MethodCallID.TextReader_GetFileName);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFileName, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_Generating);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Reset);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, Locater_Reset);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, IndentProcessor_Reset);
+            _verifier.DefineExpectedCallOrder(Locater_Reset, TextReader_GetFileName);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_Reset, TextReader_GetFileName);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFileName, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Generating);
 
             // Act
             consoleBase.ResetGeneratedText();
@@ -2807,46 +2926,46 @@
             MyConsoleBase consoleBase = GetMyConsoleBase();
             _logger
                 .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
                 .Returns(LogEntryType.Generating)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Reset))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Reset))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Reset))
                 .Verifiable(Times.Once);
             _locater
                 .SetupSet(locater => locater.CurrentSegment = _segmentName1)
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Setter))
+                .Callback(_verifier.GetCallOrderAction(Locater_CurrentSegment_Setter))
                 .Verifiable(Times.Once);
             _locater
                 .SetupSet(locater => locater.LineNumber = 0)
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_LineNumber_Setter))
+                .Callback(_verifier.GetCallOrderAction(Locater_LineNumber_Setter))
                 .Verifiable(Times.Once);
             _locater
                 .Setup(locater => locater.CurrentSegment)
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Getter))
+                .Callback(_verifier.GetCallOrderAction(Locater_CurrentSegment_Getter))
                 .Throws<ApplicationException>()
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.Log(MsgUnableToResetSegment, _segmentName1, It.IsAny<string>()))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.Locater_CurrentSegment_Setter);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.Locater_LineNumber_Setter);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.Locater_CurrentSegment_Getter);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_LineNumber_Setter, MethodCallID.Locater_CurrentSegment_Getter);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Getter, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_Generating);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Reset);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, Locater_CurrentSegment_Setter);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, Locater_LineNumber_Setter);
+            _verifier.DefineExpectedCallOrder(Locater_CurrentSegment_Setter, Locater_CurrentSegment_Getter);
+            _verifier.DefineExpectedCallOrder(Locater_LineNumber_Setter, Locater_CurrentSegment_Getter);
+            _verifier.DefineExpectedCallOrder(Locater_CurrentSegment_Getter, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Generating);
 
             // Act
             consoleBase.ResetSegment(_segmentName1);
@@ -2866,46 +2985,46 @@
             string segmentName = name is null ? string.Empty : name;
             _logger
                 .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
                 .Returns(LogEntryType.Generating)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Reset))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Reset))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Reset))
                 .Verifiable(Times.Once);
             _locater
                 .SetupSet(locater => locater.CurrentSegment = segmentName)
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Setter))
+                .Callback(_verifier.GetCallOrderAction(Locater_CurrentSegment_Setter))
                 .Verifiable(Times.Once);
             _locater
                 .SetupSet(locater => locater.LineNumber = 0)
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_LineNumber_Setter))
+                .Callback(_verifier.GetCallOrderAction(Locater_LineNumber_Setter))
                 .Verifiable(Times.Once);
             _locater
                 .Setup(locater => locater.CurrentSegment)
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Getter))
+                .Callback(_verifier.GetCallOrderAction(Locater_CurrentSegment_Getter))
                 .Returns(segmentName)
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.Log(MsgUnableToResetUnknownSegment, segmentName, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.Locater_CurrentSegment_Setter);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.Locater_LineNumber_Setter);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.Locater_CurrentSegment_Getter);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_LineNumber_Setter, MethodCallID.Locater_CurrentSegment_Getter);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Getter, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_Generating);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Reset);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, Locater_CurrentSegment_Setter);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, Locater_LineNumber_Setter);
+            _verifier.DefineExpectedCallOrder(Locater_CurrentSegment_Setter, Locater_CurrentSegment_Getter);
+            _verifier.DefineExpectedCallOrder(Locater_LineNumber_Setter, Locater_CurrentSegment_Getter);
+            _verifier.DefineExpectedCallOrder(Locater_CurrentSegment_Getter, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Generating);
 
             // Act
             consoleBase.ResetSegment(name!);
@@ -2951,46 +3070,46 @@
             consoleBase._controlDictionary[_segmentName2] = controlItem2;
             _logger
                 .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
                 .Returns(LogEntryType.Generating)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Reset))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Reset))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Reset))
                 .Verifiable(Times.Once);
             _locater
                 .SetupSet(locater => locater.CurrentSegment = _segmentName1)
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Setter))
+                .Callback(_verifier.GetCallOrderAction(Locater_CurrentSegment_Setter))
                 .Verifiable(Times.Once);
             _locater
                 .SetupSet(locater => locater.LineNumber = 0)
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_LineNumber_Setter))
+                .Callback(_verifier.GetCallOrderAction(Locater_LineNumber_Setter))
                 .Verifiable(Times.Once);
             _locater
                 .Setup(locater => locater.CurrentSegment)
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Getter))
+                .Callback(_verifier.GetCallOrderAction(Locater_CurrentSegment_Getter))
                 .Returns(_segmentName1)
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.Log(MsgSegmentHasBeenReset, _segmentName1, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.Locater_CurrentSegment_Setter);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.Locater_LineNumber_Setter);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Setter, MethodCallID.Locater_CurrentSegment_Getter);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_LineNumber_Setter, MethodCallID.Locater_CurrentSegment_Getter);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Getter, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_Generating);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Reset);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, Locater_CurrentSegment_Setter);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, Locater_LineNumber_Setter);
+            _verifier.DefineExpectedCallOrder(Locater_CurrentSegment_Setter, Locater_CurrentSegment_Getter);
+            _verifier.DefineExpectedCallOrder(Locater_LineNumber_Setter, Locater_CurrentSegment_Getter);
+            _verifier.DefineExpectedCallOrder(Locater_CurrentSegment_Getter, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Generating);
 
             // Act
             consoleBase.ResetSegment(_segmentName1);
@@ -3012,29 +3131,29 @@
             MyConsoleBase consoleBase = GetMyConsoleBase();
             _logger
                 .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
                 .Returns(LogEntryType.Generating)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Reset))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Reset))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Reset))
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ResetTokenDelimiters())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ResetTokenDelimiters))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ResetTokenDelimiters))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.TokenProcessor_ResetTokenDelimiters);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ResetTokenDelimiters, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_Generating);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Reset);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, TokenProcessor_ResetTokenDelimiters);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_ResetTokenDelimiters, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Generating);
 
             // Act
             consoleBase.ResetTokenDelimiters();
@@ -3051,40 +3170,40 @@
             consoleBase.OutputDirectory = _lastOutputDirectoryPath;
             _logger
                 .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
                 .Returns(LogEntryType.Writing)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Setup))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Setup))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Setup))
                 .Verifiable(Times.Once);
             _pathValidater
                 .Setup(pathValidater => pathValidater.ValidatePath(_outputDirectoryPath, false, false))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.PathValidater_ValidatePath))
+                .Callback(_verifier.GetCallOrderAction(PathValidater_ValidatePath))
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.CreateDirectory(_outputDirectoryPath, It.IsAny<string>()))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_CreateDirectory))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_CreateDirectory))
                 .Throws<IOException>()
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgErrorWhenCreatingOutputDirectory, It.IsAny<string>(), null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Writing))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Writing))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Writing))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_Setup);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Setup, MethodCallID.PathValidater_ValidatePath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidatePath, MethodCallID.FileAndDirectoryService_CreateDirectory);
-            _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_CreateDirectory, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_Writing);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Setup);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Setup, PathValidater_ValidatePath);
+            _verifier.DefineExpectedCallOrder(PathValidater_ValidatePath, FileAndDirectoryService_CreateDirectory);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_CreateDirectory, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Writing);
 
             // Act
             consoleBase.SetOutputDirectory(_outputDirectoryPath);
@@ -3104,35 +3223,35 @@
             consoleBase.OutputDirectory = _lastOutputDirectoryPath;
             _logger
                 .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
                 .Returns(LogEntryType.Writing)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Setup))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Setup))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Setup))
                 .Verifiable(Times.Once);
             _pathValidater
                 .Setup(pathValidater => pathValidater.ValidatePath(_outputDirectoryPath, false, false))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.PathValidater_ValidatePath))
+                .Callback(_verifier.GetCallOrderAction(PathValidater_ValidatePath))
                 .Throws<IOException>()
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgErrorWhenCreatingOutputDirectory, It.IsAny<string>(), null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Writing))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Writing))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Writing))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_Setup);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Setup, MethodCallID.PathValidater_ValidatePath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidatePath, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_Writing);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Setup);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Setup, PathValidater_ValidatePath);
+            _verifier.DefineExpectedCallOrder(PathValidater_ValidatePath, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Writing);
 
             // Act
             consoleBase.SetOutputDirectory(_outputDirectoryPath);
@@ -3152,35 +3271,35 @@
             consoleBase.OutputDirectory = _lastOutputDirectoryPath;
             _logger
                 .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
                 .Returns(LogEntryType.Writing)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Setup))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Setup))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Setup))
                 .Verifiable(Times.Once);
             _pathValidater
                 .Setup(pathValidater => pathValidater.ValidatePath(_outputDirectoryPath, false, false))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.PathValidater_ValidatePath))
+                .Callback(_verifier.GetCallOrderAction(PathValidater_ValidatePath))
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.CreateDirectory(_outputDirectoryPath, It.IsAny<string>()))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_CreateDirectory))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_CreateDirectory))
                 .Returns(_outputDirectoryPath)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Writing))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Writing))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Writing))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_Setup);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Setup, MethodCallID.PathValidater_ValidatePath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidatePath, MethodCallID.FileAndDirectoryService_CreateDirectory);
-            _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_CreateDirectory, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_Writing);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Setup);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Setup, PathValidater_ValidatePath);
+            _verifier.DefineExpectedCallOrder(PathValidater_ValidatePath, FileAndDirectoryService_CreateDirectory);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_CreateDirectory, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Writing);
 
             // Act
             consoleBase.SetOutputDirectory(_outputDirectoryPath);
@@ -3200,29 +3319,29 @@
             int tabSize = 2;
             _logger
                 .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
                 .Returns(LogEntryType.Generating)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Setup))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Setup))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Setup))
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.SetTabSize(tabSize))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_SetTabSize))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_SetTabSize))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_Setup);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Setup, MethodCallID.IndentProcessor_SetTabSize);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_SetTabSize, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_Generating);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Setup);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Setup, IndentProcessor_SetTabSize);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_SetTabSize, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Generating);
 
             // Act
             consoleBase.SetTabSize(tabSize);
@@ -3238,35 +3357,35 @@
             MyConsoleBase consoleBase = GetMyConsoleBase();
             _logger
                 .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
                 .Returns(LogEntryType.Generating)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Setup))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Setup))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Setup))
                 .Verifiable(Times.Once);
             _textReader
                 .Setup(textReader => textReader.SetFilePath(_templateFilePath))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_SetFilePath))
+                .Callback(_verifier.GetCallOrderAction(TextReader_SetFilePath))
                 .Throws<ApplicationException>()
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgUnableToSetTemplateFilePath, _templateFilePath, It.IsAny<string>()))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_Setup);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Setup, MethodCallID.TextReader_SetFilePath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_SetFilePath, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_Generating);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Setup);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Setup, TextReader_SetFilePath);
+            _verifier.DefineExpectedCallOrder(TextReader_SetFilePath, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Generating);
 
             // Act
             consoleBase.SetTemplateFilePath(_templateFilePath);
@@ -3282,29 +3401,29 @@
             MyConsoleBase consoleBase = GetMyConsoleBase();
             _logger
                 .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
                 .Returns(LogEntryType.Generating)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Setup))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Setup))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Setup))
                 .Verifiable(Times.Once);
             _textReader
                 .Setup(textReader => textReader.SetFilePath(_templateFilePath))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_SetFilePath))
+                .Callback(_verifier.GetCallOrderAction(TextReader_SetFilePath))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_Setup);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Setup, MethodCallID.TextReader_SetFilePath);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_SetFilePath, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_Generating);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Setup);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Setup, TextReader_SetFilePath);
+            _verifier.DefineExpectedCallOrder(TextReader_SetFilePath, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Generating);
 
             // Act
             consoleBase.SetTemplateFilePath(_templateFilePath);
@@ -3324,30 +3443,30 @@
             bool expected = true;
             _logger
                 .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
                 .Returns(LogEntryType.Generating)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Setup))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Setup))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Setup))
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.SetTokenDelimiters(tokenStart, tokenEnd, escapeChar))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_SetTokenDelimiters))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_SetTokenDelimiters))
                 .Returns(expected)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_Setup);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Setup, MethodCallID.TokenProcessor_SetTokenDelimiters);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_SetTokenDelimiters, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_Generating);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Setup);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Setup, TokenProcessor_SetTokenDelimiters);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_SetTokenDelimiters, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Generating);
 
             // Act
             bool actual = consoleBase.SetTokenDelimiters(tokenStart, tokenEnd, escapeChar);
@@ -3370,30 +3489,30 @@
             bool expected = false;
             _logger
                 .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
                 .Returns(LogEntryType.Generating)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Setup))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Setup))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Setup))
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.SetTokenDelimiters(tokenStart, tokenEnd, escapeChar))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_SetTokenDelimiters))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_SetTokenDelimiters))
                 .Returns(expected)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_Setup);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Setup, MethodCallID.TokenProcessor_SetTokenDelimiters);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_SetTokenDelimiters, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_Generating);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Setup);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Setup, TokenProcessor_SetTokenDelimiters);
+            _verifier.DefineExpectedCallOrder(TokenProcessor_SetTokenDelimiters, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Generating);
 
             // Act
             bool actual = consoleBase.SetTokenDelimiters(tokenStart, tokenEnd, escapeChar);
@@ -3473,14 +3592,14 @@
             InitializeMocks();
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Setup))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Setup))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Setup))
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.GetSolutionDirectory())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetSolutionDirectory))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_GetSolutionDirectory))
                 .Returns(SolutionDirectory)
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Setup, MethodCallID.FileAndDirectoryService_GetSolutionDirectory);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Setup, FileAndDirectoryService_GetSolutionDirectory);
 
             // Act
             MyConsoleBase consoleBase = GetMyConsoleBase(false);
@@ -3523,19 +3642,19 @@
             InitializeMocks();
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Setup))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Setup))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Setup))
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.GetSolutionDirectory())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetSolutionDirectory))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_GetSolutionDirectory))
                 .Throws<ArgumentException>()
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgErrorWhenLocatingSolutionDirectory, It.IsAny<string>(), null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message, 1))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message, 1))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Setup, MethodCallID.FileAndDirectoryService_GetSolutionDirectory);
-            _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_GetSolutionDirectory, MethodCallID.Logger_Log_Message, 0, 1);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Setup, FileAndDirectoryService_GetSolutionDirectory);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_GetSolutionDirectory, Logger_Log_Message, 0, 1);
 
             // Act
             MyConsoleBase consoleBase = GetMyConsoleBase(false);
@@ -3578,14 +3697,14 @@
             InitializeMocks();
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Setup))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Setup))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Setup))
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.GetSolutionDirectory())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetSolutionDirectory))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_GetSolutionDirectory))
                 .Returns(SolutionDirectory)
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Setup, MethodCallID.FileAndDirectoryService_GetSolutionDirectory);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Setup, FileAndDirectoryService_GetSolutionDirectory);
 
             // Act
             MyConsoleBase consoleBase = GetMyConsoleBase(false);
@@ -4024,14 +4143,14 @@
             InitializeMocks();
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Setup))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Setup))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Setup))
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.GetSolutionDirectory())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetSolutionDirectory))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_GetSolutionDirectory))
                 .Returns(SolutionDirectory)
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Setup, MethodCallID.FileAndDirectoryService_GetSolutionDirectory);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Setup, FileAndDirectoryService_GetSolutionDirectory);
 
             // Act
             MyConsoleBase consoleBase = GetMyConsoleBase(false);
@@ -4076,35 +4195,98 @@
             consoleBase._generatedText.AddRange(SampleText);
             _logger
                 .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
                 .Returns(LogEntryType.Generating)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Writing))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Writing))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Writing))
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.CombinePaths(_outputDirectoryPath, _outputFileName))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_CombineDirectoryAndFileName))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_CombineDirectoryAndFileName))
                 .Throws<IOException>()
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgErrorWhileConstructingFilePath, It.IsAny<string>(), null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_Writing);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Writing, MethodCallID.FileAndDirectoryService_CombineDirectoryAndFileName);
-            _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_CombineDirectoryAndFileName, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_Generating);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Writing);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Writing, FileAndDirectoryService_CombineDirectoryAndFileName);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_CombineDirectoryAndFileName, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Generating);
+
+            // Act
+            consoleBase.WriteGeneratedTextToFile(_outputFileName);
+
+            // Assert
+            consoleBase._generatedText
+                .Should()
+                .NotBeEmpty();
+            consoleBase._generatedText
+                .Should()
+                .ContainInConsecutiveOrder(SampleText);
+            consoleBase.IsOutputFileWritten
+                .Should()
+                .BeFalse();
+            VerifyMocks();
+        }
+
+        [Fact]
+        public void WriteGeneratedTextToFile_ExceptionThrownWhileWritingTextFile_LogsMessage()
+        {
+            // Arrange
+            MyConsoleBase consoleBase = GetMyConsoleBase();
+            consoleBase.OutputDirectory = _outputDirectoryPath;
+            consoleBase._generatedText.AddRange(SampleText);
+            consoleBase._controlDictionary[_segmentName1] = new() { IsFirstTime = false };
+            consoleBase._controlDictionary[_segmentName2] = new() { IsFirstTime = false };
+            _logger
+                .Setup(logger => logger.GetLogEntryType())
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
+                .Returns(LogEntryType.Generating)
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(logger => logger.SetLogEntryType(LogEntryType.Writing))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Writing))
+                .Verifiable(Times.Once);
+            _fileService
+                .Setup(fileAndDirectoryService => fileAndDirectoryService.CombinePaths(_outputDirectoryPath, _outputFileName))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_CombineDirectoryAndFileName))
+                .Returns(_outputFilePath)
+                .Verifiable(Times.Once);
+            _textWriter
+                .Setup(textWriter => textWriter.WriteTextFile(_outputFilePath, SampleText))
+                .Callback(_verifier.GetCallOrderAction(TextWriter_WriteTextFile))
+                .Throws<IOException>()
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(logger => logger.Log(MsgUnableToWriteGeneratedTextToFile, It.IsAny<string>(), null))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(logger => logger.WriteLogEntries())
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
+                .Verifiable(Times.AtLeastOnce);
+            _logger
+                .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
+                .Verifiable(Times.Once);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Writing);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Writing, FileAndDirectoryService_CombineDirectoryAndFileName);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_CombineDirectoryAndFileName, TextWriter_WriteTextFile);
+            _verifier.DefineExpectedCallOrder(TextWriter_WriteTextFile, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Generating);
 
             // Act
             consoleBase.WriteGeneratedTextToFile(_outputFileName);
@@ -4133,65 +4315,68 @@
             consoleBase._generatedText.AddRange(SampleText);
             consoleBase._controlDictionary[_segmentName1] = new() { IsFirstTime = false };
             consoleBase._controlDictionary[_segmentName2] = new() { IsFirstTime = false };
+            Sequence<LogEntryType> logEntryTypeSequence = new([LogEntryType.Generating, LogEntryType.Writing], 2);
             _logger
-                .SetupSequence(logger => logger.GetLogEntryType())
-                .Returns(LogEntryType.Generating)
-                .Returns(LogEntryType.Writing)
-                .Throws<ApplicationException>();
+                .Setup(logger => logger.GetLogEntryType())
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
+                .Returns(logEntryTypeSequence.GetNext)
+                .Verifiable(Times.Exactly(2));
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Writing))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Writing))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Writing))
                 .Verifiable(Times.AtLeastOnce);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.CombinePaths(_outputDirectoryPath, expectedFileName))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_CombineDirectoryAndFileName))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_CombineDirectoryAndFileName))
                 .Returns(expectedFilePath)
                 .Verifiable(Times.Once);
             _textWriter
                 .Setup(textWriter => textWriter.WriteTextFile(expectedFilePath, SampleText))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextWriter_WriteTextFile))
+                .Callback(_verifier.GetCallOrderAction(TextWriter_WriteTextFile))
                 .Returns(true)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Reset))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Reset))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Reset))
                 .Verifiable(Times.Once);
             _locater
                 .Setup(locater => locater.Reset())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_Reset))
+                .Callback(_verifier.GetCallOrderAction(Locater_Reset))
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.Reset())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_Reset))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_Reset))
                 .Verifiable(Times.Once);
             _textReader
                 .Setup(textReader => textReader.FileName)
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_GetFileName))
+                .Callback(_verifier.GetCallOrderAction(TextReader_GetFileName))
                 .Returns(expectedFileName)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgGeneratedTextHasBeenReset, expectedFileName, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Writing, MethodCallID.FileAndDirectoryService_CombineDirectoryAndFileName);
-            _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_CombineDirectoryAndFileName, MethodCallID.TextWriter_WriteTextFile);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextWriter_WriteTextFile, MethodCallID.Logger_SetLogEntryType_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.Locater_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.IndentProcessor_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_Reset, MethodCallID.TextReader_GetFileName);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_Reset, MethodCallID.TextReader_GetFileName);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFileName, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_SetLogEntryType_Writing);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Writing, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_Generating);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Writing, -1, -1);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Writing, FileAndDirectoryService_CombineDirectoryAndFileName);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_CombineDirectoryAndFileName, TextWriter_WriteTextFile);
+            _verifier.DefineExpectedCallOrder(TextWriter_WriteTextFile, Logger_GetLogEntryType, 0, -2);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Reset, -2);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, Locater_Reset);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, IndentProcessor_Reset);
+            _verifier.DefineExpectedCallOrder(Locater_Reset, TextReader_GetFileName);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_Reset, TextReader_GetFileName);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFileName, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_SetLogEntryType_Writing, 0, -2);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Writing, Logger_WriteLogEntries, -2);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Generating);
 
             // Act
             consoleBase.WriteGeneratedTextToFile(_emptyString);
@@ -4223,35 +4408,35 @@
             consoleBase._controlDictionary[_segmentName2] = new() { IsFirstTime = false };
             _logger
                 .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
                 .Returns(LogEntryType.Generating)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Writing))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Writing))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Writing))
                 .Verifiable(Times.AtLeastOnce);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.CombinePaths(_outputDirectoryPath, _outputFileName))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_CombineDirectoryAndFileName))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_CombineDirectoryAndFileName))
                 .Returns(_outputFilePath)
                 .Verifiable(Times.Once);
             _textWriter
                 .Setup(textWriter => textWriter.WriteTextFile(_outputFilePath, SampleText))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextWriter_WriteTextFile))
+                .Callback(_verifier.GetCallOrderAction(TextWriter_WriteTextFile))
                 .Returns(true)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.AtLeastOnce);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Writing, MethodCallID.FileAndDirectoryService_CombineDirectoryAndFileName);
-            _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_CombineDirectoryAndFileName, MethodCallID.TextWriter_WriteTextFile);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextWriter_WriteTextFile, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_Generating);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Writing, FileAndDirectoryService_CombineDirectoryAndFileName);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_CombineDirectoryAndFileName, TextWriter_WriteTextFile);
+            _verifier.DefineExpectedCallOrder(TextWriter_WriteTextFile, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Generating);
 
             // Act
             consoleBase.WriteGeneratedTextToFile(_outputFileName, false);
@@ -4284,64 +4469,68 @@
             consoleBase._generatedText.AddRange(SampleText);
             consoleBase._controlDictionary[_segmentName1] = new() { IsFirstTime = false };
             consoleBase._controlDictionary[_segmentName2] = new() { IsFirstTime = false };
+            Sequence<LogEntryType> logEntryTypeSequence = new([LogEntryType.Generating, LogEntryType.Writing], 2);
             _logger
-                .SetupSequence(logger => logger.GetLogEntryType())
-                .Returns(LogEntryType.Generating)
-                .Returns(LogEntryType.Writing)
-                .Throws<ApplicationException>();
+                .Setup(logger => logger.GetLogEntryType())
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
+                .Returns(logEntryTypeSequence.GetNext)
+                .Verifiable(Times.Exactly(2));
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Writing))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Writing))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Writing))
                 .Verifiable(Times.AtLeastOnce);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.CombinePaths(_outputDirectoryPath, _outputFileName))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_CombineDirectoryAndFileName))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_CombineDirectoryAndFileName))
                 .Returns(_outputFilePath)
                 .Verifiable(Times.Once);
             _textWriter
                 .Setup(textWriter => textWriter.WriteTextFile(_outputFilePath, SampleText))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextWriter_WriteTextFile))
+                .Callback(_verifier.GetCallOrderAction(TextWriter_WriteTextFile))
                 .Returns(true)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Reset))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Reset))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Reset))
                 .Verifiable(Times.Once);
             _locater
                 .Setup(locater => locater.Reset())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_Reset))
+                .Callback(_verifier.GetCallOrderAction(Locater_Reset))
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.Reset())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_Reset))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_Reset))
                 .Verifiable(Times.Once);
             _textReader
                 .Setup(textReader => textReader.FileName)
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_GetFileName))
+                .Callback(_verifier.GetCallOrderAction(TextReader_GetFileName))
                 .Returns(_outputFileName)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgGeneratedTextHasBeenReset, _outputFileName, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Writing, MethodCallID.FileAndDirectoryService_CombineDirectoryAndFileName);
-            _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_CombineDirectoryAndFileName, MethodCallID.TextWriter_WriteTextFile);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextWriter_WriteTextFile, MethodCallID.Logger_SetLogEntryType_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.Locater_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.IndentProcessor_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Locater_Reset, MethodCallID.TextReader_GetFileName);
-            _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_Reset, MethodCallID.TextReader_GetFileName);
-            _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFileName, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_Generating);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Writing, -1, -1);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Writing, FileAndDirectoryService_CombineDirectoryAndFileName, -1);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_CombineDirectoryAndFileName, TextWriter_WriteTextFile);
+            _verifier.DefineExpectedCallOrder(TextWriter_WriteTextFile, Logger_GetLogEntryType, 0, -2);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Reset, -2);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, Locater_Reset);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, IndentProcessor_Reset);
+            _verifier.DefineExpectedCallOrder(Locater_Reset, TextReader_GetFileName);
+            _verifier.DefineExpectedCallOrder(IndentProcessor_Reset, TextReader_GetFileName);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFileName, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_SetLogEntryType_Writing, 0, -2);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Writing, Logger_WriteLogEntries, -2);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Generating);
 
             // Act
             consoleBase.WriteGeneratedTextToFile(_outputFileName);
@@ -4370,29 +4559,29 @@
             consoleBase._generatedText.AddRange(SampleText);
             _logger
                 .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
                 .Returns(LogEntryType.Generating)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Writing))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Writing))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Writing))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgOutputDirectoryNotSet, null, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Generating))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_Writing);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Writing, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_Generating);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Writing);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Writing, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_WriteLogEntries);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Generating);
 
             // Act
             consoleBase.WriteGeneratedTextToFile(_outputFileName);
@@ -4476,8 +4665,8 @@
             _tokenProcessor.VerifyNoOtherCalls();
         }
 
-        private void SetupResetAll(MethodCallID callBefore,
-                                   MethodCallID? callAfter,
+        private void SetupResetAll(MethodCallToken callBefore,
+                                   MethodCallToken? callAfter,
                                    int firstCallNumber = 0,
                                    int secondCallNumber = 0,
                                    bool shouldDisplayMessage = false,
@@ -4487,32 +4676,32 @@
         {
             _logger
                 .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_GetLogEntryType))
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
                 .Returns(LogEntryType.Loading)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Reset))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Reset))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Reset))
                 .Verifiable(Times.Once);
             _locater
                 .Setup(locater => locater.Reset())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_Reset))
+                .Callback(_verifier.GetCallOrderAction(Locater_Reset))
                 .Verifiable(Times.Once);
             _defaultSegmentNameGenerator
                 .Setup(defaultSegmentNameGenerator => defaultSegmentNameGenerator.Reset())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.DefaultSegmentNameGenerator_Reset))
+                .Callback(_verifier.GetCallOrderAction(DefaultSegmentNameGenerator_Reset))
                 .Verifiable(Times.Once);
             _indentProcessor
                 .Setup(indentProcessor => indentProcessor.Reset())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.IndentProcessor_Reset))
+                .Callback(_verifier.GetCallOrderAction(IndentProcessor_Reset))
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ClearTokens())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ClearTokens))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ClearTokens))
                 .Verifiable(Times.Once);
             _tokenProcessor
                 .Setup(tokenProcessor => tokenProcessor.ResetTokenDelimiters())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.TokenProcessor_ResetTokenDelimiters))
+                .Callback(_verifier.GetCallOrderAction(TokenProcessor_ResetTokenDelimiters))
                 .Verifiable(Times.Once);
 
             if (shouldDisplayMessage)
@@ -4521,7 +4710,7 @@
                 {
                     _textReader
                                 .Setup(textReader => textReader.FileName)
-                                .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_GetFileName))
+                                .Callback(_verifier.GetCallOrderAction(TextReader_GetFileName))
                                 .Returns(firstFileName)
                                 .Verifiable(Times.AtLeastOnce);
                 }
@@ -4530,59 +4719,58 @@
                     Sequence<string> fileNameSequence = new([firstFileName, secondFileName]);
                     _textReader
                         .Setup(textReader => textReader.FileName)
-                        .Callback(_verifier.GetCallOrderAction(MethodCallID.TextReader_GetFileName))
+                        .Callback(_verifier.GetCallOrderAction(TextReader_GetFileName))
                         .Returns(fileNameSequence.GetNext)
                         .Verifiable(Times.AtLeast(2));
                 }
 
                 _logger
                     .Setup(logger => logger.Log(MsgTemplateHasBeenReset, firstFileName, null))
-                    .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message, 99))
+                    .Callback(_verifier.GetCallOrderAction(Logger_Log_Message, 99))
                     .Verifiable(Times.Once);
             }
 
             _logger
                 .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_WriteLogEntries))
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_SetLogEntryType_Loading))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Loading))
                 .Verifiable(Times.AtLeastOnce);
 
-            _verifier.DefineExpectedCallOrder(callBefore, MethodCallID.Logger_GetLogEntryType, firstCallNumber);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_GetLogEntryType, MethodCallID.Logger_SetLogEntryType_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.Locater_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.DefaultSegmentNameGenerator_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.IndentProcessor_Reset);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.TokenProcessor_ClearTokens);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Reset, MethodCallID.TokenProcessor_ResetTokenDelimiters);
+            _verifier.DefineExpectedCallOrder(callBefore, Logger_GetLogEntryType, firstCallNumber);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Reset);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, Locater_Reset);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, DefaultSegmentNameGenerator_Reset);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, IndentProcessor_Reset);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, TokenProcessor_ClearTokens);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, TokenProcessor_ResetTokenDelimiters);
 
             if (shouldDisplayMessage)
             {
-                _verifier.DefineExpectedCallOrder(MethodCallID.Locater_Reset, MethodCallID.TextReader_GetFileName, 0, getFileNameCallNumber);
-                _verifier.DefineExpectedCallOrder(MethodCallID.DefaultSegmentNameGenerator_Reset, MethodCallID.TextReader_GetFileName, 0, getFileNameCallNumber);
-                _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_Reset, MethodCallID.TextReader_GetFileName, 0, getFileNameCallNumber);
-                _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ClearTokens, MethodCallID.TextReader_GetFileName, 0, getFileNameCallNumber);
-                _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ResetTokenDelimiters, MethodCallID.TextReader_GetFileName, 0, getFileNameCallNumber);
-                _verifier.DefineExpectedCallOrder(MethodCallID.TextReader_GetFileName, MethodCallID.Logger_Log_Message, getFileNameCallNumber, 99);
-                _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.Logger_WriteLogEntries, 99);
+                _verifier.DefineExpectedCallOrder(Locater_Reset, TextReader_GetFileName, 0, getFileNameCallNumber);
+                _verifier.DefineExpectedCallOrder(DefaultSegmentNameGenerator_Reset, TextReader_GetFileName, 0, getFileNameCallNumber);
+                _verifier.DefineExpectedCallOrder(IndentProcessor_Reset, TextReader_GetFileName, 0, getFileNameCallNumber);
+                _verifier.DefineExpectedCallOrder(TokenProcessor_ClearTokens, TextReader_GetFileName, 0, getFileNameCallNumber);
+                _verifier.DefineExpectedCallOrder(TokenProcessor_ResetTokenDelimiters, TextReader_GetFileName, 0, getFileNameCallNumber);
+                _verifier.DefineExpectedCallOrder(TextReader_GetFileName, Logger_Log_Message, getFileNameCallNumber, 99);
+                _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_WriteLogEntries, 99);
             }
             else
             {
-                _verifier.DefineExpectedCallOrder(MethodCallID.Locater_Reset, MethodCallID.Logger_WriteLogEntries);
-                _verifier.DefineExpectedCallOrder(MethodCallID.DefaultSegmentNameGenerator_Reset, MethodCallID.Logger_WriteLogEntries);
-                _verifier.DefineExpectedCallOrder(MethodCallID.IndentProcessor_Reset, MethodCallID.Logger_WriteLogEntries);
-                _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ClearTokens, MethodCallID.Logger_WriteLogEntries);
-                _verifier.DefineExpectedCallOrder(MethodCallID.TokenProcessor_ResetTokenDelimiters, MethodCallID.Logger_WriteLogEntries);
+                _verifier.DefineExpectedCallOrder(Locater_Reset, Logger_WriteLogEntries);
+                _verifier.DefineExpectedCallOrder(DefaultSegmentNameGenerator_Reset, Logger_WriteLogEntries);
+                _verifier.DefineExpectedCallOrder(IndentProcessor_Reset, Logger_WriteLogEntries);
+                _verifier.DefineExpectedCallOrder(TokenProcessor_ClearTokens, Logger_WriteLogEntries);
+                _verifier.DefineExpectedCallOrder(TokenProcessor_ResetTokenDelimiters, Logger_WriteLogEntries);
             }
 
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_WriteLogEntries, MethodCallID.Logger_SetLogEntryType_Loading);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Loading);
 
             if (callAfter is not null)
             {
-                MethodCallID methodCallID = callAfter.Value;
-                _verifier.DefineExpectedCallOrder(MethodCallID.Logger_SetLogEntryType_Loading, methodCallID, 0, secondCallNumber);
+                _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, callAfter, 0, secondCallNumber);
             }
         }
 

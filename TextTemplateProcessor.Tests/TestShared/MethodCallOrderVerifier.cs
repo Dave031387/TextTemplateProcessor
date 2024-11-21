@@ -17,10 +17,11 @@
         private List<MethodCallOrder> ExpectedOrderList { get; } = [];
 
         /// <summary>
-        /// Gets a dictionary whose key is a <see cref="MethodCallID" /> and whose value gives the
-        /// number of times that <see cref="MethodCallID" /> has been called during the unit test.
+        /// Gets a dictionary whose key is a <see cref="MethodCallToken" /> and whose value gives
+        /// the number of times that <see cref="MethodCallToken" /> has been called during the unit
+        /// test.
         /// </summary>
-        private Dictionary<MethodCallID, int> MethodCallCounter { get; } = [];
+        private Dictionary<MethodCallToken, int> MethodCallCounter { get; } = [];
 
         /// <summary>
         /// Gets a list of <see cref="MethodCall" /> objects. The objects will appear in the list in
@@ -29,10 +30,10 @@
         private List<MethodCall> MethodCallList { get; } = [];
 
         /// <summary>
-        /// Gets a list of <see cref="MethodCallID" /> values for which at least one
+        /// Gets a list of <see cref="MethodCallToken" /> values for which at least one
         /// <see cref="MethodCallOrder" /> record specified a negative call number.
         /// </summary>
-        private List<MethodCallID> RelativeMethodCalls { get; } = [];
+        private List<MethodCallToken> RelativeMethodCalls { get; } = [];
 
         /// <summary>
         /// This record defines the order of two method calls within a single unit test.
@@ -48,26 +49,26 @@
         /// <summary>
         /// This record represents a single method call during a unit test.
         /// </summary>
-        /// <param name="MethodCallID">
-        /// The <see cref="MethodCallID" /> that corresponds to the method being called in the unit
-        /// test.
+        /// <param name="MethodCallToken">
+        /// The <see cref="MethodCallToken" /> that corresponds to the method being called in the
+        /// unit test.
         /// </param>
         /// <param name="CallNumber">
-        /// If the <paramref name="MethodCallID" /> specified on this record is called more than
+        /// If the <paramref name="MethodCallToken" /> specified on this record is called more than
         /// once in a single unit test, then each occurrence can be assigned a unique
         /// <paramref name="CallNumber" /> to tell them apart.
         /// </param>
-        private sealed record MethodCall(MethodCallID MethodCallID, int CallNumber = 0);
+        private sealed record MethodCall(MethodCallToken MethodCallToken, int CallNumber = 0);
 
         /// <summary>
         /// Defines an expected method call order sequence to be verified later by calling the
         /// <see cref="Verify" /> method.
         /// </summary>
         /// <param name="firstCall">
-        /// The <see cref="MethodCallID" /> of the first method to be called in sequence.
+        /// The <see cref="MethodCallToken" /> of the first method to be called in sequence.
         /// </param>
         /// <param name="secondCall">
-        /// The <see cref="MethodCallID" /> of the second method to be called in sequence.
+        /// The <see cref="MethodCallToken" /> of the second method to be called in sequence.
         /// </param>
         /// <param name="firstCallNumber">
         /// Optional call number of the <paramref name="firstCall" /> method. (default is 0)
@@ -88,7 +89,7 @@
         /// positive number should be assigned to each call.
         /// </para>
         /// </remarks>
-        public void DefineExpectedCallOrder(MethodCallID firstCall, MethodCallID secondCall, int firstCallNumber = 0, int secondCallNumber = 0)
+        public void DefineExpectedCallOrder(MethodCallToken firstCall, MethodCallToken secondCall, int firstCallNumber = 0, int secondCallNumber = 0)
         {
             MethodCall firstMethodCall = new(firstCall, firstCallNumber);
             MethodCall secondMethodCall = new(secondCall, secondCallNumber);
@@ -99,26 +100,26 @@
         /// This method returns an Action that can be assigned to the Callback method of a Moq
         /// Setup. The Action records the method call for future verification.
         /// </summary>
-        /// <param name="methodCallID">
-        /// The <see cref="MethodCallID" /> of the method being called.
+        /// <param name="methodCallToken">
+        /// The <see cref="MethodCallToken" /> of the method being called.
         /// </param>
         /// <param name="callNumber">
-        /// An optional call number used to distinguish the <paramref name="methodCallID" /> if the
-        /// associated method appears with different parameter values in two or more Moq Setups.
+        /// An optional call number used to distinguish the <paramref name="methodCallToken" /> if
+        /// the associated method appears with different parameter values in two or more Moq Setups.
         /// </param>
         /// <returns>
         /// An Action that can be assigned to the Callback method of a Moq Setup.
         /// </returns>
-        public Action GetCallOrderAction(MethodCallID methodCallID, int callNumber = 0)
+        public Action GetCallOrderAction(MethodCallToken methodCallToken, int callNumber = 0)
         {
             return () =>
             {
-                MethodCallCounter[methodCallID] = MethodCallCounter.TryGetValue(methodCallID, out int value) ? ++value : 1;
-                MethodCallList.Add(new(methodCallID, callNumber));
+                MethodCallCounter[methodCallToken] = MethodCallCounter.TryGetValue(methodCallToken, out int value) ? ++value : 1;
+                MethodCallList.Add(new(methodCallToken, callNumber));
 
-                if (callNumber < 0 && !RelativeMethodCalls.Contains(methodCallID))
+                if (callNumber < 0 && !RelativeMethodCalls.Contains(methodCallToken))
                 {
-                    RelativeMethodCalls.Add(methodCallID);
+                    RelativeMethodCalls.Add(methodCallToken);
                 }
             };
         }
@@ -147,59 +148,59 @@
         {
             foreach (MethodCallOrder expectedOrder in ExpectedOrderList)
             {
-                MethodCallID firstCallID = expectedOrder.FirstCall.MethodCallID;
-                MethodCallID secondCallID = expectedOrder.SecondCall.MethodCallID;
-                string firstCallIDName = Enum.GetName(typeof(MethodCallID), firstCallID)!;
-                string secondCallIDName = Enum.GetName(typeof(MethodCallID), secondCallID)!;
+                MethodCallToken firstCallToken = expectedOrder.FirstCall.MethodCallToken;
+                MethodCallToken secondCallToken = expectedOrder.SecondCall.MethodCallToken;
+                string firstCallName = firstCallToken.Name;
+                string secondCallName = secondCallToken.Name;
                 int firstCallNumber = expectedOrder.FirstCall.CallNumber;
                 int secondCallNumber = expectedOrder.SecondCall.CallNumber;
                 int firstCallCounter = firstCallNumber;
                 int secondCallCounter = secondCallNumber;
-                string firstCallName = firstCallNumber is 0
-                    ? firstCallIDName
+                string firstDisplayName = firstCallNumber is 0
+                    ? firstCallName
                     : firstCallNumber < 0
-                    ? $"{firstCallIDName}[+{-firstCallNumber}]"
-                    : $"{firstCallIDName}[{firstCallNumber}]";
-                string secondCallName = secondCallNumber is 0
-                    ? secondCallIDName
+                    ? $"{firstCallName}[+{-firstCallNumber}]"
+                    : $"{firstCallName}[{firstCallNumber}]";
+                string secondDisplayName = secondCallNumber is 0
+                    ? secondCallName
                     : secondCallNumber < 0
-                    ? $"{secondCallIDName}[+{-secondCallNumber}]"
-                    : $"{secondCallIDName}[{secondCallNumber}]";
+                    ? $"{secondCallName}[+{-secondCallNumber}]"
+                    : $"{secondCallName}[{secondCallNumber}]";
                 int firstCallOrder = 0;
                 int secondCallOrder = 0;
 
                 expectedOrder.FirstCall
                     .Should()
-                    .NotBe(expectedOrder.SecondCall, $"the first and second method calls must not both be {firstCallName}");
+                    .NotBe(expectedOrder.SecondCall, $"the first and second method calls must not both be {firstDisplayName}");
 
-                if (RelativeMethodCalls.Contains(firstCallID))
+                if (RelativeMethodCalls.Contains(firstCallToken))
                 {
                     firstCallNumber
                         .Should()
-                        .BeNegative($"all instances of {firstCallIDName} must specify a negative call number any other instances do");
+                        .BeNegative($"all instances of {firstCallName} must specify a negative call number if any other instances do");
                 }
 
-                if (RelativeMethodCalls.Contains(secondCallID))
+                if (RelativeMethodCalls.Contains(secondCallToken))
                 {
                     secondCallNumber
                         .Should()
-                        .BeNegative($"all instances of {secondCallIDName} must specify a negative call number any other instances do");
+                        .BeNegative($"all instances of {secondCallName} must specify a negative call number if any other instances do");
                 }
 
-                if (firstCallID == secondCallID && firstCallNumber < 0)
+                if (firstCallToken == secondCallToken && firstCallNumber < 0)
                 {
                     firstCallNumber
                         .Should()
-                        .BeGreaterThan(secondCallNumber, $"{secondCallName} can't come before {firstCallName}");
+                        .BeGreaterThan(secondCallNumber, $"{secondDisplayName} can't come before {firstDisplayName}");
                 }
 
                 for (int i = 0; i < MethodCallList.Count; i++)
                 {
                     MethodCall methodCall = MethodCallList[i];
-                    MethodCallID methodCallID = methodCall.MethodCallID;
+                    MethodCallToken methodCallToken = methodCall.MethodCallToken;
                     int methodCallNumber = methodCall.CallNumber;
 
-                    if (firstCallOrder == 0 && methodCallID == firstCallID)
+                    if (firstCallOrder == 0 && methodCallToken == firstCallToken)
                     {
                         if (++firstCallCounter < 0)
                         {
@@ -211,7 +212,7 @@
                             firstCallOrder = i + 1;
                         }
                     }
-                    else if (methodCallID == secondCallID)
+                    else if (methodCallToken == secondCallToken)
                     {
                         if (++secondCallCounter < 0)
                         {
@@ -232,13 +233,13 @@
 
                 firstCallOrder
                     .Should()
-                    .BePositive($"the call sequence for {firstCallName} should be greater than 0");
+                    .BePositive($"the call sequence for {firstDisplayName} should be greater than 0");
                 secondCallOrder
                     .Should()
-                    .BePositive($"the call sequence for {secondCallName} should be greater than 0");
+                    .BePositive($"the call sequence for {secondDisplayName} should be greater than 0");
                 secondCallOrder
                     .Should()
-                    .BeGreaterThan(firstCallOrder, $"{secondCallName} should be called after {firstCallName}");
+                    .BeGreaterThan(firstCallOrder, $"{secondDisplayName} should be called after {firstDisplayName}");
             }
         }
     }

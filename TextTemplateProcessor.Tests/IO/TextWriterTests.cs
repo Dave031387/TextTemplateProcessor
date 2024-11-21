@@ -98,15 +98,15 @@
             string filePath = $@"{VolumeRoot}{Sep}invalid|path{Sep}file?name";
             _logger
                 .Setup(logger => logger.Log(MsgUnableToWriteFile, It.IsAny<string>(), null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _pathValidater
                 .Setup(pathValidater => pathValidater.ValidateFullPath(filePath, true, false))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.PathValidater_ValidateFullPath))
+                .Callback(_verifier.GetCallOrderAction(PathValidater_ValidateFullPath))
                 .Throws<ArgumentException>()
                 .Verifiable(Times.Once);
             TextWriter writer = GetTextWriter();
-            _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidateFullPath, MethodCallID.Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(PathValidater_ValidateFullPath, Logger_Log_Message);
 
             // Act
             bool actual = writer.WriteTextFile(filePath, SampleText);
@@ -128,28 +128,28 @@
             string filePath = $"{directoryPath}{Sep}{fileName}";
             _pathValidater
                 .Setup(pathValidater => pathValidater.ValidateFullPath(filePath, true, false))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.PathValidater_ValidateFullPath))
+                .Callback(_verifier.GetCallOrderAction(PathValidater_ValidateFullPath))
                 .Returns(filePath)
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.GetDirectoryName(filePath))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetDirectoryName))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_GetDirectoryName))
                 .Returns(directoryPath)
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.GetFileName(filePath))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetFileName))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_GetFileName))
                 .Returns(fileName)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgGeneratedTextIsEmpty, fileName, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             TextWriter writer = GetTextWriter();
-            _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidateFullPath, MethodCallID.FileAndDirectoryService_GetDirectoryName);
-            _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidateFullPath, MethodCallID.FileAndDirectoryService_GetFileName);
-            _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_GetDirectoryName, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_GetFileName, MethodCallID.Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(PathValidater_ValidateFullPath, FileAndDirectoryService_GetDirectoryName);
+            _verifier.DefineExpectedCallOrder(PathValidater_ValidateFullPath, FileAndDirectoryService_GetFileName);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_GetDirectoryName, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_GetFileName, Logger_Log_Message);
 
             // Act
             bool actual = writer.WriteTextFile(filePath, Array.Empty<string>());
@@ -171,28 +171,28 @@
             string filePath = $"{directoryPath}{Sep}{fileName}";
             _pathValidater
                 .Setup(pathValidater => pathValidater.ValidateFullPath(filePath, true, false))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.PathValidater_ValidateFullPath))
+                .Callback(_verifier.GetCallOrderAction(PathValidater_ValidateFullPath))
                 .Returns(filePath)
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.GetDirectoryName(filePath))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetDirectoryName))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_GetDirectoryName))
                 .Returns(directoryPath)
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.GetFileName(filePath))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetFileName))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_GetFileName))
                 .Returns(fileName)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgGeneratedTextIsNull, null, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             TextWriter writer = GetTextWriter();
-            _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidateFullPath, MethodCallID.FileAndDirectoryService_GetDirectoryName);
-            _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidateFullPath, MethodCallID.FileAndDirectoryService_GetFileName);
-            _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_GetDirectoryName, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_GetFileName, MethodCallID.Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(PathValidater_ValidateFullPath, FileAndDirectoryService_GetDirectoryName);
+            _verifier.DefineExpectedCallOrder(PathValidater_ValidateFullPath, FileAndDirectoryService_GetFileName);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_GetDirectoryName, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_GetFileName, Logger_Log_Message);
 
             // Act
             bool actual = writer.WriteTextFile(filePath, null!);
@@ -214,38 +214,38 @@
             string filePath = $"{directoryPath}{Sep}{fileName}";
             _logger
                 .Setup(logger => logger.Log(MsgWritingTextFile, fileName, null))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
             _pathValidater
                 .Setup(pathValidater => pathValidater.ValidateFullPath(filePath, true, false))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.PathValidater_ValidateFullPath))
+                .Callback(_verifier.GetCallOrderAction(PathValidater_ValidateFullPath))
                 .Returns(filePath)
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.GetDirectoryName(filePath))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetDirectoryName))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_GetDirectoryName))
                 .Returns(directoryPath)
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.GetFileName(filePath))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_GetFileName))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_GetFileName))
                 .Returns(fileName)
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.CreateDirectory(directoryPath))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_CreateDirectory))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_CreateDirectory))
                 .Verifiable(Times.Once);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.WriteTextFile(filePath, SampleText))
-                .Callback(_verifier.GetCallOrderAction(MethodCallID.FileAndDirectoryService_WriteTextFile))
+                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_WriteTextFile))
                 .Verifiable(Times.Once);
             TextWriter writer = GetTextWriter();
-            _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidateFullPath, MethodCallID.FileAndDirectoryService_GetDirectoryName);
-            _verifier.DefineExpectedCallOrder(MethodCallID.PathValidater_ValidateFullPath, MethodCallID.FileAndDirectoryService_GetFileName);
-            _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_GetDirectoryName, MethodCallID.FileAndDirectoryService_CreateDirectory);
-            _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_GetFileName, MethodCallID.FileAndDirectoryService_CreateDirectory);
-            _verifier.DefineExpectedCallOrder(MethodCallID.FileAndDirectoryService_CreateDirectory, MethodCallID.Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(MethodCallID.Logger_Log_Message, MethodCallID.FileAndDirectoryService_WriteTextFile);
+            _verifier.DefineExpectedCallOrder(PathValidater_ValidateFullPath, FileAndDirectoryService_GetDirectoryName);
+            _verifier.DefineExpectedCallOrder(PathValidater_ValidateFullPath, FileAndDirectoryService_GetFileName);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_GetDirectoryName, FileAndDirectoryService_CreateDirectory);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_GetFileName, FileAndDirectoryService_CreateDirectory);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_CreateDirectory, Logger_Log_Message);
+            _verifier.DefineExpectedCallOrder(Logger_Log_Message, FileAndDirectoryService_WriteTextFile);
 
             // Act
             bool actual = writer.WriteTextFile(filePath, SampleText);

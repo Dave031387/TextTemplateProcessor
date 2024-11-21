@@ -358,8 +358,10 @@
                     Logger.Log(MsgProcessingSegment,
                                CurrentSegment);
 
+                    int originalTabSize = TabSize;
                     AdjustTabSize(controlItem);
                     GenerateTextLines(controlItem, _segmentDictionary[CurrentSegment]);
+                    RestoreTabSize(originalTabSize);
 
                     IsOutputFileWritten = false;
                 }
@@ -738,7 +740,7 @@
 
         private void AdjustTabSize(ControlItem controlItem)
         {
-            if (controlItem.TabSize > 0)
+            if (controlItem.TabSize > 0 && controlItem.TabSize != TabSize)
             {
                 SetTabSize(controlItem.TabSize);
             }
@@ -878,6 +880,14 @@
             foreach (string segmentName in _controlDictionary.Keys)
             {
                 _controlDictionary[segmentName].IsFirstTime = true;
+            }
+        }
+
+        private void RestoreTabSize(int originalTabSize)
+        {
+            if (TabSize != originalTabSize)
+            {
+                SetTabSize(originalTabSize);
             }
         }
 

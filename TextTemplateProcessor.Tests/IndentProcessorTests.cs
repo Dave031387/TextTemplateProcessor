@@ -1133,14 +1133,14 @@
             {
                 _locater
                     .Setup(locater => locater.CurrentSegment)
-                    .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Getter))
+                    .Callback(_verifier.GetCallOrderAction(Locater_CurrentSegment_Getter))
                     .Returns(SegmentName)
                     .Verifiable(Times.Once);
                 _logger
                     .Setup(logger => logger.Log(message, SegmentName, null))
-                    .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                    .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                     .Verifiable(Times.Once);
-                _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Getter, MethodCallID.Logger_Log_Message);
+                _verifier.DefineExpectedCallOrder(Locater_CurrentSegment_Getter, Logger_Log_Message);
             }
 
             IndentProcessor processor = GetIndentProcessor();
@@ -1175,14 +1175,14 @@
             {
                 _locater
                     .Setup(locater => locater.CurrentSegment)
-                    .Callback(_verifier.GetCallOrderAction(MethodCallID.Locater_CurrentSegment_Getter))
+                    .Callback(_verifier.GetCallOrderAction(Locater_CurrentSegment_Getter))
                     .Returns(SegmentName)
                     .Verifiable(Times.Once);
                 _logger
                     .Setup(logger => logger.Log(message, SegmentName, null))
-                    .Callback(_verifier.GetCallOrderAction(MethodCallID.Logger_Log_Message))
+                    .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                     .Verifiable(Times.Once);
-                _verifier.DefineExpectedCallOrder(MethodCallID.Locater_CurrentSegment_Getter, MethodCallID.Logger_Log_Message);
+                _verifier.DefineExpectedCallOrder(Locater_CurrentSegment_Getter, Logger_Log_Message);
             }
 
             IndentProcessor processor = GetIndentProcessor();
