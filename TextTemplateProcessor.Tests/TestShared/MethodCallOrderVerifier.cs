@@ -4,15 +4,16 @@
     using System.Collections.Generic;
 
     /// <summary>
-    /// This class can be used to verify the order of method calls in a unit test. It was written to
-    /// be used with the Moq mocking framework, but can be used with other frameworks that provide a
-    /// callback functionality on their Setup method.
+    /// This class can be used to verify the order of method calls on mock objects in a unit test.
+    /// It was written to be used with the Moq mocking framework, but can be used with other
+    /// frameworks that provide a callback functionality on their Setup method and allow an action
+    /// delegate to be used for the mock method return value.
     /// </summary>
     public class MethodCallOrderVerifier
     {
         /// <summary>
         /// Gets a list of <see cref="MethodCallOrder" /> objects that define the expected order of
-        /// method calls.
+        /// mock method calls.
         /// </summary>
         private List<MethodCallOrder> ExpectedOrderList { get; } = [];
 
@@ -24,8 +25,8 @@
         private Dictionary<MethodCallToken, int> MethodCallCounter { get; } = [];
 
         /// <summary>
-        /// Gets a list of <see cref="MethodCall" /> objects. The objects will appear in the list in
-        /// the order that each method was called during the unit test.
+        /// Gets a list of <see cref="MethodCall" /> records. The records will appear in the list in
+        /// the order that each mock method was called during the unit test.
         /// </summary>
         private List<MethodCall> MethodCallList { get; } = [];
 
@@ -36,7 +37,8 @@
         private List<MethodCallToken> RelativeMethodCalls { get; } = [];
 
         /// <summary>
-        /// This record defines the order of two method calls within a single unit test.
+        /// This record defines the expected order of two mock method calls within a single unit
+        /// test.
         /// </summary>
         /// <param name="FirstCall">
         /// The <see cref="MethodCall" /> that should be invoked first in sequence.
@@ -47,16 +49,16 @@
         private sealed record MethodCallOrder(MethodCall FirstCall, MethodCall SecondCall);
 
         /// <summary>
-        /// This record represents a single method call during a unit test.
+        /// This record represents a single mock method call during a unit test.
         /// </summary>
         /// <param name="MethodCallToken">
-        /// The <see cref="MethodCallToken" /> that corresponds to the method being called in the
-        /// unit test.
+        /// The <see cref="MethodCallToken" /> that corresponds to the mock method being called in
+        /// the unit test.
         /// </param>
         /// <param name="CallNumber">
-        /// If the <paramref name="MethodCallToken" /> specified on this record is called more than
-        /// once in a single unit test, then each occurrence can be assigned a unique
-        /// <paramref name="CallNumber" /> to tell them apart.
+        /// If the mock method call represented by the <paramref name="MethodCallToken" /> is called
+        /// more than once in the unit test with different parameter values, then each occurrence
+        /// can be assigned a unique <paramref name="CallNumber" /> to tell them apart.
         /// </param>
         private sealed record MethodCall(MethodCallToken MethodCallToken, int CallNumber = 0);
 
@@ -65,10 +67,12 @@
         /// <see cref="Verify" /> method.
         /// </summary>
         /// <param name="firstCall">
-        /// The <see cref="MethodCallToken" /> of the first method to be called in sequence.
+        /// The <see cref="MethodCallToken" /> representing the first mock method to be called in
+        /// sequence.
         /// </param>
         /// <param name="secondCall">
-        /// The <see cref="MethodCallToken" /> of the second method to be called in sequence.
+        /// The <see cref="MethodCallToken" /> representing the second mock method to be called in
+        /// sequence.
         /// </param>
         /// <param name="firstCallNumber">
         /// Optional call number of the <paramref name="firstCall" /> method. (default is 0)
@@ -97,18 +101,20 @@
         }
 
         /// <summary>
-        /// This method returns an Action that can be assigned to the Callback method of a Moq
-        /// Setup. The Action records the method call for future verification.
+        /// This method returns an <see langword="Action" /> that can be assigned to the Callback
+        /// method of a Moq Setup. This <see langword="Action" /> saves a record of the mock method
+        /// call for future verification.
         /// </summary>
         /// <param name="methodCallToken">
-        /// The <see cref="MethodCallToken" /> of the method being called.
+        /// The <see cref="MethodCallToken" /> representing the mock method being called.
         /// </param>
         /// <param name="callNumber">
         /// An optional call number used to distinguish the <paramref name="methodCallToken" /> if
-        /// the associated method appears with different parameter values in two or more Moq Setups.
+        /// the associated mock method is called with different parameter values in two or more Moq
+        /// Setups.
         /// </param>
         /// <returns>
-        /// An Action that can be assigned to the Callback method of a Moq Setup.
+        /// An <see langword="Action" /> that can be assigned to the Callback method of a Moq Setup.
         /// </returns>
         public Action GetCallOrderAction(MethodCallToken methodCallToken, int callNumber = 0)
         {
@@ -137,8 +143,8 @@
         }
 
         /// <summary>
-        /// This method iterates through the defined method call order objects and verifies that
-        /// each method was called in the expected order.
+        /// This method iterates through the list of expected mock method call order objects and
+        /// verifies that each mock method was called in the expected order.
         /// <para>
         /// Any discrepancies between the expected and actual method call order will result in an
         /// assertion failure with an appropriate message identifying the cause of the failure.
