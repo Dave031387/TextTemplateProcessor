@@ -12,14 +12,16 @@
     <PackageTags>text template;text file generator;c#;.NET;token parser</PackageTags>
     <PackageOutputPath>C:\Users\dave0\Packages</PackageOutputPath>
     <NeutralLanguage>en-US</NeutralLanguage>
-    <AssemblyVersion>1.0.1.0</AssemblyVersion>
-    <FileVersion>1.0.1.0</FileVersion>
+    <AssemblyVersion>1.0.2.0</AssemblyVersion>
+    <FileVersion>1.0.2.0</FileVersion>
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
     <IncludeSymbols>True</IncludeSymbols>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <RepositoryUrl>https://github.com/Dave031387/TextTemplateProcessor</RepositoryUrl>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
 	<ItemGroup>
@@ -32,6 +34,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Include="..\LICENSE.txt">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
 	  <None Include="..\README.md">
 	    <Pack>True</Pack>
 	    <PackagePath>\</PackagePath>
@@ -40,9 +46,6 @@
 
 	<ItemGroup>
 	  <PackageReference Include="BasicDI" Version="1.0.5" />
-	  <PackageReference Include="Castle.Core" Version="5.1.1" />
-	  <PackageReference Include="Microsoft.CodeCoverage" Version="17.11.1" />
-	  <PackageReference Include="System.Diagnostics.EventLog" Version="9.0.0" />
 	</ItemGroup>
 
 </Project>

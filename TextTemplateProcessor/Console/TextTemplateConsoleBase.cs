@@ -442,7 +442,7 @@
         /// while reading the user's response.
         /// </para>
         /// </returns>
-        public virtual string PromptUserForInput(string message = MsgContinuationPrompt)
+        public string PromptUserForInput(string message = MsgContinuationPrompt)
         {
             Logger.WriteLogEntries();
             LogEntryType logEntryType = Logger.GetLogEntryType();
@@ -610,7 +610,7 @@
         /// The directory path (relative or absolute) of the directory where the generated text
         /// files are to be written.
         /// </param>
-        public virtual void SetOutputDirectory(string directoryPath)
+        public void SetOutputDirectory(string directoryPath)
         {
             LogEntryType logEntryType = Logger.GetLogEntryType();
             Logger.SetLogEntryType(LogEntryType.Setup);
@@ -642,30 +642,6 @@
             LogEntryType logEntryType = Logger.GetLogEntryType();
             Logger.SetLogEntryType(LogEntryType.Setup);
             IndentProcessor.SetTabSize(tabSize);
-            Logger.WriteLogEntries();
-            Logger.SetLogEntryType(logEntryType);
-        }
-
-        /// <summary>
-        /// Sets the template file path to the given value.
-        /// </summary>
-        /// <param name="templateFilePath">
-        /// The file path of an existing text template file.
-        /// </param>
-        public void SetTemplateFilePath(string templateFilePath)
-        {
-            LogEntryType logEntryType = Logger.GetLogEntryType();
-            Logger.SetLogEntryType(LogEntryType.Setup);
-
-            try
-            {
-                TextReader.SetFilePath(templateFilePath);
-            }
-            catch (Exception ex)
-            {
-                Logger.Log(MsgUnableToSetTemplateFilePath, templateFilePath, ex.Message);
-            }
-
             Logger.WriteLogEntries();
             Logger.SetLogEntryType(logEntryType);
         }

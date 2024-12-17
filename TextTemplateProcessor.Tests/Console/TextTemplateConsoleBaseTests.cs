@@ -3351,88 +3351,6 @@
         }
 
         [Fact]
-        public void SetTemplateFilePath_ExceptionIsThrown_LogsMessage()
-        {
-            // Arrange
-            MyConsoleBase consoleBase = GetMyConsoleBase();
-            _logger
-                .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
-                .Returns(LogEntryType.Generating)
-                .Verifiable(Times.Once);
-            _logger
-                .Setup(logger => logger.SetLogEntryType(LogEntryType.Setup))
-                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Setup))
-                .Verifiable(Times.Once);
-            _textReader
-                .Setup(textReader => textReader.SetFilePath(_templateFilePath))
-                .Callback(_verifier.GetCallOrderAction(TextReader_SetFilePath))
-                .Throws<ApplicationException>()
-                .Verifiable(Times.Once);
-            _logger
-                .Setup(logger => logger.Log(MsgUnableToSetTemplateFilePath, _templateFilePath, It.IsAny<string>()))
-                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
-                .Verifiable(Times.Once);
-            _logger
-                .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
-                .Verifiable(Times.AtLeastOnce);
-            _logger
-                .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
-                .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Setup);
-            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Setup, TextReader_SetFilePath);
-            _verifier.DefineExpectedCallOrder(TextReader_SetFilePath, Logger_Log_Message);
-            _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Generating);
-
-            // Act
-            consoleBase.SetTemplateFilePath(_templateFilePath);
-
-            // Assert
-            VerifyMocks();
-        }
-
-        [Fact]
-        public void SetTemplateFilePath_WhenCalled_InvokesTextReaderSetFilePath()
-        {
-            // Arrange
-            MyConsoleBase consoleBase = GetMyConsoleBase();
-            _logger
-                .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
-                .Returns(LogEntryType.Generating)
-                .Verifiable(Times.Once);
-            _logger
-                .Setup(logger => logger.SetLogEntryType(LogEntryType.Setup))
-                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Setup))
-                .Verifiable(Times.Once);
-            _textReader
-                .Setup(textReader => textReader.SetFilePath(_templateFilePath))
-                .Callback(_verifier.GetCallOrderAction(TextReader_SetFilePath))
-                .Verifiable(Times.Once);
-            _logger
-                .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
-                .Verifiable(Times.AtLeastOnce);
-            _logger
-                .Setup(logger => logger.SetLogEntryType(LogEntryType.Generating))
-                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
-                .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Setup);
-            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Setup, TextReader_SetFilePath);
-            _verifier.DefineExpectedCallOrder(TextReader_SetFilePath, Logger_WriteLogEntries);
-            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Generating);
-
-            // Act
-            consoleBase.SetTemplateFilePath(_templateFilePath);
-
-            // Assert
-            VerifyMocks();
-        }
-
-        [Fact]
         public void SetTokenDelimiters_WhenSuccessful_ReturnsTrue()
         {
             // Arrange
@@ -4365,7 +4283,7 @@
                 .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Generating))
                 .Verifiable(Times.Once);
             _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Writing, -1, -1);
-            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Writing, FileAndDirectoryService_CombineDirectoryAndFileName);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Writing, FileAndDirectoryService_CombineDirectoryAndFileName, -1);
             _verifier.DefineExpectedCallOrder(FileAndDirectoryService_CombineDirectoryAndFileName, TextWriter_WriteTextFile);
             _verifier.DefineExpectedCallOrder(TextWriter_WriteTextFile, Logger_GetLogEntryType, 0, -2);
             _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Reset, -2);

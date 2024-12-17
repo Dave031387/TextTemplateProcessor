@@ -1,10 +1,10 @@
 ﻿namespace TextTemplateProcessor.Core
 {
     using BasicDI;
-    using global::TextTemplateProcessor.Console;
-    using global::TextTemplateProcessor.Interfaces;
-    using global::TextTemplateProcessor.IO;
-    using global::TextTemplateProcessor.Logger;
+    using TextTemplateProcessor.Console;
+    using TextTemplateProcessor.Interfaces;
+    using TextTemplateProcessor.IO;
+    using TextTemplateProcessor.Logger;
 
     internal static class ServiceLocater
     {
