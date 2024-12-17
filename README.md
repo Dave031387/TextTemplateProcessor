@@ -167,16 +167,15 @@ There are three segment options available in the current version of the ***Text 
 - `FTI` - This is the *First Time Indent* option. A *Segment* may be processed multiple times when generating a single text output file. The *First
   Time Indent* option overrides the tab control code of the first text line of the segment the first time that the segment is processed. The value
   assigned to this option must be a number between -9 and -1 (left tab), or between 1 and 9 (right tab).
-
-  > [!NOTE]
-  > *The **FTI** tab value is always treated as a "normal" tab control code (as opposed to a "one-time" tab control code). For example, the option
-  > **"FTI=-1"** would be handled the same as the tab control code **"@-1"**.*
-
 - `PAD` - When a particular *Segment* (the "active" *Segment*) is processed two or more times consecutively, sometimes it's nice to be able to
   insert padding (typically one or more blank lines) between each occurrence of the active *Segment* in the output file. The **PAD** option allows you
   to do that. The value assigned to this option must be the name of a segment that appears earlier in the text template file than the active
   *Segment*. This earlier segment is referred to as the *Pad Segment*. The text lines in the *Pad Segment* will automatically be inserted just before
   the text lines of the active *Segment* on the second and subsequent times that the active *Segment* is processed.
+
+> [!NOTE]
+> *The **FTI** tab value is always treated as a "normal" tab control code (as opposed to a "one-time" tab control code). For example, the option
+> **"FTI=-1"** would be handled the same as the tab control code **"@-1"**.*
 
 Segment options can appear in any order on a segment header line. The following example shows a segment header line which makes use of all three
 segment options. (Assumes a *Segment* named *PadSegment* has been defined earlier in the text template file.)
@@ -302,11 +301,11 @@ character if there should be the need to do so. (see [***SetTokenDelimiters***](
 ### Segment and Token Names
 Segment and token names must follow these rules:
 
-1. The name must begin with an upper- or lowercase letter.
-1. After the first character, the rest of the name can contain upper- or lowercase letters, the digits 0 through 9, and underscores.
-1. The name must not contain spaces.
-1. Names containing characters other than those mentioned above are flagged as invalid.
-1. Names can be of any length, from one character and upwards. However, it makes sense to keep them as short as possible.
+- The name must begin with an upper- or lowercase letter.
+- After the first character, the rest of the name can contain upper- or lowercase letters, the digits 0 through 9, and underscores.
+- The name must not contain spaces.
+- Names containing characters other than those mentioned above are flagged as invalid.
+- Names can be of any length, from one character and upwards. However, it makes sense to keep them as short as possible.
 
 Segment and token names are validated when the text template file is loaded and parsed. Missing or invalid segment names are replaced by a default
 name that starts with `DefaultSegment` and ends with a number that gets incremented for each default name that gets used. The first missing or invalid
@@ -424,10 +423,10 @@ namespace MyNamespace
 
 There are a couple other things to note in this example:
 
-1. The tab size value defaults to 4 spaces if no tab size is set by the **TAB** option on a segment header, or by the [***SetTabSize***](#settabsize)
-   method of the ***TextTemplateConsoleBase*** class.
-1. Blank text lines in a text template file can be shortened to 4 characters (the three-character tab control code, and the required space in the
-   fourth character position).
+- The tab size value defaults to 4 spaces if no tab size is set by the **TAB** option on a segment header, or by the [***SetTabSize***](#settabsize)
+  method of the ***TextTemplateConsoleBase*** class.
+- Blank text lines in a text template file can be shortened to 4 characters (the three-character tab control code, and the required space in the
+  fourth character position).
 
 ## ***TextTemplateConsoleBase*** Class
 ### Overview
@@ -699,13 +698,13 @@ specified *Segment*. Suppose we have a *Segment* named **Segment1** which specif
    second and subsequent times that ***GenerateSegment*** is called for **Segment1**.)
 1. The tab size will be set to 2 spaces.
 1. Each text line for **Segment1** will be processed in the order they were defined in the template file. For each text line:
-   a. Determine the indent amount for the text line. Note that the first time ***GenerateSegment*** is called for **Segment1**, the indent amount of
-      the first text line is determined from the first time indent value on the segment header. All other times the indent amount is determined from
-      the tab control code on the corresponding template line.
-   a. Replace all token placeholders on the text line with their respective token values.
-   a. Add the required number of spaces to the beginning of the generated text line. The number of spaces is equal to the indent amount that was
-      determined earlier.
-   a. Append the resulting string to the end of the generated text buffer.
+   - Determine the indent amount for the text line. Note that the first time ***GenerateSegment*** is called for **Segment1**, the indent amount of
+     the first text line is determined from the first time indent value on the segment header. All other times the indent amount is determined from
+     the tab control code on the corresponding template line.
+   - Replace all token placeholders on the text line with their respective token values.
+   - Add the required number of spaces to the beginning of the generated text line. The number of spaces is equal to the indent amount that was
+     determined earlier.
+   - Append the resulting string to the end of the generated text buffer.
 
 #### ***LoadTemplate***
 
