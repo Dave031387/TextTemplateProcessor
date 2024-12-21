@@ -1,5 +1,7 @@
 ﻿namespace TextTemplateProcessor.Console
 {
+    using TextTemplateProcessor.Core;
+
     public class TextTemplateConsoleBaseTests
     {
         private static readonly string _emptyString = string.Empty;
@@ -10,8 +12,8 @@
         private static readonly string _outputDirectoryPath = $"{VolumeRoot}{Sep}generated";
         private static readonly string _outputFileName = "output.txt";
         private static readonly string _outputFilePath = $"{_outputDirectoryPath}{Sep}{_outputFileName}";
-        private static readonly string _padTextLine = "Pad line 1";
         private static readonly string _padSegmentName = "PadSegment";
+        private static readonly string _padTextLine = "Pad line 1";
         private static readonly string _segmentName1 = "Segment1";
         private static readonly string _segmentName2 = "Segment2";
         private static readonly string _segmentName3 = "Segment3";
@@ -1678,73 +1680,38 @@
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
                 .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Loading))
                 .Verifiable(Times.Exactly(2));
-            _fileService
-                .Setup(fileAndDirectoryService => fileAndDirectoryService.GetFullPath(_templateFilePath, It.IsAny<string>(), true))
-                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_GetFullPath))
-                .Throws<IOException>()
-                .Verifiable(Times.Once);
-            _logger
-                .Setup(logger => logger.Log(MsgUnableToLoadTemplateFile, _templateFilePath, It.IsAny<string>()))
-                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message, 1))
-                .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, FileAndDirectoryService_GetFullPath);
-            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_GetFullPath, Logger_Log_Message, 0, 1);
-            SetupResetAll(Logger_Log_Message, null, 1, 0, true, _templateFileName);
-
-            // Act
-            consoleBase.LoadTemplate(_templateFilePath);
-
-            // Assert
-            consoleBase._generatedText
-                .Should()
-                .BeEmpty();
-            consoleBase._controlDictionary
-                .Should()
-                .BeEmpty();
-            consoleBase._segmentDictionary
-                .Should()
-                .BeEmpty();
-            consoleBase.IsTemplateLoaded
-                .Should()
-                .BeFalse();
-            consoleBase.IsOutputFileWritten
-                .Should()
-                .BeFalse();
-            VerifyMocks();
-        }
-
-        [Fact]
-        public void LoadTemplate_ErrorWhenValidatingTemplateFilePath_LogsMessageAndResetsState()
-        {
-            // Arrange
-            MyConsoleBase consoleBase = GetMyConsoleBase();
-            consoleBase._generatedText.Add(_textLine1);
-            consoleBase._controlDictionary[_segmentName1] = new();
-            consoleBase._segmentDictionary[_segmentName1] = [new(0, false, false, _textLine1)];
-            consoleBase.IsTemplateLoaded = true;
-            consoleBase.IsOutputFileWritten = true;
-            _logger
-                .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
-                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Loading))
+            _textReader
+                .Setup(textReader => textReader.FileName)
+                .Callback(_verifier.GetCallOrderAction(TextReader_GetFileName))
+                .Returns(_lastTemplateFileName)
                 .Verifiable(Times.Exactly(2));
+            _textReader
+                .Setup(textReader => textReader.FullFilePath)
+                .Callback(_verifier.GetCallOrderAction(TextReader_GetFullFilePath))
+                .Returns(_lastTemplateFilePath)
+                .Verifiable(Times.Once);
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.GetFullPath(_templateFilePath, It.IsAny<string>(), true))
                 .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_GetFullPath))
-                .Returns(_templateFilePath)
-                .Verifiable(Times.Once);
-            _pathValidater
-                .Setup(pathValidater => pathValidater.ValidateFullPath(_templateFilePath, true, true))
-                .Callback(_verifier.GetCallOrderAction(PathValidater_ValidateFullPath))
                 .Throws<IOException>()
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.Log(MsgUnableToLoadTemplateFile, _templateFilePath, It.IsAny<string>()))
                 .Callback(_verifier.GetCallOrderAction(Logger_Log_Message, 1))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, FileAndDirectoryService_GetFullPath);
-            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_GetFullPath, PathValidater_ValidateFullPath);
-            _verifier.DefineExpectedCallOrder(PathValidater_ValidateFullPath, Logger_Log_Message, 0, 1);
-            SetupResetAll(Logger_Log_Message, null, 1, 0, true, _templateFileName);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, TextReader_GetFileName, 0, -1);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, TextReader_GetFullFilePath, 0, -1);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFileName, FileAndDirectoryService_GetFullPath, -1);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFullFilePath, FileAndDirectoryService_GetFullPath, -1);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_GetFullPath, Logger_Log_Message, 0, 1);
+            SetupResetAll(Logger_SetLogEntryType_Loading,
+                          Logger_Log_Message,
+                          1,
+                          Logger_WriteLogEntries,
+                          0,
+                          true,
+                          _lastTemplateFileName,
+                          -2);
 
             // Act
             consoleBase.LoadTemplate(_templateFilePath);
@@ -1775,34 +1742,49 @@
             MyConsoleBase consoleBase = GetMyConsoleBase();
             consoleBase._generatedText.AddRange(SampleText);
             consoleBase.IsTemplateLoaded = true;
+            Sequence<string> fileNameSequence = new([_lastTemplateFileName, string.Empty]);
+            Sequence<string> filePathSequence = new([_lastTemplateFilePath, string.Empty]);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
                 .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Loading))
-                .Verifiable(Times.Once);
+                .Verifiable(Times.Exactly(2));
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.GetFullPath(_templateFilePath, It.IsAny<string>(), true))
                 .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_GetFullPath))
                 .Returns(_templateFilePath)
                 .Verifiable(Times.Once);
-            _pathValidater
-                .Setup(pathValidater => pathValidater.ValidateFullPath(_templateFilePath, true, true))
-                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_GetFullPath))
-                .Returns(_templateFilePath)
-                .Verifiable(Times.Once);
-            _textReader
-                .Setup(textReader => textReader.FullFilePath)
-                .Callback(_verifier.GetCallOrderAction(TextReader_GetFullFilePath))
-                .Returns(_emptyString)
-                .Verifiable(Times.AtLeastOnce);
             _textReader
                 .Setup(textReader => textReader.SetFilePath(_templateFilePath))
                 .Callback(_verifier.GetCallOrderAction(TextReader_SetFilePath))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, FileAndDirectoryService_GetFullPath);
+            _textReader
+                .Setup(textReader => textReader.FileName)
+                .Callback(_verifier.GetCallOrderAction(TextReader_GetFileName))
+                .Returns(fileNameSequence.GetNext)
+                .Verifiable(Times.AtLeast(2));
+            _textReader
+                .Setup(textReader => textReader.FullFilePath)
+                .Callback(_verifier.GetCallOrderAction(TextReader_GetFullFilePath, 0, filePathSequence.MoveNext))
+                .Returns(filePathSequence.GetNext)
+                .Verifiable(Times.AtLeast(2));
+            _logger
+                .Setup(logger => logger.WriteLogEntries())
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
+                .Verifiable(Times.AtLeastOnce);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, TextReader_GetFileName, 0, -1);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, TextReader_GetFullFilePath, 0, -1);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFileName, FileAndDirectoryService_GetFullPath, -1);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFullFilePath, FileAndDirectoryService_GetFullPath, -1);
             _verifier.DefineExpectedCallOrder(FileAndDirectoryService_GetFullPath, TextReader_SetFilePath);
-            _verifier.DefineExpectedCallOrder(TextReader_GetFileName, TextReader_SetFilePath);
-            _verifier.DefineExpectedCallOrder(TextReader_GetFullFilePath, TextReader_SetFilePath);
-            SetupResetAll(TextReader_SetFilePath, null, 0, 0, true, "");
+            _verifier.DefineExpectedCallOrder(TextReader_SetFilePath, TextReader_GetFullFilePath, 0, -2);
+            SetupResetAll(Logger_SetLogEntryType_Loading,
+                          TextReader_GetFullFilePath,
+                          -2,
+                          Logger_WriteLogEntries,
+                          0,
+                          true,
+                          string.Empty,
+                          -2);
 
             // Act
             consoleBase.LoadTemplate(_templateFilePath);
@@ -1830,14 +1812,13 @@
             consoleBase.IsOutputFileWritten = false;
             Sequence<string> fileNameSequence = new([_lastTemplateFileName, _templateFileName]);
             Sequence<string> filePathSequence = new([_lastTemplateFilePath, _templateFilePath]);
+            _logger
+                .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Loading))
+                .Verifiable(Times.Exactly(2));
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.GetFullPath(_templateFilePath, It.IsAny<string>(), true))
                 .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_GetFullPath))
-                .Returns(_templateFilePath)
-                .Verifiable(Times.Once);
-            _pathValidater
-                .Setup(pathValidater => pathValidater.ValidateFullPath(_templateFilePath, true, true))
-                .Callback(_verifier.GetCallOrderAction(PathValidater_ValidateFullPath))
                 .Returns(_templateFilePath)
                 .Verifiable(Times.Once);
             _textReader
@@ -1871,15 +1852,19 @@
                 .Setup(templateLoader => templateLoader.LoadTemplate(SampleText, It.IsAny<Dictionary<string, List<TextItem>>>(), It.IsAny<Dictionary<string, ControlItem>>()))
                 .Callback(_verifier.GetCallOrderAction(TemplateLoader_LoadTemplate))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, FileAndDirectoryService_GetFullPath);
-            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_GetFullPath, PathValidater_ValidateFullPath);
-            _verifier.DefineExpectedCallOrder(PathValidater_ValidateFullPath, TextReader_SetFilePath);
-            _verifier.DefineExpectedCallOrder(TextReader_GetFileName, TextReader_SetFilePath);
-            _verifier.DefineExpectedCallOrder(TextReader_GetFullFilePath, TextReader_SetFilePath);
-            _verifier.DefineExpectedCallOrder(TextReader_SetFilePath, TextReader_GetFullFilePath);
-            _verifier.DefineExpectedCallOrder(TextReader_GetFullFilePath, Logger_Log_Message, 0, 1);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, TextReader_GetFileName);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, TextReader_GetFullFilePath, 0, -1);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFileName, FileAndDirectoryService_GetFullPath);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFullFilePath, FileAndDirectoryService_GetFullPath, -1);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_GetFullPath, TextReader_SetFilePath);
+            _verifier.DefineExpectedCallOrder(TextReader_SetFilePath, TextReader_GetFullFilePath, 0, -2);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFullFilePath, Logger_Log_Message, -2, 1);
             _verifier.DefineExpectedCallOrder(Logger_Log_Message, TextReader_ReadTextFile, 1);
-            SetupResetAll(TextReader_ReadTextFile, Logger_Log_Message, 0, 2);
+            SetupResetAll(Logger_SetLogEntryType_Loading,
+                          TextReader_ReadTextFile,
+                          0,
+                          Logger_Log_Message,
+                          2);
             _verifier.DefineExpectedCallOrder(Logger_Log_Message, TemplateLoader_LoadTemplate, 2);
             _verifier.DefineExpectedCallOrder(TemplateLoader_LoadTemplate, Logger_WriteLogEntries);
 
@@ -1912,15 +1897,10 @@
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
                 .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Loading))
-                .Verifiable(Times.Once);
+                .Verifiable(Times.Exactly(2));
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.GetFullPath(_templateFilePath, It.IsAny<string>(), true))
                 .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_GetFullPath))
-                .Returns(_templateFilePath)
-                .Verifiable(Times.Once);
-            _pathValidater
-                .Setup(pathValidater => pathValidater.ValidateFullPath(_templateFilePath, true, true))
-                .Callback(_verifier.GetCallOrderAction(PathValidater_ValidateFullPath))
                 .Returns(_templateFilePath)
                 .Verifiable(Times.Once);
             _textReader
@@ -1950,94 +1930,18 @@
                 .Setup(templateLoader => templateLoader.LoadTemplate(SampleText, It.IsAny<Dictionary<string, List<TextItem>>>(), It.IsAny<Dictionary<string, ControlItem>>()))
                 .Callback(_verifier.GetCallOrderAction(TemplateLoader_LoadTemplate))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, FileAndDirectoryService_GetFullPath);
-            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_GetFullPath, PathValidater_ValidateFullPath);
-            _verifier.DefineExpectedCallOrder(PathValidater_ValidateFullPath, TextReader_GetFileName, 0, -1);
-            _verifier.DefineExpectedCallOrder(PathValidater_ValidateFullPath, TextReader_GetFullFilePath, 0, -1);
-            _verifier.DefineExpectedCallOrder(TextReader_GetFileName, TextReader_SetFilePath, -1);
-            _verifier.DefineExpectedCallOrder(TextReader_GetFullFilePath, TextReader_SetFilePath, -1);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, TextReader_GetFileName);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, TextReader_GetFullFilePath, 0, -1);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFileName, FileAndDirectoryService_GetFullPath);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFullFilePath, FileAndDirectoryService_GetFullPath, -1);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_GetFullPath, TextReader_SetFilePath);
             _verifier.DefineExpectedCallOrder(TextReader_SetFilePath, TextReader_GetFullFilePath, 0, -2);
             _verifier.DefineExpectedCallOrder(TextReader_GetFullFilePath, TextReader_ReadTextFile, -2);
-            SetupResetAll(TextReader_ReadTextFile, Logger_Log_Message);
+            SetupResetAll(Logger_SetLogEntryType_Loading,
+                          TextReader_ReadTextFile,
+                          0,
+                          Logger_Log_Message);
             _verifier.DefineExpectedCallOrder(Logger_Log_Message, TemplateLoader_LoadTemplate);
-            _verifier.DefineExpectedCallOrder(TemplateLoader_LoadTemplate, Logger_WriteLogEntries);
-
-            // Act
-            consoleBase.LoadTemplate(_templateFilePath);
-
-            // Assert
-            consoleBase._generatedText
-                .Should()
-                .BeEmpty();
-            consoleBase.IsTemplateLoaded
-                .Should()
-                .BeTrue();
-            consoleBase.IsOutputFileWritten
-                .Should()
-                .BeFalse();
-            VerifyMocks();
-        }
-
-        [Fact]
-        public void LoadTemplate_NoErrors_LoadsTemplateAndLogsMessage()
-        {
-            // Arrange
-            MyConsoleBase consoleBase = GetMyConsoleBase();
-            List<string> returnedTemplateLines = [_textLine1];
-            consoleBase._generatedText.Add(_textLine1);
-            consoleBase.IsTemplateLoaded = false;
-            consoleBase.IsOutputFileWritten = true;
-            Sequence<string> fileNameSequence = new([_emptyString, _templateFileName]);
-            Sequence<string> filePathSequence = new([_emptyString, _templateFilePath]);
-            _fileService
-                .Setup(fileAndDirectoryService => fileAndDirectoryService.GetFullPath(_templateFilePath, It.IsAny<string>(), true))
-                .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_GetFullPath))
-                .Returns(_templateFilePath)
-                .Verifiable(Times.Once);
-            _pathValidater
-                .Setup(pathValidater => pathValidater.ValidateFullPath(_templateFilePath, true, true))
-                .Callback(_verifier.GetCallOrderAction(PathValidater_ValidateFullPath))
-                .Returns(_templateFilePath)
-                .Verifiable(Times.Once);
-            _textReader
-                .Setup(textReader => textReader.FileName)
-                .Callback(_verifier.GetCallOrderAction(TextReader_GetFileName))
-                .Returns(fileNameSequence.GetNext)
-                .Verifiable(Times.AtLeast(2));
-            _textReader
-                .Setup(textReader => textReader.FullFilePath)
-                .Callback(_verifier.GetCallOrderAction(TextReader_GetFullFilePath))
-                .Returns(filePathSequence.GetNext)
-                .Verifiable(Times.AtLeast(2));
-            _textReader
-                .Setup(textReader => textReader.SetFilePath(_templateFilePath))
-                .Callback(_verifier.GetCallOrderAction(TextReader_SetFilePath))
-                .Verifiable(Times.Once);
-            _textReader
-                .Setup(textReader => textReader.ReadTextFile())
-                .Callback(_verifier.GetCallOrderAction(TextReader_ReadTextFile))
-                .Returns(returnedTemplateLines)
-                .Verifiable(Times.Once);
-            _logger
-                .Setup(logger => logger.Log(MsgLoadingTemplateFile, _templateFileName, null))
-                .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
-                .Verifiable(Times.Once);
-            _templateLoader
-                .Setup(templateLoader => templateLoader.LoadTemplate(returnedTemplateLines, It.IsAny<Dictionary<string, List<TextItem>>>(), It.IsAny<Dictionary<string, ControlItem>>()))
-                .Callback(_verifier.GetCallOrderAction(TemplateLoader_LoadTemplate))
-                .Verifiable(Times.Once);
-            _logger
-                .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
-                .Verifiable(Times.AtLeastOnce);
-            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, FileAndDirectoryService_GetFullPath);
-            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_GetFullPath, PathValidater_ValidateFullPath);
-            _verifier.DefineExpectedCallOrder(PathValidater_ValidateFullPath, TextReader_GetFileName);
-            _verifier.DefineExpectedCallOrder(PathValidater_ValidateFullPath, TextReader_GetFullFilePath);
-            _verifier.DefineExpectedCallOrder(TextReader_GetFileName, TextReader_SetFilePath);
-            _verifier.DefineExpectedCallOrder(TextReader_GetFullFilePath, TextReader_SetFilePath);
-            _verifier.DefineExpectedCallOrder(TextReader_SetFilePath, TextReader_ReadTextFile);
-            SetupResetAll(TextReader_ReadTextFile, TemplateLoader_LoadTemplate);
             _verifier.DefineExpectedCallOrder(TemplateLoader_LoadTemplate, Logger_WriteLogEntries);
 
             // Act
@@ -2072,11 +1976,6 @@
                 .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_GetFullPath))
                 .Returns(_templateFilePath)
                 .Verifiable(Times.Once);
-            _pathValidater
-                .Setup(pathValidater => pathValidater.ValidateFullPath(_templateFilePath, true, true))
-                .Callback(_verifier.GetCallOrderAction(PathValidater_ValidateFullPath))
-                .Returns(_templateFilePath)
-                .Verifiable(Times.Once);
             _textReader
                 .Setup(textReader => textReader.FileName)
                 .Callback(_verifier.GetCallOrderAction(TextReader_GetFileName))
@@ -2099,11 +1998,11 @@
                 .Setup(logger => logger.WriteLogEntries())
                 .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, FileAndDirectoryService_GetFullPath);
-            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_GetFullPath, PathValidater_ValidateFullPath);
-            _verifier.DefineExpectedCallOrder(PathValidater_ValidateFullPath, TextReader_SetFilePath);
-            _verifier.DefineExpectedCallOrder(TextReader_GetFileName, TextReader_SetFilePath, -1);
-            _verifier.DefineExpectedCallOrder(TextReader_GetFullFilePath, TextReader_SetFilePath, -1);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, TextReader_GetFileName);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, TextReader_GetFullFilePath, 0, -1);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFileName, FileAndDirectoryService_GetFullPath);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFullFilePath, FileAndDirectoryService_GetFullPath, -1);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_GetFullPath, TextReader_SetFilePath);
             _verifier.DefineExpectedCallOrder(TextReader_SetFilePath, TextReader_GetFullFilePath, 0, -2);
             _verifier.DefineExpectedCallOrder(TextReader_GetFullFilePath, Logger_Log_Message, -2);
             _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_WriteLogEntries);
@@ -2137,15 +2036,10 @@
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
                 .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Loading))
-                .Verifiable(Times.Once);
+                .Verifiable(Times.Exactly(2));
             _fileService
                 .Setup(fileAndDirectoryService => fileAndDirectoryService.GetFullPath(_templateFilePath, It.IsAny<string>(), true))
                 .Callback(_verifier.GetCallOrderAction(FileAndDirectoryService_GetFullPath))
-                .Returns(_templateFilePath)
-                .Verifiable(Times.Once);
-            _pathValidater
-                .Setup(pathValidater => pathValidater.ValidateFullPath(_templateFilePath, true, true))
-                .Callback(_verifier.GetCallOrderAction(PathValidater_ValidateFullPath))
                 .Returns(_templateFilePath)
                 .Verifiable(Times.Once);
             _textReader
@@ -2171,14 +2065,18 @@
                 .Setup(logger => logger.Log(MsgTemplateFileIsEmpty, _templateFilePath, null))
                 .Callback(_verifier.GetCallOrderAction(Logger_Log_Message))
                 .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, FileAndDirectoryService_GetFullPath);
-            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_GetFullPath, PathValidater_ValidateFullPath);
-            _verifier.DefineExpectedCallOrder(PathValidater_ValidateFullPath, TextReader_SetFilePath);
-            _verifier.DefineExpectedCallOrder(TextReader_GetFileName, TextReader_SetFilePath, -1);
-            _verifier.DefineExpectedCallOrder(TextReader_GetFullFilePath, TextReader_SetFilePath, -1);
+            _logger
+                .Setup(logger => logger.WriteLogEntries())
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
+                .Verifiable(Times.Once);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, TextReader_GetFileName);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, TextReader_GetFullFilePath, 0, -1);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFileName, FileAndDirectoryService_GetFullPath);
+            _verifier.DefineExpectedCallOrder(TextReader_GetFullFilePath, FileAndDirectoryService_GetFullPath, -1);
+            _verifier.DefineExpectedCallOrder(FileAndDirectoryService_GetFullPath, TextReader_SetFilePath);
             _verifier.DefineExpectedCallOrder(TextReader_SetFilePath, TextReader_GetFullFilePath, 0, -2);
             _verifier.DefineExpectedCallOrder(TextReader_GetFullFilePath, TextReader_ReadTextFile, -2);
-            SetupResetAll(TextReader_ReadTextFile, Logger_Log_Message, 0, 0, false, _emptyString, _templateFileName, -2);
+            SetupResetAll(Logger_SetLogEntryType_Loading, TextReader_ReadTextFile, 0, Logger_Log_Message);
             _verifier.DefineExpectedCallOrder(Logger_Log_Message, Logger_WriteLogEntries);
 
             // Act
@@ -2194,6 +2092,54 @@
             consoleBase.IsOutputFileWritten
                 .Should()
                 .BeFalse();
+            VerifyMocks();
+        }
+
+        [Fact]
+        public void PromptForUserInput_UserResponseIsNull_ReturnsEmptyString()
+        {
+            // Arrange
+            MyConsoleBase consoleBase = GetMyConsoleBase();
+            string expected = _emptyString;
+            _logger
+                .Setup(logger => logger.WriteLogEntries())
+                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
+                .Verifiable(Times.AtLeastOnce);
+            _logger
+                .Setup(logger => logger.GetLogEntryType())
+                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
+                .Returns(LogEntryType.Loading)
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(logger => logger.SetLogEntryType(LogEntryType.User))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_User))
+                .Verifiable(Times.Once);
+            _messageWriter
+                .Setup(messageWriter => messageWriter.WriteLine("\n" + MsgContinuationPrompt + "\n"))
+                .Callback(_verifier.GetCallOrderAction(MessageWriter_WriteLine))
+                .Verifiable(Times.Once);
+            _consoleReader
+                .Setup(consoleReader => consoleReader.ReadLine())
+                .Callback(_verifier.GetCallOrderAction(ConsoleReader_ReadLine))
+                .Returns((string)null!)
+                .Verifiable(Times.Once);
+            _logger
+                .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
+                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Loading))
+                .Verifiable(Times.Once);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_GetLogEntryType);
+            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_User);
+            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_User, MessageWriter_WriteLine);
+            _verifier.DefineExpectedCallOrder(MessageWriter_WriteLine, ConsoleReader_ReadLine);
+            _verifier.DefineExpectedCallOrder(ConsoleReader_ReadLine, Logger_SetLogEntryType_Loading);
+
+            // Act
+            string actual = consoleBase.PromptUserForInput();
+
+            // Assert
+            actual
+                .Should()
+                .Be(expected);
             VerifyMocks();
         }
 
@@ -2324,54 +2270,6 @@
                 .Setup(consoleReader => consoleReader.ReadLine())
                 .Callback(_verifier.GetCallOrderAction(ConsoleReader_ReadLine))
                 .Returns(expected)
-                .Verifiable(Times.Once);
-            _logger
-                .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
-                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Loading))
-                .Verifiable(Times.Once);
-            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_GetLogEntryType);
-            _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_User);
-            _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_User, MessageWriter_WriteLine);
-            _verifier.DefineExpectedCallOrder(MessageWriter_WriteLine, ConsoleReader_ReadLine);
-            _verifier.DefineExpectedCallOrder(ConsoleReader_ReadLine, Logger_SetLogEntryType_Loading);
-
-            // Act
-            string actual = consoleBase.PromptUserForInput();
-
-            // Assert
-            actual
-                .Should()
-                .Be(expected);
-            VerifyMocks();
-        }
-
-        [Fact]
-        public void PromptForUserInput_UserResponseIsNull_ReturnsEmptyString()
-        {
-            // Arrange
-            MyConsoleBase consoleBase = GetMyConsoleBase();
-            string expected = _emptyString;
-            _logger
-                .Setup(logger => logger.WriteLogEntries())
-                .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
-                .Verifiable(Times.AtLeastOnce);
-            _logger
-                .Setup(logger => logger.GetLogEntryType())
-                .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
-                .Returns(LogEntryType.Loading)
-                .Verifiable(Times.Once);
-            _logger
-                .Setup(logger => logger.SetLogEntryType(LogEntryType.User))
-                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_User))
-                .Verifiable(Times.Once);
-            _messageWriter
-                .Setup(messageWriter => messageWriter.WriteLine("\n" + MsgContinuationPrompt + "\n"))
-                .Callback(_verifier.GetCallOrderAction(MessageWriter_WriteLine))
-                .Verifiable(Times.Once);
-            _consoleReader
-                .Setup(consoleReader => consoleReader.ReadLine())
-                .Callback(_verifier.GetCallOrderAction(ConsoleReader_ReadLine))
-                .Returns((string)null!)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
@@ -4517,6 +4415,36 @@
             VerifyMocks();
         }
 
+        private static LogEntryType GetLogEntryType(MethodCallToken callMethodToken)
+        {
+            if (callMethodToken == Logger_SetLogEntryType_Generating)
+            {
+                return LogEntryType.Generating;
+            }
+            else if (callMethodToken == Logger_SetLogEntryType_Loading)
+            {
+                return LogEntryType.Loading;
+            }
+            else if (callMethodToken == Logger_SetLogEntryType_Reset)
+            {
+                return LogEntryType.Reset;
+            }
+            else if (callMethodToken == Logger_SetLogEntryType_Setup)
+            {
+                return LogEntryType.Setup;
+            }
+            else if (callMethodToken == Logger_SetLogEntryType_User)
+            {
+                return LogEntryType.User;
+            }
+            else if (callMethodToken == Logger_SetLogEntryType_Writing)
+            {
+                return LogEntryType.Writing;
+            }
+
+            return LogEntryType.Parsing;
+        }
+
         private MyConsoleBase GetMyConsoleBase(bool shouldInitializeMocks = true)
         {
             if (shouldInitializeMocks)
@@ -4583,19 +4511,21 @@
             _tokenProcessor.VerifyNoOtherCalls();
         }
 
-        private void SetupResetAll(MethodCallToken callBefore,
-                                   MethodCallToken? callAfter,
-                                   int firstCallNumber = 0,
-                                   int secondCallNumber = 0,
+        private void SetupResetAll(MethodCallToken setLogEntryTypeToken,
+                                   MethodCallToken callBeforeToken,
+                                   int callBeforeNumber = 0,
+                                   MethodCallToken? callAfterToken = null,
+                                   int callAfterNumber = 0,
                                    bool shouldDisplayMessage = false,
-                                   string firstFileName = "",
-                                   string? secondFileName = null,
+                                   string? templateFileName = null,
                                    int getFileNameCallNumber = 0)
         {
+            LogEntryType logEntryType = GetLogEntryType(setLogEntryTypeToken);
+
             _logger
                 .Setup(logger => logger.GetLogEntryType())
                 .Callback(_verifier.GetCallOrderAction(Logger_GetLogEntryType))
-                .Returns(LogEntryType.Loading)
+                .Returns(logEntryType)
                 .Verifiable(Times.Once);
             _logger
                 .Setup(logger => logger.SetLogEntryType(LogEntryType.Reset))
@@ -4624,26 +4554,8 @@
 
             if (shouldDisplayMessage)
             {
-                if (secondFileName is null)
-                {
-                    _textReader
-                                .Setup(textReader => textReader.FileName)
-                                .Callback(_verifier.GetCallOrderAction(TextReader_GetFileName))
-                                .Returns(firstFileName)
-                                .Verifiable(Times.AtLeastOnce);
-                }
-                else
-                {
-                    Sequence<string> fileNameSequence = new([firstFileName, secondFileName]);
-                    _textReader
-                        .Setup(textReader => textReader.FileName)
-                        .Callback(_verifier.GetCallOrderAction(TextReader_GetFileName))
-                        .Returns(fileNameSequence.GetNext)
-                        .Verifiable(Times.AtLeast(2));
-                }
-
                 _logger
-                    .Setup(logger => logger.Log(MsgTemplateHasBeenReset, firstFileName, null))
+                    .Setup(logger => logger.Log(MsgTemplateHasBeenReset, templateFileName, null))
                     .Callback(_verifier.GetCallOrderAction(Logger_Log_Message, 99))
                     .Verifiable(Times.Once);
             }
@@ -4652,12 +4564,8 @@
                 .Setup(logger => logger.WriteLogEntries())
                 .Callback(_verifier.GetCallOrderAction(Logger_WriteLogEntries))
                 .Verifiable(Times.AtLeastOnce);
-            _logger
-                .Setup(logger => logger.SetLogEntryType(LogEntryType.Loading))
-                .Callback(_verifier.GetCallOrderAction(Logger_SetLogEntryType_Loading))
-                .Verifiable(Times.AtLeastOnce);
 
-            _verifier.DefineExpectedCallOrder(callBefore, Logger_GetLogEntryType, firstCallNumber);
+            _verifier.DefineExpectedCallOrder(callBeforeToken, Logger_GetLogEntryType, callBeforeNumber);
             _verifier.DefineExpectedCallOrder(Logger_GetLogEntryType, Logger_SetLogEntryType_Reset);
             _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, Locater_Reset);
             _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Reset, DefaultSegmentNameGenerator_Reset);
@@ -4684,11 +4592,11 @@
                 _verifier.DefineExpectedCallOrder(TokenProcessor_ResetTokenDelimiters, Logger_WriteLogEntries);
             }
 
-            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, Logger_SetLogEntryType_Loading);
+            _verifier.DefineExpectedCallOrder(Logger_WriteLogEntries, setLogEntryTypeToken);
 
-            if (callAfter is not null)
+            if (callAfterToken is not null)
             {
-                _verifier.DefineExpectedCallOrder(Logger_SetLogEntryType_Loading, callAfter, 0, secondCallNumber);
+                _verifier.DefineExpectedCallOrder(setLogEntryTypeToken, callAfterToken, 0, callAfterNumber);
             }
         }
 

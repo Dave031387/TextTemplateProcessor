@@ -183,7 +183,9 @@
             return rootPath is null
                 ? throw new FilePathException(MsgRootPathIsNull)
                 : string.IsNullOrWhiteSpace(path)
-                    ? string.IsNullOrWhiteSpace(rootPath) ? Directory.GetCurrentDirectory() : Path.GetFullPath(rootPath)
+                    ? string.IsNullOrWhiteSpace(rootPath)
+                        ? Directory.GetCurrentDirectory()
+                        : Path.GetFullPath(rootPath)
                     : Path.IsPathRooted(path)
                         ? Path.GetFullPath(path)
                         : string.IsNullOrWhiteSpace(rootPath)

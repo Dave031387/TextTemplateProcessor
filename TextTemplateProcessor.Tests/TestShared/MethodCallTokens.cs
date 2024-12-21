@@ -34,6 +34,7 @@
         public static readonly MethodCallToken Logger_Log_Message = new(nameof(Logger_Log_Message));
         public static readonly MethodCallToken Logger_SetLogEntryType_Generating = new(nameof(Logger_SetLogEntryType_Generating));
         public static readonly MethodCallToken Logger_SetLogEntryType_Loading = new(nameof(Logger_SetLogEntryType_Loading));
+        public static readonly MethodCallToken Logger_SetLogEntryType_Parsing = new(nameof(Logger_SetLogEntryType_Parsing));
         public static readonly MethodCallToken Logger_SetLogEntryType_Reset = new(nameof(Logger_SetLogEntryType_Reset));
         public static readonly MethodCallToken Logger_SetLogEntryType_Setup = new(nameof(Logger_SetLogEntryType_Setup));
         public static readonly MethodCallToken Logger_SetLogEntryType_User = new(nameof(Logger_SetLogEntryType_User));

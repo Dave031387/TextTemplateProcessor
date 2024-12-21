@@ -386,12 +386,11 @@
 
             try
             {
-                string fullFilePath = FileAndDirectoryService.GetFullPath(filePath, SolutionDirectory, true);
-                string templateFilePath = PathValidater.ValidateFullPath(fullFilePath, true, true);
                 string lastFileName = TemplateFileName;
                 string lastFilePath = TemplateFilePath;
+                string fullFilePath = FileAndDirectoryService.GetFullPath(filePath, SolutionDirectory, true);
 
-                if (TrySetTemplateFilePath(filePath))
+                if (TrySetTemplateFilePath(fullFilePath))
                 {
                     if (IsTemplateLoaded && TemplateFilePath == lastFilePath)
                     {
